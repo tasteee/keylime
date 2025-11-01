@@ -59,6 +59,7 @@
 		"@node-rs/argon2": "^2.0.2",
 		"array-range": "^1.0.1",
 		"await-to-js": "^3.0.0",
+		"datass": "^2.1.0",
 		"mode-watcher": "^1.1.0",
 		"postgres": "^3.4.7",
 		"smplr": "^0.16.3",

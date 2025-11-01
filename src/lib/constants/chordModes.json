@@ -1,0 +1,22 @@
+[
+	{
+		"name": "Off",
+		"intervals": [],
+		"description": "No chord mode applied."
+	},
+	{
+		"name": "Power Chords",
+		"intervals": [0, 7, 12],
+		"description": "Root and fifth, often used in rock music."
+	},
+	{
+		"name": "Major Triad",
+		"intervals": [0, 4, 7],
+		"description": "Root, major third, and perfect fifth."
+	},
+	{
+		"name": "Minor Triad",
+		"intervals": [0, 3, 7],
+		"description": "Root, minor third, and perfect fifth."
+	}
+]

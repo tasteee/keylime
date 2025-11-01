@@ -4,74 +4,93 @@
 @plugin '@tailwindcss/typography';
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant lightTheme (&:is(.lightTheme *));
+@custom-variant darkTheme (&:is(.darkTheme *));
 
 :root {
-	--radius: 0.625rem;
-	--background: oklch(1 0 0);
-	--foreground: oklch(0.141 0.005 285.823);
-	--card: oklch(1 0 0);
-	--card-foreground: oklch(0.141 0.005 285.823);
-	--popover: oklch(1 0 0);
-	--popover-foreground: oklch(0.141 0.005 285.823);
-	--primary: oklch(0.21 0.006 285.885);
-	--primary-foreground: oklch(0.985 0 0);
-	--secondary: oklch(0.967 0.001 286.375);
-	--secondary-foreground: oklch(0.21 0.006 285.885);
-	--muted: oklch(0.967 0.001 286.375);
-	--muted-foreground: oklch(0.552 0.016 285.938);
-	--accent: oklch(0.967 0.001 286.375);
-	--accent-foreground: oklch(0.21 0.006 285.885);
+	--pink-50: #faf6f6;
+	--pink-100: #f6edef;
+	--pink-200: #eedde0;
+	--pink-300: #e0c1c7;
+	--pink-400: #d0a3ad;
+	--pink-500: #b87b8a;
+	--pink-600: #a15d71;
+	--pink-700: #854b5d;
+	--pink-800: #714052;
+	--pink-900: #623949;
+	--pink-950: #351c25;
+}
+
+.root,
+:root,
+.lightTheme {
+	--radius: 0.125rem;
+	--background: var(--pink-50);
+	--foreground: var(--pink-950);
+	--card: var(--pink-100);
+	--card-foreground: var(--pink-950);
+	--popover: var(--pink-50);
+	--popover-foreground: var(--pink-950);
+	--primary: var(--pink-800);
+	--primary-foreground: var(--pink-50);
+	--secondary: var(--pink-200);
+	--secondary-foreground: var(--pink-900);
+	--muted: var(--pink-100);
+	--muted-foreground: var(--pink-600);
+	--accent: var(--pink-200);
+	--accent-foreground: var(--pink-900);
 	--destructive: oklch(0.577 0.245 27.325);
-	--border: oklch(0.92 0.004 286.32);
-	--input: oklch(0.92 0.004 286.32);
-	--ring: oklch(0.705 0.015 286.067);
+	--border: var(--pink-300);
+	--input: var(--pink-200);
+	--ring: var(--pink-600);
 	--chart-1: oklch(0.646 0.222 41.116);
 	--chart-2: oklch(0.6 0.118 184.704);
 	--chart-3: oklch(0.398 0.07 227.392);
 	--chart-4: oklch(0.828 0.189 84.429);
 	--chart-5: oklch(0.769 0.188 70.08);
-	--sidebar: oklch(0.985 0 0);
-	--sidebar-foreground: oklch(0.141 0.005 285.823);
-	--sidebar-primary: oklch(0.21 0.006 285.885);
-	--sidebar-primary-foreground: oklch(0.985 0 0);
-	--sidebar-accent: oklch(0.967 0.001 286.375);
-	--sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-	--sidebar-border: oklch(0.92 0.004 286.32);
-	--sidebar-ring: oklch(0.705 0.015 286.067);
+	--sidebar: oklch(0.96 0.002 0);
+	--sidebar-foreground: oklch(0.15 0.002 0);
+	--sidebar-primary: oklch(0.21 0.002 0);
+	--sidebar-primary-foreground: oklch(0.96 0.002 0);
+	--sidebar-accent: oklch(0.94 0.002 0);
+	--sidebar-accent-foreground: oklch(0.21 0.002 0);
+	--sidebar-border: oklch(0.89 0.002 0);
+	--sidebar-ring: oklch(0.7 0.002 0);
 }
 
-.dark {
-	--background: oklch(0.141 0.005 285.823);
-	--foreground: oklch(0.985 0 0);
-	--card: oklch(0.21 0.006 285.885);
-	--card-foreground: oklch(0.985 0 0);
-	--popover: oklch(0.21 0.006 285.885);
-	--popover-foreground: oklch(0.985 0 0);
-	--primary: oklch(0.92 0.004 286.32);
-	--primary-foreground: oklch(0.21 0.006 285.885);
-	--secondary: oklch(0.274 0.006 286.033);
-	--secondary-foreground: oklch(0.985 0 0);
-	--muted: oklch(0.274 0.006 286.033);
-	--muted-foreground: oklch(0.705 0.015 286.067);
-	--accent: oklch(0.274 0.006 286.033);
-	--accent-foreground: oklch(0.985 0 0);
+.dark,
+.darkTheme {
+	--background: var(--pink-950);
+	--foreground: var(--pink-50);
+	--card: var(--pink-900);
+	--card-foreground: var(--pink-50);
+	--popover: var(--pink-900);
+	--popover-foreground: var(--pink-50);
+	--primary: var(--pink-300);
+	--primary-foreground: var(--pink-950);
+	--secondary: var(--pink-800);
+	--secondary-foreground: var(--pink-50);
+	--muted: var(--pink-800);
+	--muted-foreground: var(--pink-400);
+	--accent: var(--pink-800);
+	--accent-foreground: var(--pink-50);
 	--destructive: oklch(0.704 0.191 22.216);
-	--border: oklch(1 0 0 / 10%);
-	--input: oklch(1 0 0 / 15%);
-	--ring: oklch(0.552 0.016 285.938);
+	--border: var(--pink-700);
+	--input: var(--pink-800);
+	--ring: var(--pink-500);
 	--chart-1: oklch(0.488 0.243 264.376);
 	--chart-2: oklch(0.696 0.17 162.48);
 	--chart-3: oklch(0.769 0.188 70.08);
 	--chart-4: oklch(0.627 0.265 303.9);
 	--chart-5: oklch(0.645 0.246 16.439);
-	--sidebar: oklch(0.21 0.006 285.885);
-	--sidebar-foreground: oklch(0.985 0 0);
+	--sidebar: oklch(0.21 0.002 0);
+	--sidebar-foreground: oklch(0.96 0.002 0);
 	--sidebar-primary: oklch(0.488 0.243 264.376);
-	--sidebar-primary-foreground: oklch(0.985 0 0);
-	--sidebar-accent: oklch(0.274 0.006 286.033);
-	--sidebar-accent-foreground: oklch(0.985 0 0);
-	--sidebar-border: oklch(1 0 0 / 10%);
-	--sidebar-ring: oklch(0.552 0.016 285.938);
+	--sidebar-primary-foreground: oklch(0.96 0.002 0);
+	--sidebar-accent: oklch(0.27 0.002 0);
+	--sidebar-accent-foreground: oklch(0.96 0.002 0);
+	--sidebar-border: oklch(0.96 0.002 0 / 10%);
+	--sidebar-ring: oklch(0.55 0.002 0);
 }
 
 @theme inline {
@@ -110,6 +129,17 @@
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
+	--color-accent-50: var(--pink-50);
+	--color-accent-100: var(--pink-100);
+	--color-accent-200: var(--pink-200);
+	--color-accent-300: var(--pink-300);
+	--color-accent-400: var(--pink-400);
+	--color-accent-500: var(--pink-500);
+	--color-accent-600: var(--pink-600);
+	--color-accent-700: var(--pink-700);
+	--color-accent-800: var(--pink-800);
+	--color-accent-900: var(--pink-900);
+	--color-accent-950: var(--pink-950);
 }
 
 @layer base {
@@ -119,4 +149,34 @@
 	body {
 		@apply bg-background text-foreground p-2;
 	}
+
+	[data-slot='select-trigger'] {
+		border: 1px solid var(--color-accent-950) !important;
+		border-radius: 2px !important;
+		background: var(--background) !important;
+		box-shadow: none;
+	}
+
+	[data-slot='popover-content'] {
+		border: 1px solid var(--color-accent-950) !important;
+		background: var(--background) !important;
+	}
+
+	/* Caret icon colors for select triggers */
+	[data-slot='select-trigger'] svg {
+		color: var(--foreground) !important;
+		opacity: 1 !important;
+	}
+
+	[data-slot='slider-track'] {
+		background: var(--color-accent-400) !important;
+	}
+}
+
+body {
+	height: 100vh;
+}
+
+body .page {
+	height: 100%;
 }

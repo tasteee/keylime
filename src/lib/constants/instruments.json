@@ -1,0 +1,20 @@
+{
+	"availableInstruments": {
+		"piano": {
+			"label": "Piano",
+			"value": "Piano"
+		},
+		"guitar": {
+			"label": "Guitar",
+			"value": "Guitar"
+		},
+		"bass": {
+			"label": "Bass",
+			"value": "Bass"
+		},
+		"violin": {
+			"label": "Violin",
+			"value": "Violin"
+		}
+	}
+}
