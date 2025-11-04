@@ -1,9 +1,8 @@
-import { SplendidGrandPiano, Soundfont } from 'smplr';
+import { SplendidGrandPiano } from 'smplr';
 import output from './output.svelte.js';
-
 import { OutputChannel, WebMidi } from 'webmidi';
 
-const getRandomBetween = (min, max) => {
+const getRandomBetween = (min: number, max: number) => {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 

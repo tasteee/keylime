@@ -21,7 +21,7 @@
 <Select.Root type="single" onValueChange={handleSelect} value={output.midiChannel}>
 	<Select.Trigger class="w-[120px]">
 		<span>
-			<span style="font-weight: 500;">Key: </span>
+			<span style="font-weight: 500;">MIDI Channel: </span>
 			{output.midiChannel}
 		</span>
 	</Select.Trigger>

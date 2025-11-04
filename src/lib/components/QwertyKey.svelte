@@ -1,73 +1,70 @@
 <script lang="ts">
-	import KEYS_CONFIG from '../constants/keys.json'
-	import mainStore from '../stores/main.svelte.js'
-	import { onMount, onDestroy } from 'svelte'
-	import { browser } from '$app/environment'
-	import playbackStore from '$lib/stores/playback.svelte'
+	import KEYS_CONFIG from '../constants/keys.json';
+	import mainStore from '../stores/main.svelte.js';
+	import { onMount, onDestroy } from 'svelte';
+	import { browser } from '$app/environment';
+	import playbackStore from '$lib/stores/playback.svelte';
 
-  let isPressed = $state(false)
-	const props = $props()
+	let isPressed = $state(false);
+	const props = $props();
 
-	const config = KEYS_CONFIG[props.keyCode as keyof typeof KEYS_CONFIG]
-	const note = $derived(mainStore.keyNoteMap[props.keyCode] || '')
-  const noteWithoutOctave = $derived(note.replace(/[0-9]/g, ''))
+	const config = KEYS_CONFIG[props.keyCode as keyof typeof KEYS_CONFIG];
+	const note = $derived(mainStore.keyNoteMap[props.keyCode] || '');
+	const noteWithoutOctave = $derived(note.replace(/[0-9]/g, ''));
 
-  const keyClassName = $derived.by(() => {
-    const classes = []
+	const keyClassName = $derived.by(() => {
+		const classes = [];
 
-    if (config.isFunctional) {
-      classes.push('functionalKey')
-      if (isPressed) classes.push('pressedKey')
-      return classes.join(' ')
-    }
-    
-	  const isSharp = note?.includes('#')
-    const isOctaveNotePressed = mainStore.pressedNotes.includes(noteWithoutOctave)
-    if (isOctaveNotePressed) classes.push('octaveNotePressed')
-    if (isSharp) classes.push('sharpKey')
-    if (isPressed) classes.push('pressedKey')
-    if (!isSharp) classes.push('normalKey')
-    return classes.join(' ')
-  })
+		if (config.isFunctional) {
+			classes.push('functionalKey');
+			if (isPressed) classes.push('pressedKey');
+			return classes.join(' ');
+		}
+
+		const isSharp = note?.includes('#');
+		const isOctaveNotePressed = mainStore.pressedNotes.includes(noteWithoutOctave);
+		if (isOctaveNotePressed) classes.push('octaveNotePressed');
+		if (isSharp) classes.push('sharpKey');
+		if (isPressed) classes.push('pressedKey');
+		if (!isSharp) classes.push('normalKey');
+		return classes.join(' ');
+	});
 
 	function handleKeyDown(event: KeyboardEvent) {
-		if (event.repeat) return
-		event.preventDefault()
+		if (event.repeat) return;
+		event.preventDefault();
 
 		if (event.code === props.keyCode) {
-			isPressed = true
-      mainStore.pressedNotes = [...mainStore.pressedNotes, noteWithoutOctave]
-			playbackStore.play(note)
+			isPressed = true;
+			mainStore.pressedNotes = [...mainStore.pressedNotes, noteWithoutOctave];
+			playbackStore.play(note);
 		}
 	}
 
-	function handleKeyUp(event : KeyboardEvent) {
+	function handleKeyUp(event: KeyboardEvent) {
 		if (event.code === props.keyCode) {
-			isPressed = false
-      mainStore.pressedNotes = mainStore.pressedNotes.filter(n => n !== noteWithoutOctave)
-			playbackStore.stop(note)
+			isPressed = false;
+			mainStore.pressedNotes = mainStore.pressedNotes.filter((n) => n !== noteWithoutOctave);
+			playbackStore.stop(note);
 		}
 	}
 
 	onMount(() => {
 		if (browser) {
-			window.addEventListener('keydown', handleKeyDown)
-			window.addEventListener('keyup', handleKeyUp)
+			window.addEventListener('keydown', handleKeyDown);
+			window.addEventListener('keyup', handleKeyUp);
 		}
-	})
+	});
 
 	onDestroy(() => {
 		if (browser) {
-			window.removeEventListener('keydown', handleKeyDown)
-			window.removeEventListener('keyup', handleKeyUp)
+			window.removeEventListener('keydown', handleKeyDown);
+			window.removeEventListener('keyup', handleKeyUp);
 		}
-	})
+	});
 </script>
 
-<div
-	class="QwertyKey {keyClassName}"
-	style="flex: {config.width}"
->
+<div class="QwertyKey {keyClassName}" style="flex: {config.width}">
 	<span class="qwertyLabel">{config.label.toUpperCase()}</span>
 	<span class="noteLabel">{note}</span>
 </div>
@@ -85,50 +82,52 @@
 
 	.qwertyLabel {
 		font-size: 14px;
-		font-weight: bold;
+		/* font-weight: bold; */
 	}
 
 	.noteLabel {
 		font-size: 14px;
 	}
 
-  .normalKey, .functionalKey {
-    background: var(--color-accent-100);
-    color: var(--color-accent-950);
-  }
+	.normalKey,
+	.functionalKey {
+		background: var(--color-zinc-900);
+		color: var(--color-zinc-100);
+	}
 
-  .normalKey.pressedKey, .functionalKey.pressedKey {
-    background: var(--color-accent-300);
-    color: var(--color-accent-950);
-  }
+	.normalKey.pressedKey,
+	.functionalKey.pressedKey {
+		background: var(--color-zinc-700);
+		color: var(--color-zinc-100);
+	}
 
-  .sharpKey {
-    background: var(--color-accent-200);
-    color: var(--color-accent-950);
-  }
+	.sharpKey {
+		background: var(--color-zinc-800);
+		color: var(--color-zinc-100);
+	}
 
-  .sharpKey.pressedKey {
-    background: var(--color-accent-400);
-    color: var(--color-accent-950);
-  }
+	.sharpKey.pressedKey {
+		background: var(--color-zinc-600);
+		color: var(--color-zinc-100);
+	}
 
-  .octaveNotePressed {
-    box-shadow: 
-      0 2px 8px var(--color-accent-500),
-      inset 0 0 0 1px var(--color-accent-400);
-  }
+	.octaveNotePressed .noteLabel,
+	.octaveNotePressed .qwertyLabel {
+		/* font-weight: bold; */
+		font-size: 16px;
+		color: var(--color-zinc-500);
+	}
 
-  .octaveNotePressed .noteLabel {
-    font-weight: bold;
-    font-size: 16px;
-  }
+	.functionalKey.octaveNotePressed .noteLabel {
+		font-weight: normal;
+		font-size: 14px;
+		color: var(--color-zinc-100);
+	}
 
-  .functionalKey .octaveNotePressed {
-    box-shadow: none;
-  }
-
-  .functionalKey .octaveNotePressed .noteLabel {
-    font-weight: normal;
-    font-size: 14px;
-  }
+	.pressedKey.octaveNotePressed .noteLabel,
+	.pressedKey.octaveNotePressed .qwertyLabel {
+		font-weight: normal;
+		font-size: 14px;
+		color: var(--color-zinc-100);
+	}
 </style>
