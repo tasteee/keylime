@@ -1,43 +1,65 @@
-Always prioritize **clarity, readability, and explicitness** over brevity or cleverness.
-Code should be written for junior devs and future readers, not for the author.
+Always prioritize **clarity, readability, and explicitness** over brevity or cleverness. Code should be written for junior devs and future readers, not for the author.
 Favor **modular, flat, and maintainable** logic over complex, nested flows.
 
 Use **named arrow functions** only — no anonymous or inline functions.
+
 Use **named exports** only. Never use `default` exports.
-Use a **single argument object** for all functions — no destructuring in the signature.
-Argument object must be typed as `(args: ArgsT) => { ... }`.
+
+Use explicit types for all complex function arguments.
+
+i.e:
+
+```
+type FooBarArgsT = {
+  value: string;
+  count: number;
+};
+
+const fooBar = (args: FooBarArgsT) => { ... }
+```
+
 Define custom types using `type`, not `interface`, and suffix all with `T`. Example: `UserT`, `MessageT`, `ArgsT`.
+
 Boolean variables must use interrogative prefixes: `isOpen`, `canEdit`, `hasError`, `didClick`.
 
 Avoid `else`, `else if`, and `switch`. Prefer early returns and clean `if` guards.
+
 Always flatten control flow. Never nest unnecessarily.
+
 Always return early where possible — **never bury the exit**.
+
 Avoid vertical "maze" logic — limit scrolling required to understand flow.
+
 Always write **explicit** logic — no assumptions, no magic.
 
 Never abbreviate — prefer long, descriptive variable names.
+
 Avoid single-letter or ambiguous variables like `e`, `x`, `r`.
-Avoid inline complex logic — extract helpers.
+
+Avoid inline complex logic — extract complex logic into reusable helper functions.
+
 Only allow implicit returns for _trivial_ one-liners (e.g. `array.forEach(item => item.stop())`).
-Always access props with dot notation: `args.value` (never destructure).
+
+Always access props with dot notation: `args.value` (**never destructure**).
 
 ## ✅ Examples of Preferred Patterns
 
 ```ts
-type ArgsT = {
-	userId: string;
-	element: HTMLElement;
-};
+type IsAuthorizedArgsT = {
+	userId: string
+	element: HTMLElement
+}
 
-export const isAuthorized = (args: ArgsT) => {
-	const isSameUser = args.userId === account.id;
-	if (!isSameUser) return false;
-	return true;
-};
+export const isAuthorized = (args: IsAuthorizedArgsT) => {
+	const isSameUser = args.userId === account.id
+	if (!isSameUser) return false
+	return true
+}
 
-export const getDimensions = (args: ArgsT): DOMRect => {
-	return args.element.getBoundingClientRect();
-};
+// Doesnt need complex typed args, so single argument is fine.
+export const getDimensions = (element: HTMLElement): DOMRect => {
+	return element.getBoundingClientRect()
+}
 ```
 
 ## ❌ Avoid These Patterns
@@ -46,40 +68,40 @@ export const getDimensions = (args: ArgsT): DOMRect => {
 // Avoid implicit, immediate returns.
 const getData = (args: GetDataOptionsT) => ({
 	result: args.a + args.b / 2
-});
+})
 
 // Instead use a function block and return statement.
 const getData = (args: GetDataOptionsT) => {
-	const result = args.a + args.b / 2;
-	return { result };
-};
+	const result = args.a + args.b / 2
+	return { result }
+}
 
 // Avoid nesting or else blocks
 if (foo) {
-	doThis();
+	doThis()
 } else {
-	doThat();
+	doThat()
 }
 
 // Instead, return early
-if (foo) return doThis();
-doThat();
+if (foo) return doThis()
+doThat()
 
 // Avoid destructuring in function signature
 const fetchUser = ({ id, includePosts }: { id: string; includePosts: boolean }) => {
 	// ...
-};
+}
 
 // Instead, use a single argument object
 type FetchUserArgsT = {
-	id: string;
-	includePosts: boolean;
-};
+	id: string
+	includePosts: boolean
+}
 
 const fetchUser = (args: FetchUserArgsT) => {
-	const { id, includePosts } = args;
+	const { id, includePosts } = args
 	// ...
-};
+}
 ```
 
 ## more flat code examples, HIGH PRIORITY:

@@ -1,15 +1,15 @@
 <script>
-	import * as Item from '$lib/components/ui/item';
-	import { Button } from '$lib/components/ui/button';
-	import Icon from '@iconify/svelte';
+	import * as Item from '$lib/components/ui/item'
+	import { Button } from '$lib/components/ui/button'
+	import Icon from '@iconify/svelte'
 
-	const props = $props();
+	const props = $props()
 </script>
 
 <Item.Root variant="outline">
 	<Item.Content>
 		<Item.Title>{props.note}</Item.Title>
-		<Item.Description>{props.description}</Item.Description>
+		<!-- <Item.Description>{props.description}</Item.Description> -->
 	</Item.Content>
 	<Item.Actions>
 		<Button variant="outline" size="sm">

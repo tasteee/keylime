@@ -37,7 +37,7 @@
 		if (event.code === props.keyCode) {
 			isPressed = true;
 			mainStore.pressedNotes = [...mainStore.pressedNotes, noteWithoutOctave];
-			playbackStore.play(note);
+			playbackStore.play({ note });
 		}
 	}
 
@@ -45,7 +45,7 @@
 		if (event.code === props.keyCode) {
 			isPressed = false;
 			mainStore.pressedNotes = mainStore.pressedNotes.filter((n) => n !== noteWithoutOctave);
-			playbackStore.stop(note);
+			playbackStore.stop({ note });
 		}
 	}
 

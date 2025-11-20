@@ -1,9 +1,9 @@
 <script>
-	import ChordCard from './ChordCard.svelte';
+	import ChordCard from './ChordCard.svelte'
 </script>
 
 <section
-	class="ChordCardGrid gap-4 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 grid grid-cols-2"
+	class="ChordCardGrid px-4 py-4 gap-4 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 grid w-full grid-cols-2"
 >
 	<ChordCard note="Cmaj7" description="C E G B" />
 	<ChordCard note="A#m" description="A# C# F" />

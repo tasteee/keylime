@@ -42,7 +42,7 @@ class MainStore {
 	selectedScale = $state('Major');
 	selectedKeyboardLayout = $state('standard');
 	selectedKeymap = $state('rightUp') as keyof typeof KEYMAPS_CONFIG;
-	selectedChordMode = $state('Off') as keyof typeof CHORD_MODE_CONFIGS;
+	selectedChordMode = $state('Off');
 	isScaleLockActive = $state(true);
 	selectedOctave = $state(3);
 	pressedNotes = $state([]) as string[];

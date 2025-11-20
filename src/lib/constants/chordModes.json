@@ -5,7 +5,12 @@
 		"description": "No chord mode applied."
 	},
 	{
-		"name": "Power Chords",
+		"name": "Power Chord (Root + 5th)",
+		"intervals": [0, 7],
+		"description": "Root and perfect fifth, commonly used in rock music."
+	},
+	{
+		"name": "Power Chord (Full)",
 		"intervals": [0, 7, 12],
 		"description": "Root and fifth, often used in rock music."
 	},
