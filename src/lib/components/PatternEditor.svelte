@@ -1,26 +1,28 @@
 <script lang="ts">
+	import PatternEditorSignal from './PatternEditorSignal.svelte'
+	import { Input } from '$lib/components/ui/input/index.js'
+	import { Label } from '$lib/components/ui/label/index.js'
 	import { SIGNAL_IDS, SIGNAL_ROWS } from '$lib/constants/signalRows'
 	import { createSignal } from '$lib/helpers/creators'
 	import { resolveSignalConflicts } from '$lib/helpers/signalRows'
+	import { patternStore } from '$lib/stores/pattern.svelte'
 
-	let signals: SignalT[] = $state([])
-	let signalRows = $state(SIGNAL_ROWS)
 	let selectedSignalId: string | null = $state(null)
 	let isDraggingSignal = $state(false)
 	let draggingToneId: string | null = $state(null)
 	let draggedSignalId: string | null = $state(null)
 	let dragStartX = $state(0)
 	let dragStartTime = $state(0)
+	let dragThresholdMet = $state(false)
 	let isResizingSignal = $state(false)
 	let resizingSignalId: string | null = $state(null)
 	let resizeHandle: 'left' | 'right' | null = $state(null)
 	let resizeStartX = $state(0)
 	let resizeStartTime = $state(0)
 	let resizeStartDuration = $state(0)
+	let ignoreClickOutsideUntil = $state(0)
 
-	const getSignalById = (id: string): SignalT => {
-		return signals.find((signal) => signal.id === id) as SignalT
-	}
+	type SignalRowKeyT = keyof typeof SIGNAL_ROWS
 
 	// ticks per quarter note (beat)
 	const PPQ = 16
@@ -30,8 +32,75 @@
 	const TICKS_PER_BEAT = PPQ * 4
 	const TICKS_PER_BAR = TICKS_PER_BEAT * 4
 
-	const handleSignalGridRowClick = (event: MouseEvent) => {
-		console.log('handleSignalGridRowClick')
+	const selectedSignal = $derived(selectedSignalId ? patternStore.getSignalById(selectedSignalId) : null)
+
+	const handleClickOutside = (event: MouseEvent) => {
+		const hasNoSelectedSignal = selectedSignalId === null
+		if (hasNoSelectedSignal) return
+
+		const currentTime = Date.now()
+		const isIgnoringClickOutside = currentTime < ignoreClickOutsideUntil
+		if (isIgnoringClickOutside) return
+
+		const target = event.target as HTMLElement
+		const isInsideVelocityControls = target.closest('.velocityControls')
+		const clickedSignalElement = target.closest('.signal') as HTMLElement
+		const clickedSignalId = clickedSignalElement?.dataset?.signalId
+		const isClickedSignalTheSelectedSignal = clickedSignalId === selectedSignalId
+
+		const shouldKeepSelected = isInsideVelocityControls || isClickedSignalTheSelectedSignal
+		if (shouldKeepSelected) return
+
+		selectedSignalId = null
+	}
+
+	const handleKeyDown = (event: KeyboardEvent) => {
+		const isEscapeKey = event.key === 'Escape'
+		if (isEscapeKey) {
+			selectedSignalId = null
+		}
+	}
+
+	const handleMinVelocityChange = (event: Event) => {
+		if (!selectedSignal) return
+		const target = event.target as HTMLInputElement
+		const value = target.value
+		const parsedValue = parseInt(value, 10)
+		const isValidNumber = !isNaN(parsedValue)
+		if (!isValidNumber) return
+		const clampedValue = Math.max(0, Math.min(127, parsedValue))
+		selectedSignal.minVelocity = clampedValue
+		selectedSignal.modifiedTime = Date.now()
+	}
+
+	const handleMaxVelocityChange = (event: Event) => {
+		if (!selectedSignal) return
+		const target = event.target as HTMLInputElement
+		const value = target.value
+		const parsedValue = parseInt(value, 10)
+		const isValidNumber = !isNaN(parsedValue)
+		if (!isValidNumber) return
+		const clampedValue = Math.max(0, Math.min(127, parsedValue))
+		selectedSignal.maxVelocity = clampedValue
+		selectedSignal.modifiedTime = Date.now()
+	}
+
+	const handleVelocityChange = (event: Event) => {
+		if (!selectedSignal) return
+		const target = event.target as HTMLInputElement
+		const value = target.value
+		const parsedValue = parseInt(value, 10)
+		const isValidNumber = !isNaN(parsedValue)
+		if (!isValidNumber) return
+		const clampedValue = Math.max(0, Math.min(127, parsedValue))
+		selectedSignal.velocity = clampedValue
+		selectedSignal.minVelocity = clampedValue
+		selectedSignal.maxVelocity = clampedValue
+		selectedSignal.modifiedTime = Date.now()
+	}
+
+	const handleSignalGridRowDoubleClick = (event: MouseEvent) => {
+		console.log('handleSignalGridRowDoubleClick')
 		if (isDraggingSignal || isResizingSignal) return
 
 		selectedSignalId = null
@@ -42,7 +111,7 @@
 		const x = event.clientX - rect.left
 		const timePositionInCells = Math.floor(x / CELL_WIDTH)
 		const timePositionInTicks = timePositionInCells * TICKS_PER_CELL
-		const signalRow = signalRows[label as keyof typeof SIGNAL_ROWS]
+		const signalRow = patternStore.signalRows[label as keyof typeof SIGNAL_ROWS]
 
 		const signal = createSignal({
 			startTime: timePositionInTicks,
@@ -51,7 +120,7 @@
 		})
 
 		signalRow.signalIds.push(signal.id)
-		signals.push(signal)
+		patternStore.signals.push(signal)
 		console.log('>>>', signal.startTime)
 		selectedSignalId = signal.id
 	}
@@ -72,7 +141,7 @@
 		const toneId = parent.dataset.toneId
 		if (!signalId || !toneId) return
 
-		const signal = getSignalById(signalId)
+		const signal = patternStore.getSignalById(signalId)
 		if (!signal) return
 
 		isDraggingSignal = true
@@ -92,7 +161,7 @@
 		const signalId = signalElement.dataset.signalId
 		if (!signalId) return
 
-		const signal = getSignalById(signalId)
+		const signal = patternStore.getSignalById(signalId)
 		if (!signal) return
 
 		isResizingSignal = true
@@ -108,15 +177,17 @@
 	}
 
 	const handleMouseMove = (event: MouseEvent) => {
-		if (isResizingSignal && resizingSignalId) {
-			const signal = getSignalById(resizingSignalId)
+		const isCurrentlyResizing = isResizingSignal && resizingSignalId
+		if (isCurrentlyResizing) {
+			const signal = patternStore.getSignalById(resizingSignalId as string)
 			if (!signal) return
 
 			const deltaX = event.clientX - resizeStartX
 			const deltaCells = Math.round(deltaX / CELL_WIDTH)
 			const deltaTicks = deltaCells * TICKS_PER_CELL
 
-			if (resizeHandle === 'left') {
+			const isResizingLeft = resizeHandle === 'left'
+			if (isResizingLeft) {
 				const newStartTime = Math.max(0, resizeStartTime + deltaTicks)
 				const endTime = resizeStartTime + resizeStartDuration
 				const newDuration = Math.max(TICKS_PER_CELL, endTime - newStartTime)
@@ -124,7 +195,10 @@
 				signal.startTime = newStartTime
 				signal.duration = newDuration
 				signal.modifiedTime = Date.now()
-			} else if (resizeHandle === 'right') {
+			}
+
+			const isResizingRight = resizeHandle === 'right'
+			if (isResizingRight) {
 				const newDuration = Math.max(TICKS_PER_CELL, resizeStartDuration + deltaTicks)
 				signal.duration = newDuration
 				signal.modifiedTime = Date.now()
@@ -132,12 +206,38 @@
 			return
 		}
 
-		if (!isDraggingSignal || !draggedSignalId) return
-
-		const signal = getSignalById(draggedSignalId)
-		if (!signal) return
+		const isMouseDownOnSignal = isDraggingSignal && draggedSignalId
+		if (!isMouseDownOnSignal) return
 
 		const deltaX = event.clientX - dragStartX
+		const absoluteDeltaX = Math.abs(deltaX)
+		const dragThreshold = 3
+		const hasMovedEnoughToStartDrag = absoluteDeltaX >= dragThreshold
+
+		if (!dragThresholdMet && !hasMovedEnoughToStartDrag) return
+
+		if (!dragThresholdMet) {
+			dragThresholdMet = true
+		}
+
+		const signal = patternStore.getSignalById(draggedSignalId as string)
+		if (!signal) return
+
+		const target = event.target as HTMLElement
+		const currentRowElement = target.closest('[data-tone-id]') as HTMLElement
+		const currentRowId = currentRowElement?.dataset?.toneId
+		const shouldMoveToNewRow = currentRowId && draggingToneId && currentRowId !== draggingToneId
+
+		if (shouldMoveToNewRow) {
+			patternStore.moveSignalToRow({
+				fromRowId: draggingToneId as string,
+				toRowId: currentRowId,
+				signalId: draggedSignalId as string
+			})
+
+			draggingToneId = currentRowId
+		}
+
 		const deltaCells = Math.round(deltaX / CELL_WIDTH)
 		const deltaTicks = deltaCells * TICKS_PER_CELL
 		const newStartTime = Math.max(0, dragStartTime + deltaTicks)
@@ -147,40 +247,43 @@
 	}
 
 	const handleMouseUp = () => {
-		console.log('handleMouseUp')
+		const wasResizingOrDragging = isResizingSignal || isDraggingSignal
+		const wasResizing = isResizingSignal && resizingSignalId
+		const wasDragging = isDraggingSignal && draggedSignalId
 
-		if (isResizingSignal && resizingSignalId) {
-			const signalIdToFind = resizingSignalId
-			const toneId = Object.keys(signalRows).find((key) =>
-				signalRows[key as keyof typeof SIGNAL_ROWS].signalIds.includes(signalIdToFind)
-			)
+		if (wasResizing) {
+			const toneId = Object.keys(patternStore.signalRows).find((key) => {
+				const signalId = resizingSignalId as string
+				const signalRow = patternStore.signalRows[key as SignalRowKeyT]
+				return signalRow.signalIds.includes(signalId)
+			})
 
 			if (toneId) {
-				const signalRow = signalRows[toneId as keyof typeof SIGNAL_ROWS]
-				const newSignals = resolveSignalConflicts(signalRow, signals)
-				signals = [...signals, ...newSignals]
+				const signalRow = patternStore.signalRows[toneId as SignalRowKeyT]
+				const newSignals = resolveSignalConflicts(signalRow, patternStore.signals)
+				patternStore.signals = [...patternStore.signals, ...newSignals]
 				signalRow.signalIds = [...signalRow.signalIds, ...newSignals.map((signal) => signal.id)]
 			}
-		}
 
-		if (isDraggingSignal && draggedSignalId) {
-			const signalRow = signalRows[draggingToneId as keyof typeof SIGNAL_ROWS]
-			const newSignals = resolveSignalConflicts(signalRow, signals)
-			signals = [...signals, ...newSignals]
-			signalRow.signalIds = [...signalRow.signalIds, ...newSignals.map((signal) => signal.id)]
-		}
-
-		// This prevents handleSignalGridRowClick from firing and
-		// adding a new signal right after dragging ends and the cursor
-		// MAY be slightly over another grid cell, creating an unwanted signal.
-		setTimeout(() => {
 			resizeHandle = null
+			isResizingSignal = false
+			resizingSignalId = null
+		}
+
+		if (wasDragging) {
+			const signalRow = patternStore.signalRows[draggingToneId as SignalRowKeyT]
+			const newSignals = resolveSignalConflicts(signalRow, patternStore.signals)
+			patternStore.signals = [...patternStore.signals, ...newSignals]
+			signalRow.signalIds = [...signalRow.signalIds, ...newSignals.map((signal) => signal.id)]
+
 			isDraggingSignal = false
 			draggedSignalId = null
 			draggingToneId = null
-			isResizingSignal = false
-			resizingSignalId = null
-		}, 100)
+		}
+
+		if (wasResizingOrDragging) {
+			ignoreClickOutsideUntil = Date.now() + 100
+		}
 	}
 
 	const handleSignalDoubleClick = (event: MouseEvent) => {
@@ -189,11 +292,11 @@
 		if (!signalId) return
 
 		// Remove signal from signals array
-		signals = signals.filter((signal) => signal.id !== signalId)
+		patternStore.signals = patternStore.signals.filter((signal) => signal.id !== signalId)
 
 		// Remove signal ID from its row
-		for (const rowKey in signalRows) {
-			const row = signalRows[rowKey as keyof typeof SIGNAL_ROWS]
+		for (const rowKey in patternStore.signalRows) {
+			const row = patternStore.signalRows[rowKey as SignalRowKeyT]
 			row.signalIds = row.signalIds.filter((id) => id !== signalId)
 		}
 
@@ -206,41 +309,72 @@
 	}
 </script>
 
+<svelte:window onclick={handleClickOutside} onkeydown={handleKeyDown} />
+
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="PatternEditor">
+	{#if selectedSignal}
+		<div class="velocityControls">
+			<div class="velocityControlGroup">
+				<Label for="velocity">Velocity</Label>
+				<Input
+					id="velocity"
+					type="number"
+					min="0"
+					max="127"
+					value={selectedSignal.velocity}
+					oninput={handleVelocityChange}
+					class="h-8"
+				/>
+			</div>
+			<div class="velocityControlGroup">
+				<Label for="minVelocity">Min</Label>
+				<Input
+					id="minVelocity"
+					type="number"
+					min="0"
+					max="127"
+					value={selectedSignal.minVelocity}
+					oninput={handleMinVelocityChange}
+					class="h-8"
+				/>
+			</div>
+			<div class="velocityControlGroup">
+				<Label for="maxVelocity">Max</Label>
+				<Input
+					id="maxVelocity"
+					type="number"
+					min="0"
+					max="127"
+					value={selectedSignal.maxVelocity}
+					oninput={handleMaxVelocityChange}
+					class="h-8"
+				/>
+			</div>
+		</div>
+	{/if}
+
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="signalGridBox">
 		<div class="signalGridRowsBox" onmousemove={handleMouseMove} onmouseup={handleMouseUp}>
 			{#each SIGNAL_IDS as label, index (label + index)}
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<div class="signalGridRow" onclick={handleSignalGridRowClick} data-tone-id={label}>
-					{#each signalRows[label as keyof typeof SIGNAL_ROWS].signalIds as signalId}
-						{@const signal = getSignalById(signalId)}
-						{@const bg = signal.id === selectedSignalId ? 'var(--foreground)' : 'var(--muted-foreground)'}
+				<div class="signalGridRow" ondblclick={handleSignalGridRowDoubleClick} data-tone-id={label}>
+					{#each patternStore.signalRows[label as SignalRowKeyT].signalIds as signalId}
+						{@const signal = patternStore.getSignalById(signalId)}
 
-						<!-- svelte-ignore a11y_no_static_element_interactions -->
-						<div
-							class="signal"
-							onclick={handleSignalClick}
-							onmousedown={handleSignalMouseDown}
-							ondblclick={handleSignalDoubleClick}
-							data-signal-id={signal.id}
-							data-signal-startTime={signal.startTime}
-							data-signal-duration={signal.duration}
-							data-is-dragging={draggedSignalId === signal.id}
-							style="
-                  position: absolute;
-                  background: {bg};
-                  left: {(signal.startTime / TICKS_PER_CELL) * CELL_WIDTH}px;
-                  width: {(signal.duration / TICKS_PER_CELL) * CELL_WIDTH - 1}px;
-                  top: 1px;
-                "
-						>
-							<!-- svelte-ignore a11y_no_static_element_interactions -->
-							<div class="resizeHandle resizeHandleLeft" onmousedown={(e) => handleResizeMouseDown(e, 'left')}></div>
-							<!-- svelte-ignore a11y_no_static_element_interactions -->
-							<div class="resizeHandle resizeHandleRight" onmousedown={(e) => handleResizeMouseDown(e, 'right')}></div>
-						</div>
+						<PatternEditorSignal
+							{signal}
+							isSelected={signal.id === selectedSignalId}
+							isDragging={draggedSignalId === signal.id}
+							ticksPerCell={TICKS_PER_CELL}
+							cellWidth={CELL_WIDTH}
+							onSignalClick={handleSignalClick}
+							onSignalMouseDown={handleSignalMouseDown}
+							onSignalDoubleClick={handleSignalDoubleClick}
+							onResizeMouseDown={handleResizeMouseDown}
+						/>
 					{/each}
 				</div>
 			{/each}
@@ -257,55 +391,32 @@
 </div>
 
 <style>
-	/* So dragging a signal makes it appear above other signals. */
-	[data-is-dragging='true'] {
-		cursor: grabbing;
-		z-index: 999;
-	}
-
 	.PatternEditor {
 		width: 100%;
 		display: flex;
 		flex-direction: column;
+		gap: 8px;
 		padding: 8px;
 		border: 1px solid var(--border);
 		border-radius: 2px;
 	}
 
-	.signal {
-		/* background: var(--muted-foreground); */
-		height: 20px;
+	.velocityControls {
+		display: flex;
+		flex-direction: row;
+		gap: 12px;
+		align-items: flex-end;
+		padding: 8px;
+		background: hsl(var(--muted) / 0.3);
+		border: 1px solid var(--border);
 		border-radius: 2px;
-		cursor: grab;
-		position: relative;
 	}
 
-	.signal:active {
-		cursor: grabbing;
-	}
-
-	.resizeHandle {
-		position: absolute;
-		top: 0;
-		width: 2px;
-		height: 100%;
-		z-index: 10;
-		opacity: 0;
-	}
-
-	.resizeHandleLeft {
-		left: 0;
-		cursor: ew-resize;
-	}
-
-	.resizeHandleRight {
-		right: 0;
-		cursor: ew-resize;
-	}
-
-	.resizeHandle:hover {
-		opacity: 1;
-		background: rgba(255, 255, 255, 0.3);
+	.velocityControlGroup {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		min-width: 80px;
 	}
 
 	.signalGridBox {

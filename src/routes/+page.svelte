@@ -1,8 +1,35 @@
 <script>
 	import ChordCardGrid from '$lib/components/ChordCardGrid.svelte'
 	import MainControls from '$lib/components/MainControls.svelte'
-	import ArrangementPanel from '$lib/components/ArrangementPanel.svelte'
+	import output from '$lib/stores/output.svelte'
+	import SelectKey from '$lib/components/SelectKey.svelte'
+	import SelectKeymap from '$lib/components/SelectKeymap.svelte'
+	import SelectOctave from '$lib/components/SelectOctave.svelte'
+	import SelectScale from '$lib/components/SelectScale.svelte'
+	import SelectOutputType from '$lib/components/SelectOutputType.svelte'
+	import SelectInstrument from '$lib/components/SelectInstrument.svelte'
+	import SelectMidiDevice from '$lib/components/SelectMidiDevice.svelte'
+	import SelectMidiChannel from '$lib/components/SelectMidiChannel.svelte'
+	import SelectChordMode from '$lib/components/SelectChordMode.svelte'
+	import SelectVelocity from '$lib/components/SelectVelocity.svelte'
 	import PatternEditor from '$lib/components/PatternEditor.svelte'
+	import ProgressionPanel from '$lib/components/ProgressionPanel.svelte'
+
+	import playbackStore from '$lib/stores/playback.svelte'
+	import { browser } from '$app/environment'
+	import { onMount, onDestroy } from 'svelte'
+
+	const props = $props()
+
+	onMount(() => {
+		if (browser) {
+			playbackStore.load()
+		}
+	})
+
+	const isInstrument = $derived(output.type === 'Instrument')
+	const isMidi = $derived(output.type === 'MIDI')
+	const isMidiDeviceSelected = $derived(isMidi && output.midiDeviceName)
 
 	let activeView = $state('chords')
 
@@ -19,6 +46,33 @@
 		</nav>
 	</div>
 
+	<div class="controls">
+		<div class="controlsRow">
+			<SelectKey />
+			<SelectScale />
+			<SelectOctave />
+			<SelectKeymap />
+			<SelectVelocity />
+			<SelectChordMode />
+		</div>
+
+		<div class="controlsRow">
+			<SelectOutputType />
+
+			{#if isInstrument}
+				<SelectInstrument />
+			{/if}
+
+			{#if isMidi}
+				<SelectMidiDevice />
+			{/if}
+
+			{#if isMidiDeviceSelected}
+				<SelectMidiChannel />
+			{/if}
+		</div>
+	</div>
+
 	<div class="content">
 		{#if activeView === 'chords'}
 			<ChordCardGrid />
@@ -28,7 +82,7 @@
 			<PatternEditor />
 		{/if}
 
-		<ArrangementPanel />
+		<ProgressionPanel />
 	</div>
 </div>
 
@@ -90,5 +144,18 @@
 		padding: 8px;
 		padding-bottom: 168px;
 		overflow-y: hidden;
+	}
+
+	.controls {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		width: 100%;
+	}
+
+	.controlsRow {
+		width: 100%;
+		display: flex;
+		gap: 8px;
 	}
 </style>

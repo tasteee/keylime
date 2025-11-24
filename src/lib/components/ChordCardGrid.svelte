@@ -1,14 +1,22 @@
-<script>
+<script lang="ts">
 	import ChordCard from './ChordCard.svelte'
+	import scaleChords from '$lib/constants/scaleChords.json'
+	import mainStore from '$lib/stores/main.svelte'
+	import { getScaleChords } from '$lib/helpers/chords'
+
+	const scale = $derived(mainStore.selectedKey + ' ' + mainStore.selectedScale)
+	const inScaleChordNames = $derived(getScaleChords(scale))
+
+	$effect(() => {
+		console.log(mainStore.selectedKey, mainStore.selectedScale)
+		console.log('inScaleChordNames:', inScaleChordNames)
+	})
 </script>
 
 <section
-	class="ChordCardGrid px-4 py-4 gap-4 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 grid w-full grid-cols-2"
+	class="ChordCardGrid px-4 py-4 gap-4 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 grid w-full flex-1 grid-cols-2 overflow-y-auto"
 >
-	<ChordCard note="Cmaj7" description="C E G B" />
-	<ChordCard note="A#m" description="A# C# F" />
-	<ChordCard note="G7" description="G B D F" />
-	<ChordCard note="Dm" description="D F A" />
-	<ChordCard note="Fmaj9" description="F A C E G" />
-	<ChordCard note="E7b9" description="E G# B D F" />
+	{#each inScaleChordNames as chordName}
+		<ChordCard {chordName} />
+	{/each}
 </section>

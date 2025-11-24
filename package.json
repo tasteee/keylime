@@ -57,6 +57,8 @@
 	"dependencies": {
 		"@iconify/svelte": "^5.0.2",
 		"@node-rs/argon2": "^2.0.2",
+		"@tonaljs/voicing": "^5.1.2",
+		"@tonaljs/voicing-dictionary": "^5.1.2",
 		"array-range": "^1.0.1",
 		"await-to-js": "^3.0.0",
 		"datass": "^2.1.0",
