@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import ChordCardGrid from '$lib/components/ChordCardGrid.svelte'
 	import MainControls from '$lib/components/MainControls.svelte'
 	import output from '$lib/stores/output.svelte'
@@ -35,7 +35,20 @@
 
 	const goToPatternView = () => (activeView = 'patterns')
 	const goToChordView = () => (activeView = 'chords')
+
+	const handleKeyDown = (event: KeyboardEvent) => {
+		const isSpaceKey = event.code === 'Space'
+		if (!isSpaceKey) return
+
+		const isTypingInInput = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement
+		if (isTypingInInput) return
+
+		event.preventDefault()
+		playbackStore.togglePlayback()
+	}
 </script>
+
+<svelte:window onkeydown={handleKeyDown} />
 
 <div class="page lightTheme">
 	<div class="topbar">
@@ -156,6 +169,7 @@
 	.controlsRow {
 		width: 100%;
 		display: flex;
+		padding: 4px 12px;
 		gap: 8px;
 	}
 </style>

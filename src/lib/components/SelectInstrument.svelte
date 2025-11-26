@@ -1,23 +1,32 @@
 <script lang="ts">
 	import INSTRUMENTS_CONFIG from '../constants/instruments.json'
 	import * as Select from '$lib/components/ui/select/index.js'
-  import output from '../stores/output.svelte'
+	import output from '../stores/output.svelte'
 
-	const handleSelect = (value: string) => {
-		output.instrument = value
-	}
+	const instrumentEntries = Object.entries(INSTRUMENTS_CONFIG.availableInstruments)
+
+	const instruments = instrumentEntries.map(([key, config]) => ({
+		value: key,
+		label: config.label
+	}))
+
+	const currentInstrument = $derived(instruments.find((i) => i.value === output.instrument)?.label ?? output.instrument)
 </script>
 
-<Select.Root type="single" onValueChange={handleSelect} value={output.instrument}>
-	<Select.Trigger class="w-[180px]">
+<Select.Root type="single" name="instrument" bind:value={output.instrument}>
+	<Select.Trigger>
 		<span>
 			<span style="font-weight: 500;">Instrument: </span>
-			{output.instrument}
+			{currentInstrument}
 		</span>
 	</Select.Trigger>
 	<Select.Content>
-		{#each Object.keys(INSTRUMENTS_CONFIG) as instrument}
-			<Select.Item value={instrument.value}>{instrument.label}</Select.Item>
-		{/each}
+		<Select.Group>
+			{#each instruments as instrument (instrument.value)}
+				<Select.Item value={instrument.value} label={instrument.label}>
+					{instrument.label}
+				</Select.Item>
+			{/each}
+		</Select.Group>
 	</Select.Content>
 </Select.Root>

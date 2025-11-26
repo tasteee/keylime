@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Cal+Sans&family=Google+Sans+Flex:opsz,wght@6..144,1..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mozilla+Headline:wght@200..700&family=Mozilla+Text:wght@200..700&family=Rubik:ital,wght@0,300..900;1,300..900&family=Savate:ital,wght@0,200..900;1,200..900&family=Stack+Sans+Headline:wght@200..700&family=Stack+Sans+Notch:wght@200..700&family=Stack+Sans+Text:wght@200..700&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap');
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+:root {
+  /* Base - Cool Light Gray Background */
+  --background: hsl(210 40% 96%);
+  --foreground: hsl(222 47% 11%);
+
+  /* Cards - Pure White with Softness */
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(222 47% 11%);
+
+  /* Popovers */
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(222 47% 11%);
+
+  /* Primary - Vivid Blue (from Play button/Toggles) */
+  --primary: hsl(221 83% 53%);
+  --primary-foreground: hsl(210 40% 98%);
+
+  /* Secondary - Light Gray/Off-white for inactive states */
+  --secondary: hsl(210 40% 96.1%);
+  --secondary-foreground: hsl(222 47% 11.2%);
+
+  /* Muted - Subtler text */
+  --muted: hsl(210 40% 96.1%);
+  --muted-foreground: hsl(215 16% 47%);
+
+  /* Accent - Used for hover states and soft gradients */
+  --accent: hsl(210 40% 96.1%);
+  --accent-foreground: hsl(222 47% 11.2%);
+
+  /* Destructive */
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: hsl(210 40% 98%);
+
+  /* Borders & Inputs */
+  --border: hsl(214 32% 91%);
+  --input: hsl(214 32% 91%);
+  --ring: hsl(221 83% 53%);
+
+  /* Radius - Highly rounded (1rem / 16px default) */
+  --radius: 1rem;
+}

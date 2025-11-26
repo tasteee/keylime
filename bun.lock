@@ -12,6 +12,7 @@
         "array-range": "^1.0.1",
         "await-to-js": "^3.0.0",
         "datass": "^2.1.0",
+        "midi-writer-js": "^3.1.1",
         "mode-watcher": "^1.1.0",
         "postgres": "^3.4.7",
         "smplr": "^0.16.3",
@@ -508,6 +509,8 @@
     "lz-string": ["lz-string@1.5.0", "", { "bin": { "lz-string": "bin/bin.js" } }, "sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ=="],
 
     "magic-string": ["magic-string@0.30.21", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.5" } }, "sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ=="],
+
+    "midi-writer-js": ["midi-writer-js@3.1.1", "", { "dependencies": { "@tonaljs/midi": "^4.9.0" } }, "sha512-ruRzUWtmcvD7xQcrKRk9fH+1BELv8x07QJxhpM4PS5n6+MOyPb39ifxTV/oI1hHPgKMSuhnhWw2MaGWUAvH9DA=="],
 
     "mini-svg-data-uri": ["mini-svg-data-uri@1.4.4", "", { "bin": { "mini-svg-data-uri": "cli.js" } }, "sha512-r9deDe9p5FJUPZAk3A59wGH7Ii9YrjjWw0jmw/liSbHl2CHiyXj6FcDXDu2K3TjVAXqiJdaw3xxwlZZr9E6nHg=="],
 

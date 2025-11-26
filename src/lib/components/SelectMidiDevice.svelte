@@ -6,7 +6,12 @@
 	import { browser } from '$app/environment'
 	import { WebMidi } from 'webmidi'
 
-	let devices = $state([])
+	type MidiDeviceT = {
+		name: string
+		id: string
+	}
+
+	let devices = $state<MidiDeviceT[]>([])
 
 	const handleSelect = (value: string) => {
 		output.midiDeviceName = value
@@ -30,7 +35,7 @@
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={output.midiDeviceName}>
-	<Select.Trigger class="w-[180px]">
+	<Select.Trigger>
 		<span>
 			<span style="font-weight: 500;">Device: </span>
 			{output.midiDeviceName}

@@ -4,91 +4,96 @@ import { Scale, Note } from 'tonal';
 import range from 'array-range';
 
 const getFinalNote = (note: string) => {
-	// 1. make sure there are no DOUBLE SHARPS: F## -> G, C## -> D, etc.
-	// 2. make sure there are no FLATS: Db -> C#, Eb -> D#, etc.
+  // 1. make sure there are no DOUBLE SHARPS: F## -> G, C## -> D, etc.
+  // 2. make sure there are no FLATS: Db -> C#, Eb -> D#, etc.
 
-	const doubleSharpMap = {
-		'C##': 'D',
-		'D##': 'E',
-		'E##': 'F#',
-		'F##': 'G',
-		'G##': 'A',
-		'A##': 'B',
-		'B##': 'C#'
-	};
+  const doubleSharpMap = {
+    'C##': 'D',
+    'D##': 'E',
+    'E##': 'F#',
+    'F##': 'G',
+    'G##': 'A',
+    'A##': 'B',
+    'B##': 'C#'
+  };
 
-	const flatToSharpMap = {
-		Db: 'C#',
-		Eb: 'D#',
-		Gb: 'F#',
-		Ab: 'G#',
-		Bb: 'A#',
-		Fb: 'E',
-		Cb: 'B'
-	};
+  const flatToSharpMap = {
+    Db: 'C#',
+    Eb: 'D#',
+    Gb: 'F#',
+    Ab: 'G#',
+    Bb: 'A#',
+    Fb: 'E',
+    Cb: 'B'
+  };
 
-	const simplified = Note.simplify(note) || note;
-	const octaveMatch = simplified.match(/(\d+)$/);
-	const octave = octaveMatch ? octaveMatch[1] : '';
-	const noteWithoutOctave = simplified.replace(/\d+$/, '');
-	const correctedDoubleSharp = doubleSharpMap[noteWithoutOctave as keyof typeof doubleSharpMap];
-	const correctedFlat = flatToSharpMap[noteWithoutOctave as keyof typeof flatToSharpMap];
-	const finalNote = correctedDoubleSharp || correctedFlat || noteWithoutOctave;
-	return finalNote + octave;
+  const simplified = Note.simplify(note) || note;
+  const octaveMatch = simplified.match(/(\d+)$/);
+  const octave = octaveMatch ? octaveMatch[1] : '';
+  const noteWithoutOctave = simplified.replace(/\d+$/, '');
+  const correctedDoubleSharp = doubleSharpMap[noteWithoutOctave as keyof typeof doubleSharpMap];
+  const correctedFlat = flatToSharpMap[noteWithoutOctave as keyof typeof flatToSharpMap];
+  const finalNote = correctedDoubleSharp || correctedFlat || noteWithoutOctave;
+  return finalNote + octave;
 };
 
 class MainStore {
-	selectedKey = $state('C');
-	selectedScale = $state('Major');
-	selectedKeyboardLayout = $state('standard');
-	selectedKeymap = $state('rightUp') as keyof typeof KEYMAPS_CONFIG;
-	selectedChordMode = $state('Off');
-	isScaleLockActive = $state(true);
-	selectedOctave = $state(3);
-	pressedNotes = $state([]) as string[];
+  selectedKey = $state('C');
+  selectedScale = $state('Major');
+  selectedKeyboardLayout = $state('standard');
+  selectedKeymap = $state('rightUp') as keyof typeof KEYMAPS_CONFIG;
+  selectedChordMode = $state('Off');
+  isScaleLockActive = $state(true);
+  currentOpenPopoverId = $state(null) as string | null;
 
-	keyNoteMap = $derived.by(() => {
-		const keymapConfig = KEYMAPS_CONFIG[this.selectedKeymap];
-		const entries = Object.entries(keymapConfig.remaps);
+  pressedNotes = $state([]) as string[];
+  rootOctave = $state('3');
+  bpm = $state(108);
+  patternLengthBars = $state(1); // Pattern loops every N bars (default 1 bar)
+  progressionLengthBars = $state(4); // Total progression length in bars (default 4 bars)
 
-		const keyNoteMap = entries.reduce((map, entry) => {
-			const [keyCode, noteIndex] = entry as [string, number];
-			const indexedNote = this.qwertyNotes[noteIndex];
-			if (indexedNote) map[keyCode] = indexedNote;
-			return map;
-		}, {} as any);
+  keyNoteMap = $derived.by(() => {
+    const keymapConfig = KEYMAPS_CONFIG[this.selectedKeymap];
+    const entries = Object.entries(keymapConfig.remaps);
 
-		console.log('keyNoteMap', keyNoteMap);
-		return keyNoteMap;
-	});
+    const keyNoteMap = entries.reduce((map, entry) => {
+      const [keyCode, noteIndex] = entry as [string, number];
+      const indexedNote = this.qwertyNotes[noteIndex];
+      if (indexedNote) map[keyCode] = indexedNote;
+      return map;
+    }, {} as any);
 
-	qwertyNotes = $derived.by(() => {
-		const scaleNotes = Scale.get(`${this.selectedKey} ${this.selectedScale}`).notes;
-		const convertedNotes = scaleNotes.map(getFinalNote);
-		const maxKeys = 45; // QWERTY keyboard key count
-		const maxOctave = 12;
-		const notes = [];
-		const rootNote = convertedNotes[0];
-		const noteOrder = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-		const rootNoteIndex = noteOrder.indexOf(rootNote);
+    console.log('keyNoteMap', keyNoteMap);
+    return keyNoteMap;
+  });
 
-		for (
-			let octave = this.selectedOctave;
-			octave <= maxOctave && notes.length < maxKeys;
-			octave++
-		) {
-			for (const note of convertedNotes) {
-				if (notes.length >= maxKeys) break;
-				const currentNoteIndex = noteOrder.indexOf(note);
-				const shouldIncrementOctave = currentNoteIndex < rootNoteIndex;
-				const finalOctave = shouldIncrementOctave ? octave + 1 : octave;
-				const finalNote = getFinalNote(`${note}${finalOctave}`);
-				notes.push(finalNote);
-			}
-		}
+  qwertyNotes = $derived.by(() => {
+    const scaleNotes = Scale.get(`${this.selectedKey} ${this.selectedScale}`).notes;
+    const convertedNotes = scaleNotes.map(getFinalNote);
+    const maxKeys = 45; // QWERTY keyboard key count
+    const maxOctave = 12;
+    const notes = [];
+    const rootNote = convertedNotes[0];
+    const noteOrder = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const rootNoteIndex = noteOrder.indexOf(rootNote);
 
-		return notes;
-	});
+    for (
+      let octave = this.rootOctave;
+      octave <= maxOctave && notes.length < maxKeys;
+      octave++
+    ) {
+      for (const note of convertedNotes) {
+        if (notes.length >= maxKeys) break;
+        const currentNoteIndex = noteOrder.indexOf(note);
+        const shouldIncrementOctave = currentNoteIndex < rootNoteIndex;
+        const finalOctave = shouldIncrementOctave ? octave + 1 : octave;
+        const finalNote = getFinalNote(`${note}${finalOctave}`);
+        notes.push(finalNote);
+      }
+    }
+
+    return notes;
+  });
 }
 
 const mainStore = new MainStore();

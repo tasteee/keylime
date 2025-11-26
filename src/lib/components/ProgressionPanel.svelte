@@ -1,11 +1,19 @@
 <script lang="ts">
 	import ProgressionDockChord from './ProgressionDockChord.svelte'
 	import { progressionStore } from '$lib/stores/progression.svelte'
+	import playbackStore from '$lib/stores/playback.svelte'
+	import main from '$lib/stores/main.svelte'
+	import Icon from '@iconify/svelte'
+	import { Button } from '$lib/components/ui/button'
+	import { exportPerformanceAsMidi } from '$lib/helpers/midiExport'
+	import SelectPatternLength from './SelectPatternLength.svelte'
+	import SelectProgressionLength from './SelectProgressionLength.svelte'
 
 	let isDraggingChord = $state(false)
 	let draggedChordId: string | null = $state(null)
 	let dragStartX = $state(0)
 	let dragStartTime = $state(0)
+	let isMouseDownOnChord = $state(false)
 	let isResizingChord = $state(false)
 	let resizingChordId: string | null = $state(null)
 	let resizeHandle: 'left' | 'right' | null = $state(null)
@@ -14,34 +22,29 @@
 	let resizeStartDuration = $state(0)
 	let middleElement: HTMLElement | null = $state(null)
 
-	// Total progression grid is divided into 64 units
-	// Each unit = 1/64 of the progression width
-	const TOTAL_UNITS = 64
+	// Grid layout: 4 beats per bar, chords positioned/sized in beats
+	const BEATS_PER_BAR = 4
+	const DRAG_THRESHOLD_PIXELS = 24
+	const MIN_DURATION_BEATS = 0.25 // Minimum chord duration (1/4 beat)
 
-	const handleClickOutside = (event: MouseEvent) => {
-		const target = event.target as HTMLElement
-		const isInsideProgressionPanel = target.closest('.ProgressionPanel')
+	// Derived: total beats based on progression length
+	const totalBeats = $derived(main.progressionLengthBars * BEATS_PER_BAR)
 
-		const shouldDeselect = !isInsideProgressionPanel
-		if (shouldDeselect) {
-			progressionStore.selectChord(null)
+	// Derived: timing markers array based on progression length (1 marker per beat)
+	const timingMarkers = $derived.by(() => {
+		const totalBeatCount = main.progressionLengthBars * BEATS_PER_BAR
+		const markers = []
+		for (let beat = 1; beat <= totalBeatCount; beat++) {
+			markers.push(beat)
 		}
-	}
+		return markers
+	})
 
 	const handleKeyDown = (event: KeyboardEvent) => {
-		const isEscapeKey = event.key === 'Escape'
-		if (isEscapeKey) {
-			progressionStore.selectChord(null)
-			return
-		}
-
 		const isDeleteKey = event.key === 'Delete' || event.key === 'Backspace'
-		if (isDeleteKey) {
-			progressionStore.deleteSelectedChord()
-			return
-		}
-
+		if (isDeleteKey) return progressionStore.deleteSelectedChord()
 		const isDuplicateKey = (event.ctrlKey || event.metaKey) && event.key === 'd'
+
 		if (isDuplicateKey) {
 			event.preventDefault()
 			progressionStore.duplicateSelectedChord()
@@ -59,13 +62,16 @@
 		if (isResizingChord) return
 
 		const target = event.target as HTMLElement
-		const chordId = target.dataset.chordId
-		if (!chordId) return
+		const chordElement = target.closest('.chord') as HTMLElement
+		if (!chordElement) return console.log('No chord element found')
+
+		const chordId = chordElement.dataset.chordId
+		if (!chordId) return console.log('No chordId found on chord element')
 
 		const chord = progressionStore.getChord(chordId)
 		if (!chord) return
 
-		isDraggingChord = true
+		isMouseDownOnChord = true
 		draggedChordId = chordId
 		dragStartX = event.clientX
 		dragStartTime = chord.startTime ?? 0
@@ -100,19 +106,19 @@
 		if (!middleElement) return
 
 		const containerWidth = middleElement.offsetWidth
-		const unitWidth = containerWidth / TOTAL_UNITS
+		const beatWidth = containerWidth / totalBeats
 
 		if (isResizingChord && resizingChordId) {
 			const chord = progressionStore.getChord(resizingChordId)
 			if (!chord) return
 
 			const deltaX = event.clientX - resizeStartX
-			const deltaUnits = Math.round(deltaX / unitWidth)
+			const deltaBeats = Math.round((deltaX / beatWidth) * 4) / 4 // Snap to quarter beats
 
 			if (resizeHandle === 'left') {
-				const newStartTime = Math.max(0, resizeStartTime + deltaUnits)
+				const newStartTime = Math.max(0, resizeStartTime + deltaBeats)
 				const endTime = resizeStartTime + resizeStartDuration
-				const newDuration = Math.max(1, endTime - newStartTime)
+				const newDuration = Math.max(MIN_DURATION_BEATS, endTime - newStartTime)
 
 				progressionStore.updateChord({
 					id: resizingChordId,
@@ -121,7 +127,7 @@
 					modifiedTime: Date.now()
 				})
 			} else if (resizeHandle === 'right') {
-				const newDuration = Math.max(1, resizeStartDuration + deltaUnits)
+				const newDuration = Math.max(MIN_DURATION_BEATS, resizeStartDuration + deltaBeats)
 				progressionStore.updateChord({
 					id: resizingChordId,
 					duration: newDuration,
@@ -131,14 +137,22 @@
 			return
 		}
 
+		// Check if mouse has moved beyond threshold to start dragging
+		if (isMouseDownOnChord && !isDraggingChord && draggedChordId) {
+			const deltaX = Math.abs(event.clientX - dragStartX)
+			if (deltaX >= DRAG_THRESHOLD_PIXELS) {
+				isDraggingChord = true
+			}
+		}
+
 		if (!isDraggingChord || !draggedChordId) return
 
 		const chord = progressionStore.getChord(draggedChordId)
 		if (!chord) return
 
 		const deltaX = event.clientX - dragStartX
-		const deltaUnits = Math.round(deltaX / unitWidth)
-		const newStartTime = Math.max(0, dragStartTime + deltaUnits)
+		const deltaBeats = Math.round((deltaX / beatWidth) * 4) / 4 // Snap to quarter beats
+		const newStartTime = Math.max(0, dragStartTime + deltaBeats)
 
 		progressionStore.updateChord({
 			id: draggedChordId,
@@ -160,6 +174,7 @@
 		setTimeout(() => {
 			resizeHandle = null
 			isDraggingChord = false
+			isMouseDownOnChord = false
 			draggedChordId = null
 			isResizingChord = false
 			resizingChordId = null
@@ -169,13 +184,38 @@
 	const handleMiddleClick = (event: MouseEvent) => {
 		event.stopPropagation()
 	}
+
+	const togglePlayback = () => {
+		playbackStore.togglePlayback()
+	}
+
+	const handleDownloadMidi = () => {
+		exportPerformanceAsMidi({
+			performance: playbackStore.performance,
+			bpm: main.bpm,
+			key: main.selectedKey,
+			scale: main.selectedScale
+		})
+	}
 </script>
 
-<svelte:window onclick={handleClickOutside} onkeydown={handleKeyDown} />
+<svelte:window onkeydown={handleKeyDown} />
 
 <div class="ProgressionPanel">
 	<div class="top">
 		<p>Progression</p>
+		<SelectProgressionLength />
+		<SelectPatternLength />
+		<Button variant="ghost" size="icon" onclick={togglePlayback} class="playButton">
+			{#if playbackStore.isPlaying}
+				<Icon icon="mingcute:pause-fill" class="size-5" />
+			{:else}
+				<Icon icon="mingcute:play-fill" class="size-5" />
+			{/if}
+		</Button>
+		<Button variant="ghost" size="icon" onclick={handleDownloadMidi} class="downloadButton">
+			<Icon icon="mingcute:download-2-fill" class="size-5" />
+		</Button>
 	</div>
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -188,8 +228,9 @@
 		onmouseup={handleMouseUp}
 	>
 		<div class="timingMarkers">
-			{#each [1, 2, 3, 4] as beat}
-				<div class="timingMarker" style="left: {(beat - 1) * 25}%">
+			{#each timingMarkers as beat, index (beat)}
+				{@const beatPercent = (index / timingMarkers.length) * 100}
+				<div class="timingMarker" style="left: {beatPercent}%">
 					{beat}
 				</div>
 			{/each}
@@ -199,7 +240,7 @@
 			{#each progressionStore.chords as chord (chord.id)}
 				<ProgressionDockChord
 					{chord}
-					isSelected={chord.id === progressionStore.selectedChordId}
+					{totalBeats}
 					isDragging={draggedChordId === chord.id}
 					selectChord={handleChordClick}
 					onChordMouseDown={handleChordMouseDown}
@@ -232,6 +273,7 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
+		gap: 8px;
 		padding: 4px 0 12px;
 	}
 
@@ -241,6 +283,16 @@
 		font-size: 14px;
 	}
 
+	:global(.playButton) {
+		height: 32px;
+		width: 32px;
+	}
+
+	:global(.downloadButton) {
+		height: 32px;
+		width: 32px;
+	}
+
 	.middle {
 		flex: 1;
 		border-radius: 2px;
@@ -248,6 +300,7 @@
 		position: relative;
 		display: flex;
 		flex-direction: column;
+		overflow-x: auto;
 
 		background:
 			repeating-linear-gradient(

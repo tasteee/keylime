@@ -1,14 +1,19 @@
-<script>
+<script lang="ts">
 	import * as Select from '$lib/components/ui/select/index.js'
 	import mainStore from '../stores/main.svelte.js'
 
-	const handleSelect = (value) => {
-		mainStore.selectedKeymap = value
+	type KeymapT = 'isomorphic' | 'rightUpTrios' | 'rightDown' | 'rightUp' | 'downRight'
+
+	const handleSelect = (value: string) => {
+		const validKeymaps: KeymapT[] = ['isomorphic', 'rightUpTrios', 'rightDown', 'rightUp', 'downRight']
+		const isValidKeymap = validKeymaps.includes(value as KeymapT)
+		if (!isValidKeymap) return
+		mainStore.selectedKeymap = value as KeymapT
 	}
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.selectedKeymap}>
-	<Select.Trigger class="w-[220px]">
+	<Select.Trigger>
 		<span>
 			<span style="font-weight: 500;">Keymap: </span>
 			{mainStore.selectedKeymap}

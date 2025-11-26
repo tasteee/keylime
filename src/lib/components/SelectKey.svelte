@@ -1,15 +1,14 @@
-<script>
+<script lang="ts">
 	import * as Select from '$lib/components/ui/select/index.js'
 	import mainStore from '../stores/main.svelte.js'
 
-	const handleSelect = (value) => {
-		console.log('Selected key:', value)
+	const handleSelect = (value: string) => {
 		mainStore.selectedKey = value
 	}
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.selectedKey}>
-	<Select.Trigger class="w-[120px]">
+	<Select.Trigger>
 		<span>
 			<span style="font-weight: 500;">Key: </span>
 			{mainStore.selectedKey}

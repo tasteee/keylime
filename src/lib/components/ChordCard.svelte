@@ -4,83 +4,59 @@
 	import Icon from '@iconify/svelte'
 	import { progressionStore } from '$lib/stores/progression.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
-	import { generate, applyVoicingAndInversion } from '$lib/helpers/chords'
-	import ChordModifier from './ChordModifier.svelte'
+	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
+	import { applyVoicingAndInversion } from '$lib/helpers/chords'
 	import { Note } from 'tonal'
 
 	type ChordCardPropsT = {
-		chordName: string
+		chord: ChordT
 	}
 
 	const props: ChordCardPropsT = $props()
 
-	// Generate the complex ChordT object from the chord name
-	const baseChord = $derived(generate(props.chordName))
-
-	// Local state for chord modifiers
-	let octaveOffset = $state(0)
-	let inversion = $state(0)
-	let voicing = $state<VoicingT>('closed')
-	let minVelocity = $state(60)
-	let maxVelocity = $state(75)
-
-	// Derived chord with modifiers applied
-	const chord = $derived.by(() => {
-		let modifiedChord = { ...baseChord }
+	// Apply modifiers to the chord for display and playback
+	const modifiedChord = $derived.by(() => {
+		let chord = props.chord
 
 		// Apply voicing and inversion
-		modifiedChord = applyVoicingAndInversion({
-			chord: modifiedChord,
-			voicing: voicing,
-			inversion: inversion
+		chord = applyVoicingAndInversion({
+			chord,
+			voicing: props.chord.voicing as VoicingT,
+			inversion: props.chord.inversion
 		})
 
-		// Apply octave offset by transposing all notes
+		// Apply octave offset
+		const octaveOffset = props.chord.octaveOffset
 		if (octaveOffset !== 0) {
 			const interval = octaveOffset > 0 ? `${octaveOffset * 7 + 1}P` : `-${Math.abs(octaveOffset) * 7 + 1}P`
-			modifiedChord.notes = modifiedChord.notes.map((note) => Note.transpose(note, interval))
-			modifiedChord.bassNote = Note.transpose(modifiedChord.bassNote, interval)
+			chord = {
+				...chord,
+				notes: chord.notes.map((note) => Note.transpose(note, interval)),
+				bassNote: Note.transpose(chord.bassNote, interval)
+			}
 		}
 
-		// Apply velocity
-		modifiedChord.minVelocity = minVelocity
-		modifiedChord.maxVelocity = maxVelocity
-		modifiedChord.octaveOffset = octaveOffset
-		modifiedChord.inversion = inversion
-		modifiedChord.voicing = voicing
-
-		return modifiedChord
+		return chord
 	})
 
-	const onOctaveOffsetChange = (value: number) => {
-		octaveOffset = value
-	}
-
-	const onInversionChange = (value: number) => {
-		inversion = value
-	}
-
-	const onVoicingChange = (value: VoicingT) => {
-		voicing = value
-	}
-
-	const onMinVelocityChange = (value: number) => {
-		minVelocity = value
-	}
-
-	const onMaxVelocityChange = (value: number) => {
-		maxVelocity = value
+	const handleContextMenu = (event: MouseEvent) => {
+		event.preventDefault()
+		event.stopPropagation()
+		chordModifierStore.openForGridChord({
+			chordId: props.chord.id
+		})
 	}
 
 	const addChordToProgression = (event: MouseEvent) => {
 		event.preventDefault()
 		event.stopPropagation()
 
-		// Create a new chord instance with modifiers applied
+		// Create a new chord instance for the progression
 		const chordToAdd: ChordT = {
-			...chord,
+			...modifiedChord,
 			id: crypto.randomUUID()
 		}
+
 		progressionStore.addChord(chordToAdd)
 	}
 
@@ -89,14 +65,9 @@
 		if (target.closest('button')) return
 		const isLeftButton = event.button === 0
 		if (!isLeftButton) return
-
 		event.preventDefault()
 		event.stopPropagation()
-
-		// Play each note in the chord
-		chord.notes.forEach((note) => {
-			playbackStore.play({ note })
-		})
+		playbackStore.playChord(modifiedChord.notes)
 	}
 
 	const onMouseUp = (event: MouseEvent) => {
@@ -107,50 +78,37 @@
 		event.stopPropagation()
 
 		// Stop each note in the chord
-		chord.notes.forEach((note) => {
-			playbackStore.stop({ note })
+		modifiedChord.notes.forEach((note) => {
+			playbackStore.stopNote({ note })
 		})
 	}
 
 	const onMouseLeave = () => {
 		// Stop all notes when mouse leaves while pressed
-		chord.notes.forEach((note) => {
-			playbackStore.stop({ note })
+		modifiedChord.notes.forEach((note) => {
+			playbackStore.stopNote({ note })
 		})
 	}
 </script>
 
-<ChordModifier
-	{octaveOffset}
-	{inversion}
-	{voicing}
-	{minVelocity}
-	{maxVelocity}
-	{onOctaveOffsetChange}
-	{onInversionChange}
-	{onVoicingChange}
-	{onMinVelocityChange}
-	{onMaxVelocityChange}
->
-	{#snippet children()}
-		<Item.Root
-			variant="outline"
-			onmousedown={onMouseDown}
-			onmouseup={onMouseUp}
-			onmouseleave={onMouseLeave}
-			role="button"
-			tabindex={0}
-			class="cursor-pointer select-none"
-		>
-			<Item.Content>
-				<Item.Title>{chord.symbol}</Item.Title>
-				<!-- <Item.Description class="text-xs font-mono">{chord.notes.join(' ')}</Item.Description> -->
-			</Item.Content>
-			<Item.Actions>
-				<Button variant="outline" size="sm" onclick={addChordToProgression}>
-					<Icon icon="mingcute:add-line" class="size-3" />
-				</Button>
-			</Item.Actions>
-		</Item.Root>
-	{/snippet}
-</ChordModifier>
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div oncontextmenu={handleContextMenu}>
+	<Item.Root
+		variant="outline"
+		onmousedown={onMouseDown}
+		onmouseup={onMouseUp}
+		onmouseleave={onMouseLeave}
+		role="button"
+		tabindex={0}
+		class="cursor-pointer select-none"
+	>
+		<Item.Content>
+			<Item.Title>{modifiedChord.symbol}</Item.Title>
+		</Item.Content>
+		<Item.Actions>
+			<Button variant="outline" size="sm" onclick={addChordToProgression}>
+				<Icon icon="mingcute:add-line" class="size-3" />
+			</Button>
+		</Item.Actions>
+	</Item.Root>
+</div>

@@ -32,9 +32,14 @@ type ChordT = {
   notes: string[]
   minVelocity: number
   maxVelocity: number
-  startTime?: number // ticks - position in progression timeline
-  duration?: number // ticks - length in progression timeline
+  startTime?: number // beats - position in progression timeline
+  duration?: number // beats - length in progression timeline
   modifiedTime?: number // timestamp - for conflict resolution
+}
+
+type ProgressionChordT = ChordT & {
+  startTime: number // beats - position in progression timeline
+  duration: number // beats - length in progression timeline
 }
 
 type SignalRowT = {
@@ -52,12 +57,22 @@ type SignalRowsT = {
 
 type SignalT = {
   id: string
-  startTime: number // ticks
+  startTime: number // beats (can be decimal, e.g., 0.25 = 1/4 beat)
   noteIndex: number
   velocity?: number
   minVelocity: number
   maxVelocity: number
-  duration: number // ticks
+  duration: number // beats (can be decimal, e.g., 0.25 = 1/4 beat)
   octaveOffset: number
   modifiedTime?: number
+}
+
+type PerformanceNoteT = {
+  id: string
+  note: string
+  startTime: number // beats (absolute time in the progression)
+  duration: number // beats
+  velocity: number
+  chordId: string
+  signalId: string
 }

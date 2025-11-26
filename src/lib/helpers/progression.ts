@@ -2,9 +2,11 @@ type ResolveChordConflictsArgsT = {
   chords: ChordT[]
 }
 
-export const resolveChordConflicts = (args: ResolveChordConflictsArgsT) => {
-  const chords = args.chords
+export const resolveChordConflicts = (args: ResolveChordConflictsArgsT): ChordT[] => {
+  // Create deep copies to avoid mutating originals
+  const chords = args.chords.map((chord) => ({ ...chord }))
   const newChords: ChordT[] = []
+  const chordsToRemove = new Set<string>()
 
   chords.forEach((chordA) => {
     chords.forEach((chordB) => {
@@ -22,13 +24,14 @@ export const resolveChordConflicts = (args: ResolveChordConflictsArgsT) => {
       const aModifiedTime = chordA.modifiedTime ?? 0
       const bModifiedTime = chordB.modifiedTime ?? 0
       const aHasPriority = aModifiedTime > bModifiedTime
-      const aStartsBeforeB = aStart < bStart
-      const aStartsAfterB = aStart >= bStart
 
       // If chordA has priority, chordB should be modified/removed
       if (aHasPriority) return
 
       // chordB has priority, so chordA gets chopped up
+      const aStartsBeforeB = aStart < bStart
+      const aStartsAfterB = aStart >= bStart
+
       if (aStartsBeforeB) {
         const originalEnd = aEnd
         chordA.duration = bStart - aStart
@@ -49,11 +52,26 @@ export const resolveChordConflicts = (args: ResolveChordConflictsArgsT) => {
 
       if (aStartsAfterB) {
         const originalEnd = aEnd
-        chordA.startTime = bEnd
-        chordA.duration = originalEnd - bEnd
+        const newStartTime = bEnd
+        const newDuration = originalEnd - bEnd
+
+        // If the chord would have zero or negative duration, mark for removal
+        if (newDuration <= 0) {
+          chordsToRemove.add(chordA.id)
+        } else {
+          chordA.startTime = newStartTime
+          chordA.duration = newDuration
+        }
       }
     })
   })
 
-  return newChords
+  // Filter out chords with zero or negative duration, then add new remainder chords
+  const validChords = chords.filter((chord) => {
+    const duration = chord.duration ?? 0
+    const isMarkedForRemoval = chordsToRemove.has(chord.id)
+    return duration > 0 && !isMarkedForRemoval
+  })
+
+  return [...validChords, ...newChords]
 }

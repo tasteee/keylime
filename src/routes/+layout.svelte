@@ -1,9 +1,10 @@
 <script lang="ts">
-	import '../lib/styles/global.css';
-	import { ModeWatcher } from 'mode-watcher';
-	import favicon from '$lib/assets/favicon.svg';
+	import '../lib/styles/global.css'
+	import { ModeWatcher } from 'mode-watcher'
+	import favicon from '$lib/assets/favicon.svg'
+	import DialogChordModifier from '$lib/components/DialogChordModifier.svelte'
 
-	let { children } = $props();
+	let { children } = $props()
 </script>
 
 <svelte:head>
@@ -11,5 +12,6 @@
 </svelte:head>
 
 <ModeWatcher />
+<DialogChordModifier />
 
 {@render children?.()}

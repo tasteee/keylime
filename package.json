@@ -62,6 +62,7 @@
 		"array-range": "^1.0.1",
 		"await-to-js": "^3.0.0",
 		"datass": "^2.1.0",
+		"midi-writer-js": "^3.1.1",
 		"mode-watcher": "^1.1.0",
 		"postgres": "^3.4.7",
 		"smplr": "^0.16.3",

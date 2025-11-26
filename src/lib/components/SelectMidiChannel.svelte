@@ -19,7 +19,7 @@
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={output.midiChannel}>
-	<Select.Trigger class="w-[120px]">
+	<Select.Trigger>
 		<span>
 			<span style="font-weight: 500;">MIDI Channel: </span>
 			{output.midiChannel}

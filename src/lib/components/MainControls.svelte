@@ -10,6 +10,7 @@
 	import SelectMidiChannel from '$lib/components/SelectMidiChannel.svelte'
 	import SelectChordMode from '$lib/components/SelectChordMode.svelte'
 	import SelectVelocity from '$lib/components/SelectVelocity.svelte'
+	import SelectPatternLength from '$lib/components/SelectPatternLength.svelte'
 
 	const isInstrument = $derived(output.type === 'Instrument')
 	const isMidi = $derived(output.type === 'MIDI')
@@ -21,9 +22,10 @@
 		<SelectKey />
 		<SelectScale />
 		<SelectOctave />
-		<SelectKeymap />
+		<SelectPatternLength />
+		<!-- <SelectKeymap /> -->
 		<SelectVelocity />
-		<SelectChordMode />
+		<!-- <SelectChordMode /> -->
 	</div>
 
 	<div class="controlsRow">
@@ -49,11 +51,13 @@
 		flex-direction: column;
 		gap: 8px;
 		width: 100%;
+		padding: 12px;
 	}
 
 	.controlsRow {
 		width: 100%;
 		display: flex;
+		padding: 4px 12px;
 		gap: 8px;
 	}
 </style>

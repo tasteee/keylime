@@ -3,8 +3,9 @@
 		signal: SignalT
 		isSelected: boolean
 		isDragging: boolean
-		ticksPerCell: number
+		beatsPerCell: number
 		cellWidth: number
+		opacity?: number
 		onSignalClick: (event: MouseEvent) => void
 		onSignalMouseDown: (event: MouseEvent) => void
 		onSignalDoubleClick: (event: MouseEvent) => void
@@ -14,8 +15,11 @@
 	const props: PatternEditorSignalPropsT = $props()
 
 	const backgroundColor = $derived(props.isSelected ? 'var(--foreground)' : 'var(--muted-foreground)')
-	const leftPosition = $derived((props.signal.startTime / props.ticksPerCell) * props.cellWidth)
-	const width = $derived((props.signal.duration / props.ticksPerCell) * props.cellWidth - 1)
+	// Convert beat-based timing to pixel positions
+	// startTime is in beats, beatsPerCell tells us how many beats per cell
+	const leftPosition = $derived((props.signal.startTime / props.beatsPerCell) * props.cellWidth)
+	const width = $derived((props.signal.duration / props.beatsPerCell) * props.cellWidth - 1)
+	const signalOpacity = $derived(props.opacity ?? 1)
 
 	const handleResizeLeft = (event: MouseEvent) => {
 		props.onResizeMouseDown(event, 'left')
@@ -43,6 +47,7 @@
     left: {leftPosition}px;
     width: {width}px;
     top: 1px;
+    opacity: {signalOpacity};
   "
 >
 	<!-- svelte-ignore a11y_no_static_element_interactions -->

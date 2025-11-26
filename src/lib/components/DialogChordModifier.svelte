@@ -1,29 +1,25 @@
 <script lang="ts">
-	import * as ContextMenu from '$lib/components/ui/context-menu'
+	import * as Dialog from '$lib/components/ui/dialog'
 	import * as Select from '$lib/components/ui/select'
 	import * as ButtonGroup from '$lib/components/ui/button-group'
 	import { Button } from '$lib/components/ui/button'
 	import { Input } from '$lib/components/ui/input'
 	import { Label } from '$lib/components/ui/label'
 	import Icon from '@iconify/svelte'
+	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
 
-	type ChordModifierPropsT = {
-		octaveOffset: number
-		inversion: number
-		voicing: VoicingT
-		minVelocity: number
-		maxVelocity: number
-		onOctaveOffsetChange: (value: number) => void
-		onInversionChange: (value: number) => void
-		onVoicingChange: (value: VoicingT) => void
-		onMinVelocityChange: (value: number) => void
-		onMaxVelocityChange: (value: number) => void
-		children: any
-	}
+	type VoicingItemT = { value: VoicingT; label: string }
 
-	const props: ChordModifierPropsT = $props()
+	const isOpen = $derived(chordModifierStore.state.isOpen)
+	const currentChord = $derived(chordModifierStore.currentChord)
+	const octaveOffset = $derived(chordModifierStore.state.octaveOffset)
+	const inversion = $derived(chordModifierStore.state.inversion)
+	const voicing = $derived(chordModifierStore.state.voicing)
+	const minVelocity = $derived(chordModifierStore.state.minVelocity)
+	const maxVelocity = $derived(chordModifierStore.state.maxVelocity)
+	const chordName = $derived(currentChord?.symbol ?? 'Chord')
 
-	const voicingOptions: { value: VoicingT; label: string }[] = [
+	const voicingOptions: VoicingItemT[] = [
 		{ value: 'closed', label: 'Closed' },
 		{ value: 'open', label: 'Open' },
 		{ value: 'drop2', label: 'Drop 2' },
@@ -43,22 +39,22 @@
 	]
 
 	const incrementOctave = () => {
-		props.onOctaveOffsetChange(props.octaveOffset + 1)
+		chordModifierStore.updateOctaveOffset(octaveOffset + 1)
 	}
 
 	const decrementOctave = () => {
-		props.onOctaveOffsetChange(props.octaveOffset - 1)
+		chordModifierStore.updateOctaveOffset(octaveOffset - 1)
 	}
 
 	const handleVoicingChange = (value: string | undefined) => {
 		if (!value) return
-		props.onVoicingChange(value as VoicingT)
+		chordModifierStore.updateVoicing(value as VoicingT)
 	}
 
 	const handleInversionChange = (value: string | undefined) => {
 		if (!value) return
 		const numValue = parseInt(value, 10)
-		props.onInversionChange(numValue)
+		chordModifierStore.updateInversion(numValue)
 	}
 
 	const handleMinVelocityInput = (event: Event) => {
@@ -66,7 +62,7 @@
 		const value = parseInt(target.value, 10)
 		if (isNaN(value)) return
 		const clampedValue = Math.max(0, Math.min(127, value))
-		props.onMinVelocityChange(clampedValue)
+		chordModifierStore.updateMinVelocity(clampedValue)
 	}
 
 	const handleMaxVelocityInput = (event: Event) => {
@@ -74,27 +70,29 @@
 		const value = parseInt(target.value, 10)
 		if (isNaN(value)) return
 		const clampedValue = Math.max(0, Math.min(127, value))
-		props.onMaxVelocityChange(clampedValue)
+		chordModifierStore.updateMaxVelocity(clampedValue)
 	}
 
-	const octaveDisplayValue = $derived(
-		props.octaveOffset === 0 ? '±0' : props.octaveOffset > 0 ? `+${props.octaveOffset}` : `${props.octaveOffset}`
-	)
-
-	const currentVoicingLabel = $derived(voicingOptions.find((option) => option.value === props.voicing)?.label || 'Closed')
+	const octaveDisplayValue = $derived(octaveOffset === 0 ? '±0' : octaveOffset > 0 ? `+${octaveOffset}` : `${octaveOffset}`)
+	const currentVoicingLabel = $derived(voicingOptions.find((option) => option.value === voicing)?.label || 'Closed')
 
 	const currentInversionLabel = $derived(
-		inversionOptions.find((option) => option.value === props.inversion)?.label || 'Root Position'
+		inversionOptions.find((option) => option.value === inversion)?.label || 'Root Position'
 	)
+
+	const handleOpenChange = (open: boolean) => {
+		if (!open) chordModifierStore.closeDialog()
+	}
 </script>
 
-<ContextMenu.Root>
-	<ContextMenu.Trigger>
-		{@render props.children()}
-	</ContextMenu.Trigger>
+<Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
+	<Dialog.Content class="w-80">
+		<Dialog.Header>
+			<Dialog.Title>{chordName}</Dialog.Title>
+			<Dialog.Description>Modify chord properties</Dialog.Description>
+		</Dialog.Header>
 
-	<ContextMenu.Content class="w-80">
-		<div class="space-y-4 p-4">
+		<div class="space-y-4 pt-4">
 			<!-- Octave Offset -->
 			<div class="OctaveModifier gap-3 flex items-center justify-between">
 				<Label class="text-sm font-medium">Octave</Label>
@@ -102,7 +100,7 @@
 					<div class="octaveDisplay text-sm font-mono min-w-[3rem] text-center">
 						{octaveDisplayValue}
 					</div>
-					<ButtonGroup.Root orientation="vertical" aria-label="Octave controls" class="h-fit">
+					<ButtonGroup.Root aria-label="Octave controls" class="h-fit">
 						<Button variant="outline" size="icon" onclick={incrementOctave}>
 							<Icon icon="mingcute:add-line" class="size-4" />
 						</Button>
@@ -116,7 +114,7 @@
 			<!-- Inversion Select -->
 			<div class="InversionSelect space-y-2">
 				<Label class="text-sm font-medium">Inversion</Label>
-				<Select.Root type="single" onValueChange={handleInversionChange} value={props.inversion.toString()}>
+				<Select.Root type="single" onValueChange={handleInversionChange} value={inversion.toString()}>
 					<Select.Trigger class="w-full">
 						<span class="text-sm">{currentInversionLabel}</span>
 					</Select.Trigger>
@@ -131,7 +129,7 @@
 			<!-- Voicing Select -->
 			<div class="VoicingSelect space-y-2">
 				<Label class="text-sm font-medium">Voicing</Label>
-				<Select.Root type="single" onValueChange={handleVoicingChange} value={props.voicing}>
+				<Select.Root type="single" onValueChange={handleVoicingChange} value={voicing}>
 					<Select.Trigger class="w-full">
 						<span class="text-sm">{currentVoicingLabel}</span>
 					</Select.Trigger>
@@ -150,7 +148,7 @@
 					<Input
 						type="number"
 						class="minVelocityInput flex-1"
-						value={props.minVelocity}
+						value={minVelocity}
 						oninput={handleMinVelocityInput}
 						min="0"
 						max="127"
@@ -159,7 +157,7 @@
 					<Input
 						type="number"
 						class="maxVelocityInput flex-1"
-						value={props.maxVelocity}
+						value={maxVelocity}
 						oninput={handleMaxVelocityInput}
 						min="0"
 						max="127"
@@ -167,5 +165,5 @@
 				</div>
 			</div>
 		</div>
-	</ContextMenu.Content>
-</ContextMenu.Root>
+	</Dialog.Content>
+</Dialog.Root>

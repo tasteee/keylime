@@ -109,7 +109,15 @@ const getIntervalsForChordType = (chordType: string): string[] | null => {
 }
 
 // Use Tonal to convert a chord from its string representation to a ChordT object.
-const generate = (name: string): ChordT => {
+type GenerateArgsT = {
+  name: string
+  baseOctave?: string
+}
+
+export const generateChord = (args: GenerateArgsT | string): ChordT => {
+  const name = typeof args === 'string' ? args : args.name
+  const baseOctave = typeof args === 'string' ? 3 : (args.baseOctave ?? 3)
+
   // First, try to normalize the chord name
   const normalizedName = normalizeChordName(name)
 
@@ -147,9 +155,8 @@ const generate = (name: string): ChordT => {
   const noteLetters = tonalChord.notes
   const symbol = tonalChord.symbol || name
 
-  // Add octaves to notes, starting from octave 3
-  const baseOctave = 3
-  const notesWithOctaves = addOctavesToNotes(noteLetters, baseOctave)
+  // Add octaves to notes, starting from the specified base octave
+  const notesWithOctaves = addOctavesToNotes(noteLetters, Number(baseOctave))
 
   const bassNote = notesWithOctaves[0] || rootNote + baseOctave
   const chordId = crypto.randomUUID()
@@ -161,7 +168,7 @@ const generate = (name: string): ChordT => {
     symbol: symbol,
     voicing: 'closed',
     inversion: 0,
-    durationBeats: 1,
+    durationBeats: 4,
     bassNote: bassNote,
     notes: notesWithOctaves,
     minVelocity: 64,
@@ -214,7 +221,7 @@ type ApplyVoicingAndInversionArgsT = {
 }
 
 // Apply both voicing and inversion transformations to a chord's notes
-const applyVoicingAndInversion = (args: ApplyVoicingAndInversionArgsT): ChordT => {
+export const applyVoicingAndInversion = (args: ApplyVoicingAndInversionArgsT): ChordT => {
   const targetVoicing = args.voicing ?? args.chord.voicing
   const targetInversion = args.inversion ?? args.chord.inversion
 
@@ -390,15 +397,13 @@ const applyVoicingToNotes = (notes: string[], voicing: string): string[] => {
 }
 
 // Convenience function to apply only voicing
-const applyVoicing = (chord: ChordT, voicing: VoicingT): ChordT => {
+export const applyVoicing = (chord: ChordT, voicing: VoicingT): ChordT => {
   return applyVoicingAndInversion({ chord, voicing })
 }
 
 // Convenience function to apply only inversion
-const applyInversion = (chord: ChordT, inversion: number): ChordT => {
+export const applyInversion = (chord: ChordT, inversion: number): ChordT => {
   return applyVoicingAndInversion({ chord, inversion })
 }
-
-export { generate, applyVoicingAndInversion, applyVoicing, applyInversion }
 
 prepareChords()

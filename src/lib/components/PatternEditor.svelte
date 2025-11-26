@@ -1,12 +1,16 @@
 <script lang="ts">
+	import { onMount } from 'svelte'
 	import PatternEditorSignal from './PatternEditorSignal.svelte'
 	import { Input } from '$lib/components/ui/input/index.js'
 	import { Label } from '$lib/components/ui/label/index.js'
 	import { SIGNAL_IDS, SIGNAL_ROWS } from '$lib/constants/signalRows'
 	import { createSignal } from '$lib/helpers/creators'
-	import { resolveSignalConflicts } from '$lib/helpers/signalRows'
+	import { resolveSignalConflicts, getNoteFromSignalRow } from '$lib/helpers/signalRows'
 	import { patternStore } from '$lib/stores/pattern.svelte'
+	import { progressionStore } from '$lib/stores/progression.svelte'
+	import playbackStore from '$lib/stores/playback.svelte'
 
+	let signalGridBox: HTMLDivElement
 	let selectedSignalId: string | null = $state(null)
 	let isDraggingSignal = $state(false)
 	let draggingToneId: string | null = $state(null)
@@ -21,18 +25,29 @@
 	let resizeStartTime = $state(0)
 	let resizeStartDuration = $state(0)
 	let ignoreClickOutsideUntil = $state(0)
+	let currentlyPlayingNote: string | null = $state(null)
 
 	type SignalRowKeyT = keyof typeof SIGNAL_ROWS
 
-	// ticks per quarter note (beat)
-	const PPQ = 16
+	// Grid layout constants
+	// 1 beat = 4 cells, 1 bar = 4 beats = 16 cells
 	const CELL_WIDTH = 16 // in pixels
 	const CELLS_PER_BEAT = 4
-	const TICKS_PER_CELL = PPQ / CELLS_PER_BEAT
-	const TICKS_PER_BEAT = PPQ * 4
-	const TICKS_PER_BAR = TICKS_PER_BEAT * 4
+	const BEATS_PER_CELL = 1 / CELLS_PER_BEAT // 0.25 beats per cell
 
 	const selectedSignal = $derived(selectedSignalId ? patternStore.getSignalById(selectedSignalId) : null)
+	const selectedChord = $derived(
+		progressionStore.selectedChordId
+			? (progressionStore.chords.find((chord) => chord.id === progressionStore.selectedChordId) ?? null)
+			: null
+	)
+
+	// Calculate where the inactive area starts (in pixels)
+	const activePatternWidthPx = $derived.by(() => {
+		const activePatternCells = patternStore.activePatternLengthBeats * CELLS_PER_BEAT
+		const widthInPixels = activePatternCells * CELL_WIDTH
+		return widthInPixels
+	})
 
 	const handleClickOutside = (event: MouseEvent) => {
 		const hasNoSelectedSignal = selectedSignalId === null
@@ -110,12 +125,12 @@
 		const rect = target.getBoundingClientRect()
 		const x = event.clientX - rect.left
 		const timePositionInCells = Math.floor(x / CELL_WIDTH)
-		const timePositionInTicks = timePositionInCells * TICKS_PER_CELL
+		const timePositionInBeats = timePositionInCells * BEATS_PER_CELL
 		const signalRow = patternStore.signalRows[label as keyof typeof SIGNAL_ROWS]
 
 		const signal = createSignal({
-			startTime: timePositionInTicks,
-			duration: TICKS_PER_CELL,
+			startTime: timePositionInBeats,
+			duration: BEATS_PER_CELL, // 0.25 beats (1/4 beat = 1 cell)
 			modifiedTime: Date.now()
 		})
 
@@ -123,6 +138,14 @@
 		patternStore.signals.push(signal)
 		console.log('>>>', signal.startTime)
 		selectedSignalId = signal.id
+
+		const noteToPlay = getNoteFromSignalRow({ signalRowId: label as string, chord: selectedChord })
+		if (noteToPlay) {
+			playbackStore.playNote({ note: noteToPlay })
+			setTimeout(() => {
+				playbackStore.stopNote({ note: noteToPlay })
+			}, 250)
+		}
 	}
 
 	const handleSignalClick = (event: MouseEvent) => {
@@ -150,6 +173,12 @@
 		dragStartX = event.clientX
 		dragStartTime = signal.startTime
 		selectedSignalId = signalId
+
+		const noteToPlay = getNoteFromSignalRow({ signalRowId: toneId, chord: selectedChord })
+		if (noteToPlay) {
+			currentlyPlayingNote = noteToPlay
+			playbackStore.playNote({ note: noteToPlay })
+		}
 
 		event.stopPropagation()
 		event.preventDefault()
@@ -184,13 +213,13 @@
 
 			const deltaX = event.clientX - resizeStartX
 			const deltaCells = Math.round(deltaX / CELL_WIDTH)
-			const deltaTicks = deltaCells * TICKS_PER_CELL
+			const deltaBeats = deltaCells * BEATS_PER_CELL
 
 			const isResizingLeft = resizeHandle === 'left'
 			if (isResizingLeft) {
-				const newStartTime = Math.max(0, resizeStartTime + deltaTicks)
+				const newStartTime = Math.max(0, resizeStartTime + deltaBeats)
 				const endTime = resizeStartTime + resizeStartDuration
-				const newDuration = Math.max(TICKS_PER_CELL, endTime - newStartTime)
+				const newDuration = Math.max(BEATS_PER_CELL, endTime - newStartTime)
 
 				signal.startTime = newStartTime
 				signal.duration = newDuration
@@ -199,7 +228,7 @@
 
 			const isResizingRight = resizeHandle === 'right'
 			if (isResizingRight) {
-				const newDuration = Math.max(TICKS_PER_CELL, resizeStartDuration + deltaTicks)
+				const newDuration = Math.max(BEATS_PER_CELL, resizeStartDuration + deltaBeats)
 				signal.duration = newDuration
 				signal.modifiedTime = Date.now()
 			}
@@ -239,8 +268,8 @@
 		}
 
 		const deltaCells = Math.round(deltaX / CELL_WIDTH)
-		const deltaTicks = deltaCells * TICKS_PER_CELL
-		const newStartTime = Math.max(0, dragStartTime + deltaTicks)
+		const deltaBeats = deltaCells * BEATS_PER_CELL
+		const newStartTime = Math.max(0, dragStartTime + deltaBeats)
 
 		signal.startTime = newStartTime
 		signal.modifiedTime = Date.now()
@@ -281,6 +310,11 @@
 			draggingToneId = null
 		}
 
+		if (currentlyPlayingNote) {
+			playbackStore.stopNote({ note: currentlyPlayingNote })
+			currentlyPlayingNote = null
+		}
+
 		if (wasResizingOrDragging) {
 			ignoreClickOutsideUntil = Date.now() + 100
 		}
@@ -307,6 +341,10 @@
 
 		event.stopPropagation() // Prevent triggering row click
 	}
+
+	onMount(() => {
+		signalGridBox.scrollTop = 342.5
+	})
 </script>
 
 <svelte:window onclick={handleClickOutside} onkeydown={handleKeyDown} />
@@ -355,7 +393,7 @@
 	{/if}
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="signalGridBox">
+	<div class="signalGridBox" bind:this={signalGridBox}>
 		<div class="signalGridRowsBox" onmousemove={handleMouseMove} onmouseup={handleMouseUp}>
 			{#each SIGNAL_IDS as label, index (label + index)}
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -363,21 +401,26 @@
 				<div class="signalGridRow" ondblclick={handleSignalGridRowDoubleClick} data-tone-id={label}>
 					{#each patternStore.signalRows[label as SignalRowKeyT].signalIds as signalId}
 						{@const signal = patternStore.getSignalById(signalId)}
+						{@const isSignalInactive = signal.startTime >= patternStore.activePatternLengthBeats}
 
 						<PatternEditorSignal
 							{signal}
 							isSelected={signal.id === selectedSignalId}
 							isDragging={draggedSignalId === signal.id}
-							ticksPerCell={TICKS_PER_CELL}
+							beatsPerCell={BEATS_PER_CELL}
 							cellWidth={CELL_WIDTH}
 							onSignalClick={handleSignalClick}
 							onSignalMouseDown={handleSignalMouseDown}
 							onSignalDoubleClick={handleSignalDoubleClick}
 							onResizeMouseDown={handleResizeMouseDown}
+							opacity={isSignalInactive ? 0.3 : 1}
 						/>
 					{/each}
 				</div>
 			{/each}
+
+			<!-- Overlay for inactive pattern area -->
+			<div class="inactivePatternOverlay" style="left: {activePatternWidthPx}px;"></div>
 		</div>
 
 		<div class="signalRowLabelsBox">
@@ -471,7 +514,7 @@
 	}
 
 	.signalGridRow {
-		--beatWidth: 48px;
+		--beatWidth: 64px;
 		--barCount: 16;
 		--cellWidth: 16px;
 		--beatsPerBar: 4;
@@ -547,5 +590,15 @@
 
 	.signalGridRowsBox::-webkit-scrollbar-thumb:hover {
 		background: hsl(var(--muted-foreground) / 0.5);
+	}
+
+	.inactivePatternOverlay {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		background: rgba(0, 0, 0, 0.6);
+		pointer-events: none;
+		z-index: 100;
 	}
 </style>

@@ -1,14 +1,14 @@
-<script>
-	import * as Select from '$lib/components/ui/select/index.js';
-	import mainStore from '../stores/main.svelte.js';
+<script lang="ts">
+	import * as Select from '$lib/components/ui/select/index.js'
+	import mainStore from '../stores/main.svelte.js'
 
-	const handleSelect = (value) => {
-		mainStore.selectedScale = value;
-	};
+	const handleSelect = (value: string) => {
+		mainStore.selectedScale = value
+	}
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.selectedScale}>
-	<Select.Trigger class="w-[180px]">
+	<Select.Trigger>
 		<span>
 			<span style="font-weight: 500;">Scale: </span>
 			{mainStore.selectedScale}

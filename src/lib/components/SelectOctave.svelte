@@ -1,17 +1,19 @@
-<script>
+<script lang="ts">
 	import * as Select from '$lib/components/ui/select/index.js'
 	import mainStore from '../stores/main.svelte.js'
 
-	const handleSelect = (value) => {
-		mainStore.selectedOctave = value
+	const handleSelect = (value: string | undefined) => {
+		if (!value) return
+		const octaveNumber = parseInt(value, 10)
+		mainStore.rootOctave = String(octaveNumber)
 	}
 </script>
 
-<Select.Root type="single" onValueChange={handleSelect} value={mainStore.selectedOctave}>
-	<Select.Trigger class="w-[120px]">
+<Select.Root type="single" onValueChange={handleSelect} value={mainStore.rootOctave}>
+	<Select.Trigger>
 		<span>
 			<span style="font-weight: 500;">Octave: </span>
-			{mainStore.selectedOctave}
+			{mainStore.rootOctave.toString()}
 		</span>
 	</Select.Trigger>
 	<Select.Content>

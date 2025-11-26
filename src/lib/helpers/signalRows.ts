@@ -1,3 +1,5 @@
+import { Note } from 'tonal'
+
 // Match any digits that follow "N" in a signalRow id.
 // i.e "N1" -> 1, "N5-1" -> 5, "N3+2" -> 3, "N0" -> 0
 export const getSignalRowIdIndex = (signalId: string): number => {
@@ -13,9 +15,49 @@ export const getSignalRowIdOctave = (signalId: string): number => {
   return match ? parseInt(match[0], 10) : 0
 }
 
+type GetNoteFromSignalRowArgsT = {
+  signalRowId: string
+  chord: ChordT | null
+}
+
+export const getNoteFromSignalRow = (args: GetNoteFromSignalRowArgsT): string | null => {
+  if (!args.chord) return null
+
+  const noteIndex = getSignalRowIdIndex(args.signalRowId)
+  const octaveOffset = getSignalRowIdOctave(args.signalRowId)
+
+  const chordNotesCount = args.chord.notes.length
+  if (chordNotesCount === 0) return null
+
+  // Calculate which note in the chord (wrapping around)
+  // N1 -> index 0, N2 -> index 1, N3 -> index 2, N4 -> index 0 (next octave), etc.
+  const zeroIndexedNoteIndex = noteIndex - 1
+  const wrappedNoteIndex = ((zeroIndexedNoteIndex % chordNotesCount) + chordNotesCount) % chordNotesCount
+
+  // Calculate how many full octaves we've wrapped through
+  const octavesFromWrapping = Math.floor(zeroIndexedNoteIndex / chordNotesCount)
+
+  // Total octave offset combines the wrapping octaves and the explicit octave offset
+  const totalOctaveOffset = octavesFromWrapping + octaveOffset
+
+  const baseNote = args.chord.notes[wrappedNoteIndex]
+  if (!baseNote) return null
+
+  const hasNoOctaveOffset = totalOctaveOffset === 0
+  if (hasNoOctaveOffset) return baseNote
+
+  const interval = totalOctaveOffset > 0
+    ? `${totalOctaveOffset * 7 + 1}P`
+    : `-${Math.abs(totalOctaveOffset) * 7 + 1}P`
+  const transposedNote = Note.transpose(baseNote, interval)
+
+  return transposedNote
+}
+
 export const signalRowHelpers = {
   getIdIndex: getSignalRowIdIndex,
-  getIdOctave: getSignalRowIdOctave
+  getIdOctave: getSignalRowIdOctave,
+  getNoteFromSignalRow
 }
 
 export const resolveSignalConflicts = (signalRow: SignalRowT, signals: SignalT[]) => {
