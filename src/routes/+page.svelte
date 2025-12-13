@@ -1,6 +1,5 @@
 <script lang="ts">
 	import ChordCardGrid from '$lib/components/ChordCardGrid.svelte'
-	import MainControls from '$lib/components/MainControls.svelte'
 	import output from '$lib/stores/output.svelte'
 	import SelectKey from '$lib/components/SelectKey.svelte'
 	import SelectKeymap from '$lib/components/SelectKeymap.svelte'
@@ -10,21 +9,15 @@
 	import SelectInstrument from '$lib/components/SelectInstrument.svelte'
 	import SelectMidiDevice from '$lib/components/SelectMidiDevice.svelte'
 	import SelectMidiChannel from '$lib/components/SelectMidiChannel.svelte'
-	import SelectChordMode from '$lib/components/SelectChordMode.svelte'
 	import SelectVelocity from '$lib/components/SelectVelocity.svelte'
 	import PatternEditor from '$lib/components/PatternEditor.svelte'
 	import ProgressionPanel from '$lib/components/ProgressionPanel.svelte'
-
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { browser } from '$app/environment'
-	import { onMount, onDestroy } from 'svelte'
-
-	const props = $props()
+	import { onMount } from 'svelte'
 
 	onMount(() => {
-		if (browser) {
-			playbackStore.load()
-		}
+		if (browser) playbackStore.load()
 	})
 
 	const isInstrument = $derived(output.type === 'Instrument')
@@ -66,7 +59,6 @@
 			<SelectOctave />
 			<SelectKeymap />
 			<SelectVelocity />
-			<SelectChordMode />
 		</div>
 
 		<div class="controlsRow">

@@ -15,13 +15,23 @@ const getRandomBetween = (args: { min: number; max: number }) => {
 }
 
 const getMidiOutput = () => {
-  if (output.type !== 'MIDI') return null
-  if (!output.midiChannel) return null
-  if (output.midiChannel === 'All') return null
+  console.log('getMidiOutput called:', { type: output.type, channel: output.midiChannel, device: output.midiDeviceName })
+  if (output.type !== 'MIDI') {
+    console.log('Output type is not MIDI, returning null')
+    return null
+  }
+  if (!output.midiChannel) {
+    console.log('No MIDI channel set, returning null')
+    return null
+  }
   const midiOutput = WebMidi.getOutputByName(output.midiDeviceName)
-  if (!midiOutput) return null
-  const channel = parseInt(output.midiChannel, 10)
-  return midiOutput.channels[channel]
+  if (!midiOutput) {
+    console.log('MIDI output device not found:', output.midiDeviceName)
+    return null
+  }
+  const channelNumber = output.midiChannel === 'All' ? 1 : parseInt(output.midiChannel, 10)
+  console.log('MIDI output found:', { device: midiOutput.name, channel: channelNumber })
+  return midiOutput.channels[channelNumber]
 }
 
 const transposeNote = (args: { note: string; semitones: number }) => {
@@ -86,8 +96,13 @@ class PlaybackStore {
     this.activeChords.add(args.note)
     const midiOutput = getMidiOutput()
     const velocity = getRandomBetween({ min: output.minVelocity, max: output.maxVelocity })
-    if (!midiOutput) this.piano.start({ note: args.note, velocity })
-    else midiOutput.playNote(args.note, { attack: velocity / 1000 })
+    console.log('playNote:', { note: args.note, velocity, hasMidiOutput: !!midiOutput })
+    if (!midiOutput) {
+      this.piano.start({ note: args.note, velocity })
+    } else {
+      console.log('Sending MIDI note:', args.note, 'velocity:', velocity)
+      midiOutput.playNote(args.note, { attack: velocity / 127 })
+    }
   }
 
   playChord = async (notes: string[]) => {
@@ -157,7 +172,6 @@ class PlaybackStore {
     // Convert beats to milliseconds for actual playback
     const bpm = main.bpm
     const msPerBeat = 60000 / bpm
-
     const loopStartTime = Date.now()
 
     this.performance.forEach((performanceNote) => {
@@ -169,8 +183,13 @@ class PlaybackStore {
         if (!this.isPlaying) return
         const midiOutput = getMidiOutput()
         const velocity = performanceNote.velocity
-        if (!midiOutput) this.piano.start({ note: performanceNote.note, velocity })
-        else midiOutput.playNote(performanceNote.note, { attack: velocity / 127 })
+        console.log('Performance note:', { note: performanceNote.note, velocity, hasMidiOutput: !!midiOutput })
+        if (!midiOutput) {
+          this.piano.start({ note: performanceNote.note, velocity })
+        } else {
+          console.log('Sending MIDI performance note:', performanceNote.note, 'velocity:', velocity)
+          midiOutput.playNote(performanceNote.note, { attack: velocity / 127 })
+        }
         this.activeChords.add(performanceNote.note)
 
         const noteStopTimeoutId = setTimeout(() => {

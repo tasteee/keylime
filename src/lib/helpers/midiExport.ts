@@ -41,31 +41,22 @@ export const exportPerformanceAsMidi = (args: ExportMidiArgsT) => {
   const track = new MidiWriter.Track()
   track.setTempo(args.bpm)
 
-  const sortedNotes = [...args.performance].sort(
-    (noteA, noteB) => noteA.startTime - noteB.startTime
-  )
-
-  let currentTick = 0
-
-  sortedNotes.forEach((performanceNote) => {
+  args.performance.forEach((performanceNote) => {
     const midiPitch = convertNoteToMidi({ note: performanceNote.note })
     // Convert beat-based timing to MIDI ticks
     const startTimeTicks = beatsToTicks(performanceNote.startTime)
     const durationTicks = beatsToTicks(performanceNote.duration)
-    const waitTicks = startTimeTicks - currentTick
 
-    const wait = waitTicks > 0 ? `T${waitTicks}` : '0'
-    const duration = `T${durationTicks}`
-
+    // Use absolute tick positioning instead of relative wait
+    // This ensures notes at the same time start together
     const noteEvent = new MidiWriter.NoteEvent({
       pitch: midiPitch,
-      duration: duration,
+      duration: `T${durationTicks}`,
       velocity: performanceNote.velocity,
-      wait: wait
+      tick: startTimeTicks
     })
 
     track.addEvent(noteEvent)
-    currentTick = startTimeTicks
   })
 
   const writer = new MidiWriter.Writer(track)

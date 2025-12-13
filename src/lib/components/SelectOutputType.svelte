@@ -1,15 +1,9 @@
 <script lang="ts">
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js'
 	import output from '../stores/output.svelte'
-
-	let outputType = $state(output.type)
-
-	$effect(() => {
-		output.type = outputType
-	})
 </script>
 
-<ToggleGroup.Root class="SelectOutputType" type="single" bind:value={outputType}>
+<ToggleGroup.Root class="SelectOutputType" type="single" bind:value={output.type}>
 	<ToggleGroup.Item class="toggleGroupItem" value="Instrument">Instrument</ToggleGroup.Item>
 	<ToggleGroup.Item class="toggleGroupItem" value="MIDI">MIDI</ToggleGroup.Item>
 </ToggleGroup.Root>

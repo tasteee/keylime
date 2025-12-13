@@ -159,3 +159,11 @@ html,
 body {
   overscroll-behavior: none;
 }
+
+[data-slot="slider"] {
+  background: var(--color-zinc-700);
+}
+
+.border {
+  border-width: 2px;
+}

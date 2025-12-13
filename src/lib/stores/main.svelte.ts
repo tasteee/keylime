@@ -47,6 +47,7 @@ class MainStore {
   currentOpenPopoverId = $state(null) as string | null;
 
   pressedNotes = $state([]) as string[];
+  mousePlayingNote = $state(null) as string | null;
   rootOctave = $state('3');
   bpm = $state(108);
   patternLengthBars = $state(1); // Pattern loops every N bars (default 1 bar)
@@ -78,7 +79,7 @@ class MainStore {
     const rootNoteIndex = noteOrder.indexOf(rootNote);
 
     for (
-      let octave = this.rootOctave;
+      let octave = Number(this.rootOctave);
       octave <= maxOctave && notes.length < maxKeys;
       octave++
     ) {

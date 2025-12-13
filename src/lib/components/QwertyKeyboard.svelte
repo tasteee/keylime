@@ -1,17 +1,19 @@
-<script>
+<script lang="ts">
 	import playbackStore from '$lib/stores/playback.svelte'
 	import KEYBOARDS_CONFIG from '../constants/keyboards.json'
 	import QwertyKey from './QwertyKey.svelte'
 	import { browser } from '$app/environment'
-	import { onMount, onDestroy } from 'svelte'
+	import { onMount } from 'svelte'
 
-	const props = $props()
+	type QwertyKeyboardPropsT = {
+		layout: keyof typeof KEYBOARDS_CONFIG
+	}
+
+	const props: QwertyKeyboardPropsT = $props()
 	const config = KEYBOARDS_CONFIG[props.layout]
 
 	onMount(() => {
-		if (browser) {
-			playbackStore.load()
-		}
+		if (browser) playbackStore.load()
 	})
 </script>
 

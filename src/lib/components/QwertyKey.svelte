@@ -10,7 +10,7 @@
 
 	const config = KEYS_CONFIG[props.keyCode as keyof typeof KEYS_CONFIG]
 	const note = $derived(mainStore.keyNoteMap[props.keyCode] || '')
-	const noteWithoutOctave = $derived(note.replace(/[0-9]/g, ''))
+	const noteWithoutOctave = $derived(note ? note.replace(/[0-9]/g, '') : '')
 
 	const keyClassName = $derived.by(() => {
 		const classes = []
@@ -49,6 +49,67 @@
 		}
 	}
 
+	function handleMouseDown(event: MouseEvent) {
+		const isLeftButton = event.button === 0
+		if (!isLeftButton) return
+
+		event.preventDefault()
+		event.stopPropagation()
+
+		const wasPlayingNote = mainStore.mousePlayingNote
+		if (wasPlayingNote && wasPlayingNote !== note) {
+			const wasPlayingNoteWithoutOctave = wasPlayingNote.replace(/[0-9]/g, '')
+			mainStore.pressedNotes = mainStore.pressedNotes.filter((n) => n !== wasPlayingNoteWithoutOctave)
+			playbackStore.stopNote({ note: wasPlayingNote })
+		}
+
+		isPressed = true
+		mainStore.mousePlayingNote = note
+		mainStore.pressedNotes = [...mainStore.pressedNotes, noteWithoutOctave]
+		playbackStore.playNote({ note })
+	}
+
+	function handleMouseUp(event: MouseEvent) {
+		const isLeftButton = event.button === 0
+		if (!isLeftButton) return
+
+		event.preventDefault()
+		event.stopPropagation()
+
+		const wasPlayingNote = mainStore.mousePlayingNote
+		if (wasPlayingNote) {
+			const wasPlayingNoteWithoutOctave = wasPlayingNote.replace(/[0-9]/g, '')
+			mainStore.pressedNotes = mainStore.pressedNotes.filter((n) => n !== wasPlayingNoteWithoutOctave)
+			playbackStore.stopNote({ note: wasPlayingNote })
+			mainStore.mousePlayingNote = null
+		}
+
+		isPressed = false
+	}
+
+	function handleMouseEnter(event: MouseEvent) {
+		const isMouseDown = event.buttons === 1
+		if (!isMouseDown) return
+
+		const wasPlayingNote = mainStore.mousePlayingNote
+		if (wasPlayingNote && wasPlayingNote !== note) {
+			const wasPlayingNoteWithoutOctave = wasPlayingNote.replace(/[0-9]/g, '')
+			mainStore.pressedNotes = mainStore.pressedNotes.filter((n) => n !== wasPlayingNoteWithoutOctave)
+			playbackStore.stopNote({ note: wasPlayingNote })
+		}
+
+		isPressed = true
+		mainStore.mousePlayingNote = note
+		mainStore.pressedNotes = [...mainStore.pressedNotes, noteWithoutOctave]
+		playbackStore.playNote({ note })
+	}
+
+	function handleMouseLeave() {
+		if (mainStore.mousePlayingNote === note) {
+			isPressed = false
+		}
+	}
+
 	onMount(() => {
 		if (browser) {
 			window.addEventListener('keydown', handleKeyDown)
@@ -64,7 +125,16 @@
 	})
 </script>
 
-<div class="QwertyKey {keyClassName}" style="flex: {config.width}">
+<div
+	class="QwertyKey {keyClassName}"
+	style="flex: {config.width}"
+	role="button"
+	tabindex="0"
+	onmousedown={handleMouseDown}
+	onmouseup={handleMouseUp}
+	onmouseenter={handleMouseEnter}
+	onmouseleave={handleMouseLeave}
+>
 	<span class="qwertyLabel">{config.label.toUpperCase()}</span>
 	<span class="noteLabel">{note}</span>
 </div>

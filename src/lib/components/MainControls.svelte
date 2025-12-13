@@ -8,7 +8,6 @@
 	import SelectInstrument from '$lib/components/SelectInstrument.svelte'
 	import SelectMidiDevice from '$lib/components/SelectMidiDevice.svelte'
 	import SelectMidiChannel from '$lib/components/SelectMidiChannel.svelte'
-	import SelectChordMode from '$lib/components/SelectChordMode.svelte'
 	import SelectVelocity from '$lib/components/SelectVelocity.svelte'
 	import SelectPatternLength from '$lib/components/SelectPatternLength.svelte'
 
@@ -25,7 +24,6 @@
 		<SelectPatternLength />
 		<!-- <SelectKeymap /> -->
 		<SelectVelocity />
-		<!-- <SelectChordMode /> -->
 	</div>
 
 	<div class="controlsRow">

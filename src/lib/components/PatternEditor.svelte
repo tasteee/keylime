@@ -9,6 +9,8 @@
 	import { patternStore } from '$lib/stores/pattern.svelte'
 	import { progressionStore } from '$lib/stores/progression.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
+	import mainStore from '$lib/stores/main.svelte'
+	import outputStore from '$lib/stores/output.svelte'
 
 	let signalGridBox: HTMLDivElement
 	let selectedSignalId: string | null = $state(null)
@@ -131,7 +133,9 @@
 		const signal = createSignal({
 			startTime: timePositionInBeats,
 			duration: BEATS_PER_CELL, // 0.25 beats (1/4 beat = 1 cell)
-			modifiedTime: Date.now()
+			modifiedTime: Date.now(),
+			minVelocity: outputStore.minVelocity,
+			maxVelocity: outputStore.maxVelocity
 		})
 
 		signalRow.signalIds.push(signal.id)
