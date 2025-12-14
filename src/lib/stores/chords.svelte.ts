@@ -15,44 +15,8 @@ class ChordsStore {
   progressionBaseChords = $state([]) as ChordT[]
 
   progressionChords = $derived.by(() => {
-    const currentOctave = mainStore.rootOctave
-
     return this.progressionBaseChords.map((chord) => {
-      const octaveOffset = chord.octaveOffset
-
-      const regeneratedChord = generateChord({
-        name: chord.symbol,
-        baseOctave: currentOctave
-      })
-
-      let modifiedChord = applyVoicingAndInversion({
-        chord: regeneratedChord,
-        voicing: chord.voicing as VoicingT,
-        inversion: chord.inversion
-      })
-
-      if (octaveOffset !== 0) {
-        const interval = octaveOffset > 0
-          ? `${octaveOffset * 7 + 1}P`
-          : `-${Math.abs(octaveOffset) * 7 + 1}P`
-
-        modifiedChord.notes = modifiedChord.notes.map((note) => Note.transpose(note, interval))
-        modifiedChord.bassNote = Note.transpose(modifiedChord.bassNote, interval)
-      }
-
-      return {
-        ...modifiedChord,
-        id: chord.id,
-        startTime: chord.startTime,
-        duration: chord.duration,
-        durationBeats: chord.durationBeats,
-        modifiedTime: chord.modifiedTime,
-        minVelocity: chord.minVelocity,
-        maxVelocity: chord.maxVelocity,
-        octaveOffset: chord.octaveOffset,
-        inversion: chord.inversion,
-        voicing: chord.voicing
-      }
+      return { ...chord }
     })
   }) as ChordT[]
 }

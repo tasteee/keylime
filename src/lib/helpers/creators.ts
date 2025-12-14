@@ -13,9 +13,6 @@ export const createSignal = (overrides: Partial<SignalT> = {}): SignalT => {
     startTime,
     duration,
     octaveOffset: overrides.octaveOffset || 0,
-    velocity: overrides.velocity,
-    minVelocity: overrides.minVelocity || 65,
-    maxVelocity: overrides.maxVelocity || 85,
     noteIndex: overrides.noteIndex || 0
   }
 }

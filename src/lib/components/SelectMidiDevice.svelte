@@ -35,10 +35,10 @@
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={output.midiDeviceName}>
-	<Select.Trigger>
-		<span>
-			<span style="font-weight: 500;">Device: </span>
-			{output.midiDeviceName}
+	<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[140px] border-none bg-transparent shadow-none focus:ring-0">
+		<span class="text-xs">
+			<span class="text-muted-foreground mr-1">Device</span>
+			<span class="font-medium text-foreground">{output.midiDeviceName || 'Select Device'}</span>
 		</span>
 	</Select.Trigger>
 	<Select.Content>

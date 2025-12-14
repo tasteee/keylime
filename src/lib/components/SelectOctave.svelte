@@ -10,10 +10,10 @@
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.rootOctave}>
-	<Select.Trigger>
-		<span>
-			<span style="font-weight: 500;">Octave: </span>
-			{mainStore.rootOctave.toString()}
+	<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[80px] border-none bg-transparent shadow-none focus:ring-0">
+		<span class="text-xs">
+			<span class="text-muted-foreground mr-1">Octave</span>
+			<span class="font-medium text-foreground">{mainStore.rootOctave.toString()}</span>
 		</span>
 	</Select.Trigger>
 	<Select.Content>

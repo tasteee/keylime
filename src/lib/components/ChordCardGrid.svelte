@@ -5,10 +5,21 @@
 	const gridChords = $derived(gridChordsStore.gridChords)
 </script>
 
-<section
-	class="ChordCardGrid px-4 py-4 gap-x-4 gap-y-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 grid w-full flex-1 grid-cols-2 overflow-y-auto"
->
+<section class="ChordCardGrid">
 	{#each gridChords as chord}
 		<ChordCard {chord} />
 	{/each}
 </section>
+
+<style>
+	.ChordCardGrid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+		gap: 16px;
+		padding: 24px;
+		width: 100%;
+		flex: 1;
+		overflow-y: auto;
+		align-content: start;
+	}
+</style>

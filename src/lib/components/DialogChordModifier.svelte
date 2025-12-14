@@ -15,8 +15,6 @@
 	const octaveOffset = $derived(chordModifierStore.state.octaveOffset)
 	const inversion = $derived(chordModifierStore.state.inversion)
 	const voicing = $derived(chordModifierStore.state.voicing)
-	const minVelocity = $derived(chordModifierStore.state.minVelocity)
-	const maxVelocity = $derived(chordModifierStore.state.maxVelocity)
 	const chordName = $derived(currentChord?.symbol ?? 'Chord')
 
 	const voicingOptions: VoicingItemT[] = [
@@ -55,22 +53,6 @@
 		if (!value) return
 		const numValue = parseInt(value, 10)
 		chordModifierStore.updateInversion(numValue)
-	}
-
-	const handleMinVelocityInput = (event: Event) => {
-		const target = event.target as HTMLInputElement
-		const value = parseInt(target.value, 10)
-		if (isNaN(value)) return
-		const clampedValue = Math.max(0, Math.min(127, value))
-		chordModifierStore.updateMinVelocity(clampedValue)
-	}
-
-	const handleMaxVelocityInput = (event: Event) => {
-		const target = event.target as HTMLInputElement
-		const value = parseInt(target.value, 10)
-		if (isNaN(value)) return
-		const clampedValue = Math.max(0, Math.min(127, value))
-		chordModifierStore.updateMaxVelocity(clampedValue)
 	}
 
 	const octaveDisplayValue = $derived(octaveOffset === 0 ? '±0' : octaveOffset > 0 ? `+${octaveOffset}` : `${octaveOffset}`)
@@ -139,30 +121,6 @@
 						{/each}
 					</Select.Content>
 				</Select.Root>
-			</div>
-
-			<!-- Velocity Modifier -->
-			<div class="velocityModifier space-y-2">
-				<Label class="text-sm font-medium">Min / Max Velocity</Label>
-				<div class="gap-2 flex items-center">
-					<Input
-						type="number"
-						class="minVelocityInput flex-1"
-						value={minVelocity}
-						oninput={handleMinVelocityInput}
-						min="0"
-						max="127"
-					/>
-					<span class="text-muted-foreground text-sm">-</span>
-					<Input
-						type="number"
-						class="maxVelocityInput flex-1"
-						value={maxVelocity}
-						oninput={handleMaxVelocityInput}
-						min="0"
-						max="127"
-					/>
-				</div>
 			</div>
 		</div>
 	</Dialog.Content>

@@ -22,25 +22,29 @@ type VoicingT =
 
 type ChordT = {
   id: string
-  octaveOffset: number
-  rootNote: string
+  name: string
   symbol: string
+  rootNote: string
+  octaveOffset: number
   voicing: string
   inversion: number
-  durationBeats: number
   bassNote: string
-  notes: string[]
-  minVelocity: number
-  maxVelocity: number
-  startTime?: number // beats - position in progression timeline
-  duration?: number // beats - length in progression timeline
-  modifiedTime?: number // timestamp - for conflict resolution
 }
 
 type ProgressionChordT = ChordT & {
+  type: 'chord'
   startTime: number // beats - position in progression timeline
-  duration: number // beats - length in progression timeline
+  durationBeats: number // beats - length in progression timeline
 }
+
+type ProgressionRestT = {
+  id: string
+  type: 'rest'
+  startTime: number // beats - position in progression timeline
+  durationBeats: number // beats - length in progression timeline
+}
+
+type ProgressionItemT = ProgressionChordT | ProgressionRestT
 
 type SignalRowT = {
   id: string
@@ -59,9 +63,6 @@ type SignalT = {
   id: string
   startTime: number // beats (can be decimal, e.g., 0.25 = 1/4 beat)
   noteIndex: number
-  velocity?: number
-  minVelocity: number
-  maxVelocity: number
   duration: number // beats (can be decimal, e.g., 0.25 = 1/4 beat)
   octaveOffset: number
   modifiedTime?: number

@@ -1,8 +1,12 @@
 import { Note } from 'tonal'
 import { getNoteFromSignalRow } from './signalRows'
+import { chordToNotes } from './chordToNotes'
+import { chordNotesToSignalRowNotes } from './chordNotesToSignalRowNotes'
+import mainStore from '$lib/stores/main.svelte'
+import outputStore from '$lib/stores/output.svelte'
 
 type GeneratePerformanceArgsT = {
-  chords: ChordT[]
+  chords: ProgressionChordT[]
   signals: SignalT[]
   signalRows: SignalRowsT
   patternLengthBeats: number
@@ -24,35 +28,38 @@ const mapSignalToNote = (args: {
   signal: SignalT
   chord: ChordT
   signalRow: SignalRowT
+  chordNotes: string[]
 }): string | null => {
-  const baseNote = getNoteFromSignalRow({
+  // Use the signal row ID to derive the note, just like getNoteFromSignalRow does
+  const note = getNoteFromSignalRow({
     signalRowId: args.signalRow.id,
-    chord: args.chord
+    chord: null,
+    chordNotes: args.chordNotes
   })
 
-  if (!baseNote) return null
+  if (!note) return null
 
   const hasSignalOctaveOffset = args.signal.octaveOffset !== 0
-  if (!hasSignalOctaveOffset) return baseNote
+  if (!hasSignalOctaveOffset) return note
 
   const octaveOffset = args.signal.octaveOffset
   const interval = octaveOffset > 0
     ? `${octaveOffset * 7 + 1}P`
     : `-${Math.abs(octaveOffset) * 7 + 1}P`
 
-  const transposedNote = Note.transpose(baseNote, interval)
+  const transposedNote = Note.transpose(note, interval)
   return transposedNote
 }
 
 type FindChordAtTimeArgsT = {
-  chords: ChordT[]
+  chords: ProgressionChordT[]
   absoluteTime: number
 }
 
-const findChordAtTime = (args: FindChordAtTimeArgsT): ChordT | null => {
+const findChordAtTime = (args: FindChordAtTimeArgsT): ProgressionChordT | null => {
   const foundChord = args.chords.find((chord) => {
     const chordStart = chord.startTime ?? 0
-    const chordEnd = chordStart + (chord.duration ?? 0)
+    const chordEnd = chordStart + chord.durationBeats
     const isTimeWithinChord = args.absoluteTime >= chordStart && args.absoluteTime < chordEnd
     return isTimeWithinChord
   })
@@ -105,9 +112,12 @@ export const generatePerformance = (args: GeneratePerformanceArgsT): Performance
         return
       }
 
+      // Derive notes from chord at performance generation time
+      const chordNotes = chordToNotes({ chord: activeChord, rootOctave: mainStore.rootOctave })
+
       // Calculate the end of this chord
       const chordStart = activeChord.startTime ?? 0
-      const chordEnd = chordStart + (activeChord.duration ?? 0)
+      const chordEnd = chordStart + activeChord.durationBeats
 
       // Clip signal duration to chord boundary and progression end
       const absoluteEndTime = absoluteStartTime + signal.duration
@@ -118,13 +128,10 @@ export const generatePerformance = (args: GeneratePerformanceArgsT): Performance
       if (isNoDuration) return
 
       // Map signal to the note in the active chord
-      const note = mapSignalToNote({ signal, chord: activeChord, signalRow })
+      const note = mapSignalToNote({ signal, chord: activeChord, signalRow, chordNotes })
       if (!note) return
 
-      const hasExplicitVelocity = signal.velocity !== undefined
-      const velocity = hasExplicitVelocity
-        ? (signal.velocity as number)
-        : getRandomBetween({ min: signal.minVelocity, max: signal.maxVelocity })
+      const velocity = getRandomBetween({ min: outputStore.minVelocity, max: outputStore.maxVelocity })
 
       const performanceNote: PerformanceNoteT = {
         id: `${activeChord.id}-${signal.id}-${repeatIndex}`,

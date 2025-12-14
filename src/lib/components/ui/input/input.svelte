@@ -1,13 +1,12 @@
 <script lang="ts">
-	import type { HTMLInputAttributes, HTMLInputTypeAttribute } from "svelte/elements";
-	import { cn, type WithElementRef } from "$lib/utils.js";
+	import type { HTMLInputAttributes, HTMLInputTypeAttribute } from 'svelte/elements'
+	import { cn, type WithElementRef } from '$lib/utils.js'
 
-	type InputType = Exclude<HTMLInputTypeAttribute, "file">;
+	type InputType = Exclude<HTMLInputTypeAttribute, 'file'>
 
 	type Props = WithElementRef<
-		Omit<HTMLInputAttributes, "type"> &
-			({ type: "file"; files?: FileList } | { type?: InputType; files?: undefined })
-	>;
+		Omit<HTMLInputAttributes, 'type'> & ({ type: 'file'; files?: FileList } | { type?: InputType; files?: undefined })
+	>
 
 	let {
 		ref = $bindable(null),
@@ -15,19 +14,19 @@
 		type,
 		files = $bindable(),
 		class: className,
-		"data-slot": dataSlot = "input",
+		'data-slot': dataSlot = 'input',
 		...restProps
-	}: Props = $props();
+	}: Props = $props()
 </script>
 
-{#if type === "file"}
+{#if type === 'file'}
 	<input
 		bind:this={ref}
 		data-slot={dataSlot}
 		class={cn(
-			"selection:bg-primary dark:bg-input/30 selection:text-primary-foreground border-input ring-offset-background placeholder:text-muted-foreground shadow-xs flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 pt-1.5 text-sm font-medium outline-none transition-[color,box-shadow] disabled:cursor-not-allowed disabled:opacity-50",
-			"focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-			"aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+			'border-black bg-white selection:text-black placeholder:text-gray-400 h-10 min-w-0 px-3 pt-1.5 text-sm font-mono font-medium flex w-full rounded-none border-[3px] transition-all outline-none selection:bg-[#FF69B4] disabled:cursor-not-allowed disabled:opacity-50',
+			'focus-visible:border-[#CCFF00] focus-visible:shadow-[4px_4px_0px_#00FFFF] focus-visible:ring-0',
+			'aria-invalid:animate-pulse aria-invalid:border-[#FF9900]',
 			className
 		)}
 		type="file"
@@ -40,9 +39,9 @@
 		bind:this={ref}
 		data-slot={dataSlot}
 		class={cn(
-			"border-input bg-background selection:bg-primary dark:bg-input/30 selection:text-primary-foreground ring-offset-background placeholder:text-muted-foreground shadow-xs flex h-9 w-full min-w-0 rounded-md border px-3 py-1 text-base outline-none transition-[color,box-shadow] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-			"focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-			"aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+			'border-black bg-white selection:text-black placeholder:text-gray-400 h-10 min-w-0 px-3 py-1 text-base md:text-sm font-mono flex w-full rounded-none border-[3px] transition-all outline-none selection:bg-[#FF69B4] disabled:cursor-not-allowed disabled:opacity-50',
+			'focus-visible:border-[#CCFF00] focus-visible:shadow-[4px_4px_0px_#00FFFF] focus-visible:ring-0',
+			'aria-invalid:animate-pulse aria-invalid:border-[#FF9900]',
 			className
 		)}
 		{type}

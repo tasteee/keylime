@@ -6,6 +6,8 @@
 	import { SIGNAL_IDS, SIGNAL_ROWS } from '$lib/constants/signalRows'
 	import { createSignal } from '$lib/helpers/creators'
 	import { resolveSignalConflicts, getNoteFromSignalRow } from '$lib/helpers/signalRows'
+	import { chordToNotes } from '$lib/helpers/chordToNotes'
+	import { chordNotesToSignalRowNotes } from '$lib/helpers/chordNotesToSignalRowNotes'
 	import { patternStore } from '$lib/stores/pattern.svelte'
 	import { progressionStore } from '$lib/stores/progression.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
@@ -28,6 +30,8 @@
 	let resizeStartDuration = $state(0)
 	let ignoreClickOutsideUntil = $state(0)
 	let currentlyPlayingNote: string | null = $state(null)
+	let isMouseDownOnLabel = $state(false)
+	let currentLabelNote: string | null = $state(null)
 
 	type SignalRowKeyT = keyof typeof SIGNAL_ROWS
 
@@ -39,10 +43,22 @@
 
 	const selectedSignal = $derived(selectedSignalId ? patternStore.getSignalById(selectedSignalId) : null)
 	const selectedChord = $derived(
-		progressionStore.selectedChordId
-			? (progressionStore.chords.find((chord) => chord.id === progressionStore.selectedChordId) ?? null)
+		progressionStore.selectedItemId
+			? (progressionStore.chords.find((chord) => chord.id === progressionStore.selectedItemId) ?? null)
 			: null
 	)
+
+	// Calculate note mappings for each signal row based on selected chord
+	const signalRowNotes = $derived.by(() => {
+		if (!selectedChord) return new Map<string, string>()
+		const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: mainStore.rootOctave })
+		const notes = chordNotesToSignalRowNotes({ chordNotes })
+		const noteMap = new Map<string, string>()
+		SIGNAL_IDS.forEach((signalId, index) => {
+			noteMap.set(signalId, notes[index])
+		})
+		return noteMap
+	})
 
 	// Calculate where the inactive area starts (in pixels)
 	const activePatternWidthPx = $derived.by(() => {
@@ -60,12 +76,11 @@
 		if (isIgnoringClickOutside) return
 
 		const target = event.target as HTMLElement
-		const isInsideVelocityControls = target.closest('.velocityControls')
 		const clickedSignalElement = target.closest('.signal') as HTMLElement
 		const clickedSignalId = clickedSignalElement?.dataset?.signalId
 		const isClickedSignalTheSelectedSignal = clickedSignalId === selectedSignalId
 
-		const shouldKeepSelected = isInsideVelocityControls || isClickedSignalTheSelectedSignal
+		const shouldKeepSelected = isClickedSignalTheSelectedSignal
 		if (shouldKeepSelected) return
 
 		selectedSignalId = null
@@ -78,44 +93,6 @@
 		}
 	}
 
-	const handleMinVelocityChange = (event: Event) => {
-		if (!selectedSignal) return
-		const target = event.target as HTMLInputElement
-		const value = target.value
-		const parsedValue = parseInt(value, 10)
-		const isValidNumber = !isNaN(parsedValue)
-		if (!isValidNumber) return
-		const clampedValue = Math.max(0, Math.min(127, parsedValue))
-		selectedSignal.minVelocity = clampedValue
-		selectedSignal.modifiedTime = Date.now()
-	}
-
-	const handleMaxVelocityChange = (event: Event) => {
-		if (!selectedSignal) return
-		const target = event.target as HTMLInputElement
-		const value = target.value
-		const parsedValue = parseInt(value, 10)
-		const isValidNumber = !isNaN(parsedValue)
-		if (!isValidNumber) return
-		const clampedValue = Math.max(0, Math.min(127, parsedValue))
-		selectedSignal.maxVelocity = clampedValue
-		selectedSignal.modifiedTime = Date.now()
-	}
-
-	const handleVelocityChange = (event: Event) => {
-		if (!selectedSignal) return
-		const target = event.target as HTMLInputElement
-		const value = target.value
-		const parsedValue = parseInt(value, 10)
-		const isValidNumber = !isNaN(parsedValue)
-		if (!isValidNumber) return
-		const clampedValue = Math.max(0, Math.min(127, parsedValue))
-		selectedSignal.velocity = clampedValue
-		selectedSignal.minVelocity = clampedValue
-		selectedSignal.maxVelocity = clampedValue
-		selectedSignal.modifiedTime = Date.now()
-	}
-
 	const handleSignalGridRowDoubleClick = (event: MouseEvent) => {
 		console.log('handleSignalGridRowDoubleClick')
 		if (isDraggingSignal || isResizingSignal) return
@@ -123,8 +100,14 @@
 		selectedSignalId = null
 		const target = event.target as HTMLElement
 
-		const label = target.dataset.toneId
-		const rect = target.getBoundingClientRect()
+		// Find the row element - may need to look up the DOM tree if clicking on signal/resize handle
+		const rowElement = target.closest('.signalGridRow') as HTMLElement
+		if (!rowElement) return
+
+		const label = rowElement.dataset.toneId
+		if (!label) return
+
+		const rect = rowElement.getBoundingClientRect()
 		const x = event.clientX - rect.left
 		const timePositionInCells = Math.floor(x / CELL_WIDTH)
 		const timePositionInBeats = timePositionInCells * BEATS_PER_CELL
@@ -133,9 +116,7 @@
 		const signal = createSignal({
 			startTime: timePositionInBeats,
 			duration: BEATS_PER_CELL, // 0.25 beats (1/4 beat = 1 cell)
-			modifiedTime: Date.now(),
-			minVelocity: outputStore.minVelocity,
-			maxVelocity: outputStore.maxVelocity
+			modifiedTime: Date.now()
 		})
 
 		signalRow.signalIds.push(signal.id)
@@ -143,7 +124,13 @@
 		console.log('>>>', signal.startTime)
 		selectedSignalId = signal.id
 
-		const noteToPlay = getNoteFromSignalRow({ signalRowId: label as string, chord: selectedChord })
+		// Derive notes from selected chord if available
+		let noteToPlay: string | null = null
+		if (selectedChord) {
+			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: mainStore.rootOctave })
+			noteToPlay = getNoteFromSignalRow({ signalRowId: label as string, chord: null, chordNotes })
+		}
+
 		if (noteToPlay) {
 			playbackStore.playNote({ note: noteToPlay })
 			setTimeout(() => {
@@ -178,7 +165,13 @@
 		dragStartTime = signal.startTime
 		selectedSignalId = signalId
 
-		const noteToPlay = getNoteFromSignalRow({ signalRowId: toneId, chord: selectedChord })
+		// Derive notes from selected chord if available
+		let noteToPlay: string | null = null
+		if (selectedChord) {
+			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: mainStore.rootOctave })
+			noteToPlay = getNoteFromSignalRow({ signalRowId: toneId, chord: null, chordNotes })
+		}
+
 		if (noteToPlay) {
 			currentlyPlayingNote = noteToPlay
 			playbackStore.playNote({ note: noteToPlay })
@@ -197,6 +190,10 @@
 		const signal = patternStore.getSignalById(signalId)
 		if (!signal) return
 
+		// Find the row to get the signal row ID for note playback
+		const rowElement = signalElement.closest('.signalGridRow') as HTMLElement
+		const toneId = rowElement?.dataset.toneId
+
 		isResizingSignal = true
 		resizingSignalId = signalId
 		resizeHandle = handle
@@ -204,6 +201,18 @@
 		resizeStartTime = signal.startTime
 		resizeStartDuration = signal.duration
 		selectedSignalId = signalId
+
+		// Play note when resizing starts
+		if (selectedChord && toneId) {
+			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: mainStore.rootOctave })
+			const noteToPlay = getNoteFromSignalRow({ signalRowId: toneId, chord: null, chordNotes })
+			if (noteToPlay) {
+				playbackStore.playNote({ note: noteToPlay })
+				setTimeout(() => {
+					playbackStore.stopNote({ note: noteToPlay })
+				}, 250)
+			}
+		}
 
 		event.stopPropagation()
 		event.preventDefault()
@@ -326,6 +335,33 @@
 
 	const handleSignalDoubleClick = (event: MouseEvent) => {
 		const target = event.target as HTMLElement
+
+		// Check if we're clicking on a resize handle - if so, just delete the signal
+		const isResizeHandle = target.classList.contains('resizeHandle')
+		if (isResizeHandle) {
+			const signalElement = target.parentElement as HTMLElement
+			const signalId = signalElement?.dataset.signalId
+			if (!signalId) return
+
+			// Remove signal from signals array
+			patternStore.signals = patternStore.signals.filter((signal) => signal.id !== signalId)
+
+			// Remove signal ID from its row
+			for (const rowKey in patternStore.signalRows) {
+				const row = patternStore.signalRows[rowKey as SignalRowKeyT]
+				row.signalIds = row.signalIds.filter((id) => id !== signalId)
+			}
+
+			// Clear selection if the deleted signal was selected
+			if (selectedSignalId === signalId) {
+				selectedSignalId = null
+			}
+
+			event.stopPropagation()
+			return
+		}
+
+		// Normal signal double-click - delete it
 		const signalId = target.dataset.signalId
 		if (!signalId) return
 
@@ -346,6 +382,71 @@
 		event.stopPropagation() // Prevent triggering row click
 	}
 
+	const handleLabelMouseDown = (event: MouseEvent) => {
+		const target = event.target as HTMLElement
+		const labelElement = target.closest('.signalRowLabel') as HTMLElement
+		if (!labelElement) return
+
+		const signalId = labelElement.dataset.signalId
+		if (!signalId) return
+
+		const note = signalRowNotes.get(signalId)
+		if (!note) return
+
+		isMouseDownOnLabel = true
+		currentLabelNote = note
+		playbackStore.playNote({ note })
+	}
+
+	const handleLabelMouseUp = (event: MouseEvent) => {
+		if (!isMouseDownOnLabel) return
+		if (!currentLabelNote) return
+
+		playbackStore.stopNote({ note: currentLabelNote })
+		isMouseDownOnLabel = false
+		currentLabelNote = null
+	}
+
+	const handleLabelMouseEnter = (event: MouseEvent) => {
+		if (!isMouseDownOnLabel) return
+
+		const target = event.target as HTMLElement
+		const labelElement = target.closest('.signalRowLabel') as HTMLElement
+		if (!labelElement) return
+
+		const signalId = labelElement.dataset.signalId
+		if (!signalId) return
+
+		const note = signalRowNotes.get(signalId)
+		if (!note) return
+
+		const wasSameNote = note === currentLabelNote
+		if (wasSameNote) return
+
+		// Stop the previous note
+		if (currentLabelNote) {
+			playbackStore.stopNote({ note: currentLabelNote })
+		}
+
+		// Play the new note
+		currentLabelNote = note
+		playbackStore.playNote({ note })
+	}
+
+	const handleLabelMouseLeave = (event: MouseEvent) => {
+		// Only stop if we're leaving the entire label area, not just switching between labels
+		const relatedTarget = event.relatedTarget as HTMLElement
+		const isEnteringAnotherLabel = relatedTarget?.closest('.signalRowLabel')
+		if (isEnteringAnotherLabel) return
+
+		if (!isMouseDownOnLabel) return
+		if (!currentLabelNote) return
+
+		playbackStore.stopNote({ note: currentLabelNote })
+		isMouseDownOnLabel = false
+		currentLabelNote = null
+	}
+
 	onMount(() => {
 		signalGridBox.scrollTop = 342.5
 	})
@@ -355,47 +456,6 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="PatternEditor">
-	{#if selectedSignal}
-		<div class="velocityControls">
-			<div class="velocityControlGroup">
-				<Label for="velocity">Velocity</Label>
-				<Input
-					id="velocity"
-					type="number"
-					min="0"
-					max="127"
-					value={selectedSignal.velocity}
-					oninput={handleVelocityChange}
-					class="h-8"
-				/>
-			</div>
-			<div class="velocityControlGroup">
-				<Label for="minVelocity">Min</Label>
-				<Input
-					id="minVelocity"
-					type="number"
-					min="0"
-					max="127"
-					value={selectedSignal.minVelocity}
-					oninput={handleMinVelocityChange}
-					class="h-8"
-				/>
-			</div>
-			<div class="velocityControlGroup">
-				<Label for="maxVelocity">Max</Label>
-				<Input
-					id="maxVelocity"
-					type="number"
-					min="0"
-					max="127"
-					value={selectedSignal.maxVelocity}
-					oninput={handleMaxVelocityChange}
-					class="h-8"
-				/>
-			</div>
-		</div>
-	{/if}
-
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="signalGridBox" bind:this={signalGridBox}>
 		<div class="signalGridRowsBox" onmousemove={handleMouseMove} onmouseup={handleMouseUp}>
@@ -427,10 +487,20 @@
 			<div class="inactivePatternOverlay" style="left: {activePatternWidthPx}px;"></div>
 		</div>
 
-		<div class="signalRowLabelsBox">
+		<div class="signalRowLabelsBox" onmouseup={handleLabelMouseUp}>
 			{#each SIGNAL_IDS as label, index (label + index)}
-				<div class="signalRowLabel">
-					{label}
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div
+					class="signalRowLabel"
+					data-signal-id={label}
+					onmousedown={handleLabelMouseDown}
+					onmouseenter={handleLabelMouseEnter}
+					onmouseleave={handleLabelMouseLeave}
+				>
+					<span class="labelId">{label}</span>
+					{#if signalRowNotes.get(label)}
+						<span class="labelNote">{signalRowNotes.get(label)}</span>
+					{/if}
 				</div>
 			{/each}
 		</div>
@@ -440,43 +510,25 @@
 <style>
 	.PatternEditor {
 		width: 100%;
+		height: 100%;
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
-		padding: 8px;
-		border: 1px solid var(--border);
-		border-radius: 2px;
-	}
-
-	.velocityControls {
-		display: flex;
-		flex-direction: row;
 		gap: 12px;
-		align-items: flex-end;
-		padding: 8px;
-		background: hsl(var(--muted) / 0.3);
-		border: 1px solid var(--border);
-		border-radius: 2px;
-	}
-
-	.velocityControlGroup {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		min-width: 80px;
+		padding: 0;
+		min-height: 0;
 	}
 
 	.signalGridBox {
 		width: 100%;
-		height: 275px;
-		max-height: 275px;
+		flex: 1;
 		display: flex;
 		flex-direction: row-reverse;
 		overflow-y: auto;
 		overflow-x: hidden;
 		border: 1px solid var(--border);
-		border-radius: 2px;
-		background: hsl(var(--background));
+		border-radius: var(--radius-md);
+		background: var(--card);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 	}
 
 	.signalRowLabelsBox {
@@ -484,24 +536,47 @@
 		height: fit-content;
 		flex-direction: column;
 		flex-shrink: 0;
-		background: hsl(var(--muted));
+		background: var(--muted);
 		border-right: 1px solid var(--border);
-		box-shadow: 4px 0px 8px -3px rgba(255, 255, 255, 0.0025);
+		z-index: 20;
 	}
 
 	.signalRowLabel {
-		width: 52px;
-		min-width: 52px;
+		width: 100px;
+		min-width: 100px;
 		height: 24px;
-		padding: 0px 8px;
+		padding: 0px 12px;
 		display: flex;
 		align-items: center;
-		justify-content: end;
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: hsl(var(--muted-foreground));
+		justify-content: space-between;
+		gap: 8px;
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--muted-foreground);
 		border-bottom: 1px solid var(--border);
 		flex-shrink: 0;
+		user-select: none;
+		transition:
+			color 0.1s,
+			background-color 0.1s;
+	}
+
+	.labelId {
+		text-align: right;
+		flex: 1;
+	}
+
+	.labelNote {
+		text-align: left;
+		color: var(--primary);
+		font-weight: 500;
+		min-width: 28px;
+	}
+
+	.signalRowLabel:hover {
+		color: var(--foreground);
+		background-color: var(--accent);
+		cursor: pointer;
 	}
 
 	.signalRowLabel:last-child {
@@ -515,6 +590,7 @@
 		overflow-x: auto;
 		position: relative;
 		min-height: min-content;
+		background-color: var(--background);
 	}
 
 	.signalGridRow {
@@ -530,24 +606,24 @@
 		min-height: 24px;
 		flex-shrink: 0;
 		position: relative;
-		background-color: hsl(var(--background));
+		background-color: transparent;
 		border-bottom: 1px solid var(--border);
 
 		/* Alternating bar backgrounds + grid lines */
 		background-image:
-			/* Vertical grid lines every 12px */
+			/* Vertical grid lines every 16px (cell) */
 			repeating-linear-gradient(
 				to right,
 				transparent 0px,
 				transparent calc(var(--cellWidth) - 1px),
-				rgba(222, 222, 222, 0.15) calc(var(--cellWidth) - 1px),
-				rgba(222, 222, 222, 0.15) var(--cellWidth)
+				var(--border) calc(var(--cellWidth) - 1px),
+				var(--border) var(--cellWidth)
 			),
-			/* Alternating bar shading (every 2 bars = 384px) */
+			/* Alternating bar shading (every 2 bars) */
 				repeating-linear-gradient(
 					to right,
-					rgba(200, 200, 200, 0.03) 0px,
-					rgba(200, 200, 200, 0.03) var(--barWidth),
+					var(--secondary) 0px,
+					var(--secondary) var(--barWidth),
 					transparent var(--barWidth),
 					transparent calc(var(--barWidth) * 2)
 				);
@@ -559,41 +635,41 @@
 
 	/* Custom scrollbar styling */
 	.signalGridBox::-webkit-scrollbar {
-		width: 0px;
-		height: 0px;
+		width: 10px;
+		height: 10px;
 	}
 
 	.signalGridBox::-webkit-scrollbar-track {
-		background: hsl(var(--muted) / 0.3);
-		border-radius: 0.25rem;
+		background: transparent;
 	}
 
 	.signalGridBox::-webkit-scrollbar-thumb {
-		background: hsl(var(--muted-foreground) / 0.3);
-		border-radius: 0.25rem;
+		background: var(--border);
+		border-radius: 5px;
+		border: 2px solid var(--card); /* Creates padding effect */
 	}
 
 	.signalGridBox::-webkit-scrollbar-thumb:hover {
-		background: hsl(var(--muted-foreground) / 0.5);
+		background: var(--muted-foreground);
 	}
 
 	.signalGridRowsBox::-webkit-scrollbar {
-		width: 0px;
-		height: 0px;
+		width: 10px;
+		height: 10px;
 	}
 
 	.signalGridRowsBox::-webkit-scrollbar-track {
-		background: hsl(var(--muted) / 0.3);
-		border-radius: 0.25rem;
+		background: transparent;
 	}
 
 	.signalGridRowsBox::-webkit-scrollbar-thumb {
-		background: hsl(var(--muted-foreground) / 0.3);
-		border-radius: 0.25rem;
+		background: var(--border);
+		border-radius: 5px;
+		border: 2px solid var(--background);
 	}
 
 	.signalGridRowsBox::-webkit-scrollbar-thumb:hover {
-		background: hsl(var(--muted-foreground) / 0.5);
+		background: var(--muted-foreground);
 	}
 
 	.inactivePatternOverlay {
@@ -601,8 +677,10 @@
 		top: 0;
 		bottom: 0;
 		right: 0;
-		background: rgba(0, 0, 0, 0.6);
+		background: var(--background);
+		opacity: 0.5;
 		pointer-events: none;
 		z-index: 100;
+		backdrop-filter: grayscale(100%);
 	}
 </style>

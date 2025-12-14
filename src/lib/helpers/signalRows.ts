@@ -18,15 +18,18 @@ export const getSignalRowIdOctave = (signalId: string): number => {
 type GetNoteFromSignalRowArgsT = {
   signalRowId: string
   chord: ChordT | null
+  chordNotes?: string[]
 }
 
 export const getNoteFromSignalRow = (args: GetNoteFromSignalRowArgsT): string | null => {
-  if (!args.chord) return null
+  if (!args.chord && !args.chordNotes) return null
 
   const noteIndex = getSignalRowIdIndex(args.signalRowId)
   const octaveOffset = getSignalRowIdOctave(args.signalRowId)
 
-  const chordNotesCount = args.chord.notes.length
+  // Use provided chordNotes or fall back to chord.notes (for backward compatibility)
+  const notes = args.chordNotes || (args.chord as any)?.notes || []
+  const chordNotesCount = notes.length
   if (chordNotesCount === 0) return null
 
   // Calculate which note in the chord (wrapping around)
@@ -40,7 +43,7 @@ export const getNoteFromSignalRow = (args: GetNoteFromSignalRowArgsT): string | 
   // Total octave offset combines the wrapping octaves and the explicit octave offset
   const totalOctaveOffset = octavesFromWrapping + octaveOffset
 
-  const baseNote = args.chord.notes[wrappedNoteIndex]
+  const baseNote = notes[wrappedNoteIndex]
   if (!baseNote) return null
 
   const hasNoOctaveOffset = totalOctaveOffset === 0
@@ -65,6 +68,8 @@ export const resolveSignalConflicts = (signalRow: SignalRowT, signals: SignalT[]
   const signalsInRow = ids.map((id) => signals.find((signal) => signal.id === id)) as SignalT[]
   const newSignals: SignalT[] = []
 
+  const OVERLAP_TOLERANCE = 0.001 // Small tolerance for floating point precision
+
   signalsInRow.forEach((signalA) => {
     signalsInRow.forEach((signalB) => {
       if (signalA.id === signalB.id) return
@@ -74,7 +79,9 @@ export const resolveSignalConflicts = (signalRow: SignalRowT, signals: SignalT[]
       const bStart = signalB.startTime
       const bEnd = signalB.startTime + signalB.duration
 
-      const hasOverlap = aStart < bEnd && bStart < aEnd
+      // Signals are only considered overlapping if they truly overlap beyond tolerance
+      // This prevents adjacent signals from being treated as conflicts
+      const hasOverlap = (aStart + OVERLAP_TOLERANCE < bEnd) && (bStart + OVERLAP_TOLERANCE < aEnd)
       if (!hasOverlap) return
 
       // Determine which signal has priority based on modifiedTime

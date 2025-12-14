@@ -14,8 +14,6 @@ type ChordModifierStateT = {
   octaveOffset: number
   inversion: number
   voicing: VoicingT
-  minVelocity: number
-  maxVelocity: number
 }
 
 class ChordModifierStore {
@@ -25,9 +23,7 @@ class ChordModifierStore {
     source: null,
     octaveOffset: 0,
     inversion: 0,
-    voicing: 'closed',
-    minVelocity: 60,
-    maxVelocity: 75
+    voicing: 'closed'
   })
 
   // Get the current chord being modified (fully computed with all modifications)
@@ -67,8 +63,6 @@ class ChordModifierStore {
     this.state.octaveOffset = gridChord.octaveOffset
     this.state.inversion = gridChord.inversion
     this.state.voicing = gridChord.voicing as VoicingT
-    this.state.minVelocity = gridChord.minVelocity
-    this.state.maxVelocity = gridChord.maxVelocity
   }
 
   openForProgressionChord = (args: { chordId: string }) => {
@@ -82,8 +76,6 @@ class ChordModifierStore {
     this.state.octaveOffset = progressionChord.octaveOffset
     this.state.inversion = progressionChord.inversion
     this.state.voicing = progressionChord.voicing as VoicingT
-    this.state.minVelocity = progressionChord.minVelocity
-    this.state.maxVelocity = progressionChord.maxVelocity
   }
 
   closeDialog = () => {
@@ -110,18 +102,6 @@ class ChordModifierStore {
     this.playCurrentChord()
   }
 
-  updateMinVelocity = (value: number) => {
-    this.state.minVelocity = value
-    this.saveToProgressionIfNeeded()
-    this.playCurrentChord()
-  }
-
-  updateMaxVelocity = (value: number) => {
-    this.state.maxVelocity = value
-    this.saveToProgressionIfNeeded()
-    this.playCurrentChord()
-  }
-
   private saveToProgressionIfNeeded = () => {
     const isProgressionChord = this.state.source === 'progression'
     if (isProgressionChord) {
@@ -132,9 +112,7 @@ class ChordModifierStore {
         id: chordId,
         octaveOffset: this.state.octaveOffset,
         inversion: this.state.inversion,
-        voicing: this.state.voicing,
-        minVelocity: this.state.minVelocity,
-        maxVelocity: this.state.maxVelocity
+        voicing: this.state.voicing
       })
       return
     }
@@ -148,9 +126,7 @@ class ChordModifierStore {
         chordId,
         octaveOffset: this.state.octaveOffset,
         inversion: this.state.inversion,
-        voicing: this.state.voicing,
-        minVelocity: this.state.minVelocity,
-        maxVelocity: this.state.maxVelocity
+        voicing: this.state.voicing
       })
     }
   }
@@ -159,42 +135,18 @@ class ChordModifierStore {
     const chord = this.currentChord
     if (!chord) return
 
-    // Play the chord
-    playbackStore.playChord(chord.notes)
-
-    // Stop after 300ms
-    setTimeout(() => {
-      chord.notes.forEach((note) => {
-        playbackStore.stopNote({ note })
-      })
-    }, 300)
+    // Play the chord for 500ms
+    playbackStore.playChord(chord, 500)
   }
 
   private applyModifiersToChord = (baseChord: ChordT): ChordT => {
-    // Apply voicing and inversion
-    let modifiedChord = applyVoicingAndInversion({
-      chord: baseChord,
-      voicing: this.state.voicing,
-      inversion: this.state.inversion
-    })
-
-    // Apply octave offset by transposing all notes
-    const octaveOffset = this.state.octaveOffset
-    if (octaveOffset !== 0) {
-      const interval =
-        octaveOffset > 0 ? `${octaveOffset * 7 + 1}P` : `-${Math.abs(octaveOffset) * 7 + 1}P`
-      modifiedChord.notes = modifiedChord.notes.map((note) => Note.transpose(note, interval))
-      modifiedChord.bassNote = Note.transpose(modifiedChord.bassNote, interval)
+    // Return chord with current modifier values
+    return {
+      ...baseChord,
+      octaveOffset: this.state.octaveOffset,
+      inversion: this.state.inversion,
+      voicing: this.state.voicing
     }
-
-    // Apply velocity and modifier values
-    modifiedChord.minVelocity = this.state.minVelocity
-    modifiedChord.maxVelocity = this.state.maxVelocity
-    modifiedChord.octaveOffset = this.state.octaveOffset
-    modifiedChord.inversion = this.state.inversion
-    modifiedChord.voicing = this.state.voicing
-
-    return modifiedChord
   }
 }
 

@@ -1,5 +1,4 @@
 import { SIGNAL_IDS, SIGNAL_ROWS } from '$lib/constants/signalRows'
-import { resolveChordConflicts } from '$lib/helpers/progression'
 import mainStore from './main.svelte'
 import { generateChord, applyVoicingAndInversion } from '$lib/helpers/chords'
 import { Note } from 'tonal'
@@ -9,163 +8,171 @@ import { Note } from 'tonal'
 const TOTAL_UNITS = 64
 
 class ProgressionStore {
-  baseChords: ProgressionChordT[] = $state([])
-  selectedChordId: string | null = $state(null)
+  baseItems: ProgressionItemT[] = $state([])
+  selectedItemId: string | null = $state(null)
 
-  // Regenerate all chords with current global octave
-  chords = $derived.by(() => {
-    const currentOctave = mainStore.rootOctave
+  // Regenerate all items with startTime calculated
+  items = $derived.by(() => {
+    let accumulatedStartTime = 0
 
-    return this.baseChords.map((chord) => {
-      // Regenerate the base chord with current global octave
-      const regeneratedChord = generateChord({
-        name: chord.symbol,
-        baseOctave: currentOctave
-      })
+    return this.baseItems.map((item) => {
+      // Calculate startTime based on accumulated duration of previous items
+      const startTime = accumulatedStartTime
+      accumulatedStartTime += item.durationBeats
 
-      // Reapply the stored modifiers
-      let modifiedChord = applyVoicingAndInversion({
-        chord: regeneratedChord,
-        voicing: chord.voicing as VoicingT,
-        inversion: chord.inversion
-      })
-
-      // Apply octave offset by transposing all notes
-      const octaveOffset = chord.octaveOffset
-      if (octaveOffset !== 0) {
-        const interval = octaveOffset > 0
-          ? `${octaveOffset * 7 + 1}P`
-          : `-${Math.abs(octaveOffset) * 7 + 1}P`
-        modifiedChord.notes = modifiedChord.notes.map((note) => Note.transpose(note, interval))
-        modifiedChord.bassNote = Note.transpose(modifiedChord.bassNote, interval)
-      }
-
-      // Return chord with preserved timeline data and modifiers
+      // Return item with calculated startTime
       return {
-        ...modifiedChord,
-        id: chord.id,
-        startTime: chord.startTime,
-        duration: chord.duration,
-        durationBeats: chord.durationBeats,
-        modifiedTime: chord.modifiedTime,
-        minVelocity: chord.minVelocity,
-        maxVelocity: chord.maxVelocity,
-        octaveOffset: chord.octaveOffset,
-        inversion: chord.inversion,
-        voicing: chord.voicing
-      }
+        ...item,
+        startTime
+      } as ProgressionItemT
     })
   })
 
-  getChord = (id: string): ChordT | undefined => {
-    const finder = (c: ChordT) => c.id === id
-    return this.baseChords.find(finder)
+  // Backwards compatibility - returns only chords
+  chords = $derived.by(() => {
+    return this.items.filter((item) => item.type === 'chord') as ProgressionChordT[]
+  })
+
+  getItem = (id: string): ProgressionItemT | undefined => {
+    const finder = (item: ProgressionItemT) => item.id === id
+    return this.baseItems.find(finder)
   }
 
-  getLastChordEndTime = (): number => {
-    if (!this.baseChords.length) return 0
-    const lastChord = this.baseChords[this.baseChords.length - 1]
-    return lastChord.startTime + lastChord.duration
+  getChord = (id: string): ProgressionChordT | undefined => {
+    const item = this.getItem(id)
+    if (item?.type === 'chord') return item
+    return undefined
+  }
+
+  getTotalDuration = (): number => {
+    if (!this.baseItems.length) return 0
+    return this.baseItems.reduce((total, item) => total + item.durationBeats, 0)
   }
 
   addChord = (chord: ChordT) => {
-    const lastChordEndTime = this.getLastChordEndTime()
-
     const chordWithTimelineData: ProgressionChordT = {
       ...chord,
-      startTime: lastChordEndTime,
-      duration: chord.durationBeats, // duration in beats (same as durationBeats)
-      modifiedTime: Date.now()
+      type: 'chord',
+      startTime: 0, // Will be calculated in derived
+      durationBeats: 4 // Default to 4 beats
     }
 
-    this.baseChords = [...this.baseChords, chordWithTimelineData]
+    this.baseItems = [...this.baseItems, chordWithTimelineData]
 
     // Automatically select the newly added chord
-    this.selectedChordId = chordWithTimelineData.id
+    this.selectedItemId = chordWithTimelineData.id
   }
 
-  removeChord = (id: string) => {
-    const wasSelected = this.selectedChordId === id
-    this.baseChords = this.baseChords.filter((chord) => chord.id !== id)
+  addRest = () => {
+    const restItem: ProgressionRestT = {
+      id: `rest-${Date.now()}`,
+      type: 'rest',
+      startTime: 0, // Will be calculated in derived
+      durationBeats: 4 // Default to 4 beats
+    }
 
-    // Only deselect if the selected chord was deleted and no chords remain
+    this.baseItems = [...this.baseItems, restItem]
+
+    // Automatically select the newly added rest
+    this.selectedItemId = restItem.id
+  }
+
+  removeItem = (id: string) => {
+    const wasSelected = this.selectedItemId === id
+    this.baseItems = this.baseItems.filter((item) => item.id !== id)
+
+    // Only deselect if the selected item was deleted and no items remain
     if (wasSelected) {
-      const hasChordsRemaining = this.baseChords.length > 0
-      if (hasChordsRemaining) {
-        // Select the last chord in the progression
-        const lastChord = this.baseChords[this.baseChords.length - 1]
-        this.selectedChordId = lastChord.id
+      const hasItemsRemaining = this.baseItems.length > 0
+      if (hasItemsRemaining) {
+        // Select the last item in the progression
+        const lastItem = this.baseItems[this.baseItems.length - 1]
+        this.selectedItemId = lastItem.id
       } else {
-        // No chords left, deselect
-        this.selectedChordId = null
+        // No items left, deselect
+        this.selectedItemId = null
       }
     }
   }
 
-  updateChord = (updatedChord: Partial<ChordT>) => {
-    this.baseChords = this.baseChords.map((chord) => {
-      const isTargetChord = chord.id === updatedChord.id
-      if (!isTargetChord) return chord
+  // Backwards compatibility
+  removeChord = (id: string) => {
+    this.removeItem(id)
+  }
 
-      const mergedChord = { ...chord, ...updatedChord }
+  updateItem = (updatedItem: Partial<ProgressionItemT>) => {
+    this.baseItems = this.baseItems.map((item) => {
+      const isTargetItem = item.id === updatedItem.id
+      if (!isTargetItem) return item
 
-      // Sync durationBeats when duration changes (duration is now in beats directly)
-      const hasDurationUpdate = updatedChord.duration !== undefined
-      if (hasDurationUpdate) {
-        const MIN_DURATION_BEATS = 1 / 16
-        mergedChord.durationBeats = Math.max(MIN_DURATION_BEATS, mergedChord.duration)
-      }
-
-      return mergedChord
+      const mergedItem = { ...item, ...updatedItem }
+      return mergedItem as ProgressionItemT
     })
   }
 
+  // Backwards compatibility
+  updateChord = (updatedChord: Partial<ProgressionChordT>) => {
+    this.updateItem(updatedChord)
+  }
+
+  selectItem = (id: string | null) => {
+    this.selectedItemId = id
+  }
+
+  // Backwards compatibility
   selectChord = (id: string | null) => {
-    this.selectedChordId = id
+    this.selectItem(id)
   }
 
+  deleteSelectedItem = () => {
+    const hasSelectedItem = this.selectedItemId !== null
+    if (hasSelectedItem) {
+      this.removeItem(this.selectedItemId as string)
+    }
+  }
+
+  // Backwards compatibility
   deleteSelectedChord = () => {
-    const hasSelectedChord = this.selectedChordId !== null
-    if (hasSelectedChord) {
-      this.removeChord(this.selectedChordId as string)
-    }
+    this.deleteSelectedItem()
   }
 
+  duplicateSelectedItem = () => {
+    const hasSelectedItem = this.selectedItemId !== null
+    if (!hasSelectedItem) return
+
+    const originalItem = this.getItem(this.selectedItemId as string)
+    if (!originalItem) return
+
+    const duplicatedItem: ProgressionItemT = {
+      ...originalItem,
+      id: `${originalItem.id}-${Date.now()}`,
+      startTime: 0 // Will be calculated in derived
+    } as ProgressionItemT
+
+    this.baseItems = [...this.baseItems, duplicatedItem]
+    this.selectedItemId = duplicatedItem.id
+  }
+
+  // Backwards compatibility
   duplicateSelectedChord = () => {
-    const hasSelectedChord = this.selectedChordId !== null
-    if (!hasSelectedChord) return
-
-    const originalChord = this.getChord(this.selectedChordId as string)
-    if (!originalChord) return
-
-    const originalStartTime = originalChord.startTime ?? 0
-    const originalDuration = originalChord.duration ?? 0
-    const newStartTime = originalStartTime + originalDuration
-
-    const duplicatedChord: ProgressionChordT = {
-      ...originalChord,
-      id: `${originalChord.id}-${Date.now()}`,
-      startTime: newStartTime,
-      duration: originalDuration,
-      modifiedTime: Date.now()
-    }
-
-    this.baseChords = [...this.baseChords, duplicatedChord]
-    this.selectedChordId = duplicatedChord.id
-    this.resolveConflictsForChord(duplicatedChord.id)
+    this.duplicateSelectedItem()
   }
 
-  resolveConflictsForChord = (chordId: string) => {
-    const resolvedChords = resolveChordConflicts({ chords: this.baseChords })
-    const progressionChords: ProgressionChordT[] = resolvedChords.map((chord) => {
-      return {
-        ...chord,
-        startTime: chord.startTime ?? 0,
-        duration: chord.duration ?? 0,
-        modifiedTime: Date.now()
-      }
-    })
-    this.baseChords = progressionChords
+  reorderItem = (args: { itemId: string; newIndex: number }) => {
+    const itemIndex = this.baseItems.findIndex(item => item.id === args.itemId)
+    if (itemIndex === -1) return
+
+    const item = this.baseItems[itemIndex]
+    const newItems = [...this.baseItems]
+    newItems.splice(itemIndex, 1)
+    newItems.splice(args.newIndex, 0, item)
+
+    this.baseItems = newItems
+  }
+
+  // Backwards compatibility
+  reorderChord = (args: { chordId: string; newIndex: number }) => {
+    this.reorderItem({ itemId: args.chordId, newIndex: args.newIndex })
   }
 }
 

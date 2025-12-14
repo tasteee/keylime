@@ -13,16 +13,20 @@
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.patternLengthBars.toString()}>
-	<Select.Trigger class="w-[140px]">
-		<span>
-			<span style="font-weight: 500;">Pattern: </span>
-			{mainStore.patternLengthBars}
-			{mainStore.patternLengthBars === 1 ? 'Bar' : 'Bars'}
-		</span>
+	<Select.Trigger
+		class="h-8 text-xs font-medium hover:bg-background/80 w-[140px] border-transparent bg-transparent focus:ring-0 focus:ring-offset-0"
+	>
+		<div class="gap-1 flex items-center">
+			<span class="text-muted-foreground">Pattern:</span>
+			<span class="text-foreground font-semibold">
+				{mainStore.patternLengthBars}
+				{mainStore.patternLengthBars === 1 ? 'Bar' : 'Bars'}
+			</span>
+		</div>
 	</Select.Trigger>
 	<Select.Content>
 		{#each patternLengthOptions as option}
-			<Select.Item value={option.toString()}>
+			<Select.Item value={option.toString()} class="text-xs">
 				{option}
 				{option === 1 ? 'Bar' : 'Bars'}
 			</Select.Item>

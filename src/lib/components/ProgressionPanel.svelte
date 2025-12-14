@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ProgressionDockChord from './ProgressionDockChord.svelte'
+	import ProgressionChordCard from './ProgressionChordCard.svelte'
 	import { progressionStore } from '$lib/stores/progression.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
 	import main from '$lib/stores/main.svelte'
@@ -7,182 +7,325 @@
 	import { Button } from '$lib/components/ui/button'
 	import { exportPerformanceAsMidi } from '$lib/helpers/midiExport'
 	import SelectPatternLength from './SelectPatternLength.svelte'
-	import SelectProgressionLength from './SelectProgressionLength.svelte'
 
-	let isDraggingChord = $state(false)
-	let draggedChordId: string | null = $state(null)
+	let isDraggingItem = $state(false)
+	let draggedItemId: string | null = $state(null)
 	let dragStartX = $state(0)
-	let dragStartTime = $state(0)
-	let isMouseDownOnChord = $state(false)
-	let isResizingChord = $state(false)
-	let resizingChordId: string | null = $state(null)
-	let resizeHandle: 'left' | 'right' | null = $state(null)
+	let dragStartIndex = $state(0)
+	let isMouseDownOnItem = $state(false)
+	let isResizingItem = $state(false)
+	let resizingItemId: string | null = $state(null)
 	let resizeStartX = $state(0)
-	let resizeStartTime = $state(0)
 	let resizeStartDuration = $state(0)
 	let middleElement: HTMLElement | null = $state(null)
+	let itemAreaElement: HTMLElement | null = $state(null)
+	let ghostItemMouseX = $state(0)
+	let ghostItemMouseY = $state(0)
 
-	// Grid layout: 4 beats per bar, chords positioned/sized in beats
+	// Grid layout: 4 beats per bar
 	const BEATS_PER_BAR = 4
 	const DRAG_THRESHOLD_PIXELS = 24
-	const MIN_DURATION_BEATS = 0.25 // Minimum chord duration (1/4 beat)
+	const MIN_DURATION_BEATS = 1 // Minimum item duration (1 beat)
+	const RESIZE_INCREMENT_BEATS = 0.5 // Snap to 0.5 beats when resizing
+	const PIXELS_PER_BEAT = 80 // Fixed width per beat for consistent sizing
+	const GAP_BETWEEN_ITEMS = 2 // Gap in pixels between items
+	const MAX_MARKER_BARS = 64 // Render markers up to this many bars
 
-	// Derived: total beats based on progression length
-	const totalBeats = $derived(main.progressionLengthBars * BEATS_PER_BAR)
-
-	// Derived: timing markers array based on progression length (1 marker per beat)
-	const timingMarkers = $derived.by(() => {
-		const totalBeatCount = main.progressionLengthBars * BEATS_PER_BAR
-		const markers = []
-		for (let beat = 1; beat <= totalBeatCount; beat++) {
-			markers.push(beat)
-		}
-		return markers
+	// Derived: total duration is sum of all item durations
+	const totalBeats = $derived.by(() => {
+		return progressionStore.getTotalDuration()
 	})
+
+	// Derived: item area width in pixels (including gaps)
+	const itemAreaWidth = $derived.by(() => {
+		const numItems = progressionStore.items.length
+		const totalGaps = numItems > 0 ? (numItems - 1) * GAP_BETWEEN_ITEMS : 0
+		return totalBeats * PIXELS_PER_BEAT + totalGaps
+	})
+
+	// Derived: ghost item data when dragging
+	const ghostItem = $derived.by(() => {
+		if (!isDraggingItem || !draggedItemId) return null
+		const item = progressionStore.items.find((i) => i.id === draggedItemId)
+		if (!item) return null
+		return item
+	})
+
+	// Derived: total duration in bars
+	const totalBars = $derived.by(() => {
+		const beats = progressionStore.getTotalDuration()
+		return Math.round((beats / BEATS_PER_BAR) * 1000) / 1000
+	})
+
+	// Derived: marker positions accounting for gaps
+	const markers = $derived.by(() => {
+		const markersList: { beat: number; pixel: number; label: string }[] = []
+		let currentBeat = 0
+		let currentPixel = 0
+		const items = progressionStore.items
+
+		// Iterate through items
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i]
+			const itemDuration = item.durationBeats ?? 0
+			const itemWidth = itemDuration * PIXELS_PER_BEAT
+
+			// Find next bar boundary
+			let nextBarBeat = Math.ceil(currentBeat / BEATS_PER_BAR) * BEATS_PER_BAR
+			if (nextBarBeat < currentBeat) nextBarBeat += BEATS_PER_BAR
+
+			// If currentBeat is exactly a bar start, add it
+			if (currentBeat % BEATS_PER_BAR === 0) {
+				// Avoid duplicates if we already added this beat (shouldn't happen with this logic but good to be safe)
+				if (!markersList.find((m) => m.beat === currentBeat)) {
+					markersList.push({
+						beat: currentBeat,
+						pixel: currentPixel,
+						label: `${currentBeat / BEATS_PER_BAR + 1} ${currentBeat / BEATS_PER_BAR === 0 ? 'bar' : 'bars'}`
+					})
+				}
+			}
+
+			// Add markers inside the item
+			while (nextBarBeat < currentBeat + itemDuration) {
+				if (nextBarBeat > currentBeat) {
+					const offset = nextBarBeat - currentBeat
+					const pixel = currentPixel + offset * PIXELS_PER_BEAT
+					markersList.push({
+						beat: nextBarBeat,
+						pixel,
+						label: `${nextBarBeat / BEATS_PER_BAR + 1} bars`
+					})
+				}
+				nextBarBeat += BEATS_PER_BAR
+			}
+
+			currentBeat += itemDuration
+			currentPixel += itemWidth
+			if (i < items.length - 1) {
+				currentPixel += GAP_BETWEEN_ITEMS
+			}
+		}
+
+		// Fill remaining space
+		const maxBeat = MAX_MARKER_BARS * BEATS_PER_BAR
+		let nextBarBeat = Math.ceil(currentBeat / BEATS_PER_BAR) * BEATS_PER_BAR
+		if (nextBarBeat < currentBeat) nextBarBeat += BEATS_PER_BAR
+
+		// If we ended exactly on a bar, add it
+		if (currentBeat % BEATS_PER_BAR === 0 && currentBeat <= maxBeat) {
+			if (!markersList.find((m) => m.beat === currentBeat)) {
+				markersList.push({
+					beat: currentBeat,
+					pixel: currentPixel,
+					label: `${currentBeat / BEATS_PER_BAR + 1} ${currentBeat / BEATS_PER_BAR === 0 ? 'bar' : 'bars'}`
+				})
+			}
+		}
+
+		while (nextBarBeat <= maxBeat) {
+			if (nextBarBeat > currentBeat) {
+				const offset = nextBarBeat - currentBeat
+				const pixel = currentPixel + offset * PIXELS_PER_BEAT
+				markersList.push({
+					beat: nextBarBeat,
+					pixel,
+					label: `${nextBarBeat / BEATS_PER_BAR + 1} bars`
+				})
+			}
+			nextBarBeat += BEATS_PER_BAR
+		}
+
+		return markersList
+	})
+
+	// Derived: currently selected item
+	const selectedItem = $derived.by(() => {
+		if (!progressionStore.selectedItemId) return null
+		return progressionStore.getItem(progressionStore.selectedItemId)
+	})
+
+	const adjustDuration = (delta: number) => {
+		if (!selectedItem) return
+		const newDuration = Math.max(MIN_DURATION_BEATS, selectedItem.durationBeats + delta)
+		progressionStore.updateItem({
+			id: selectedItem.id,
+			durationBeats: newDuration
+		})
+	}
+
+	const moveItem = (direction: number) => {
+		if (!selectedItem) return
+		const currentIndex = progressionStore.items.findIndex((i) => i.id === selectedItem.id)
+		if (currentIndex === -1) return
+
+		const newIndex = currentIndex + direction
+		if (newIndex < 0 || newIndex >= progressionStore.items.length) return
+
+		progressionStore.reorderItem({
+			itemId: selectedItem.id,
+			newIndex
+		})
+	}
+
+	const handleDelete = () => {
+		progressionStore.deleteSelectedItem()
+	}
 
 	const handleKeyDown = (event: KeyboardEvent) => {
 		const isDeleteKey = event.key === 'Delete' || event.key === 'Backspace'
-		if (isDeleteKey) return progressionStore.deleteSelectedChord()
+		if (isDeleteKey) return progressionStore.deleteSelectedItem()
 		const isDuplicateKey = (event.ctrlKey || event.metaKey) && event.key === 'd'
 
 		if (isDuplicateKey) {
 			event.preventDefault()
-			progressionStore.duplicateSelectedChord()
+			progressionStore.duplicateSelectedItem()
 		}
 	}
 
-	const handleChordClick = (event: MouseEvent) => {
+	const handleItemClick = (event: MouseEvent) => {
 		const target = event.target as HTMLElement
-		const chordId = target.dataset.chordId
+		const itemElement = target.closest('.progressionItem') as HTMLElement
+		const itemId = itemElement?.dataset.itemId
 		event.stopPropagation()
-		progressionStore.selectChord(chordId || null)
+		progressionStore.selectItem(itemId || null)
 	}
 
-	const handleChordMouseDown = (event: MouseEvent) => {
-		if (isResizingChord) return
+	const handleItemMouseDown = (event: MouseEvent) => {
+		if (isResizingItem) return
 
 		const target = event.target as HTMLElement
-		const chordElement = target.closest('.chord') as HTMLElement
-		if (!chordElement) return console.log('No chord element found')
+		const itemElement = target.closest('.progressionItem') as HTMLElement
+		if (!itemElement) return console.log('No item element found')
 
-		const chordId = chordElement.dataset.chordId
-		if (!chordId) return console.log('No chordId found on chord element')
+		const itemId = itemElement.dataset.itemId
+		if (!itemId) return console.log('No itemId found on item element')
 
-		const chord = progressionStore.getChord(chordId)
-		if (!chord) return
+		const itemIndex = progressionStore.items.findIndex((i) => i.id === itemId)
+		if (itemIndex === -1) return
 
-		isMouseDownOnChord = true
-		draggedChordId = chordId
+		console.log('Drag started for item:', itemId, 'at index:', itemIndex)
+
+		isMouseDownOnItem = true
+		draggedItemId = itemId
 		dragStartX = event.clientX
-		dragStartTime = chord.startTime ?? 0
-		progressionStore.selectChord(chordId)
+		dragStartIndex = itemIndex
+		progressionStore.selectItem(itemId)
 
 		event.stopPropagation()
 		event.preventDefault()
 	}
 
-	const handleResizeMouseDown = (event: MouseEvent, handle: 'left' | 'right') => {
+	const handleResizeMouseDown = (event: MouseEvent) => {
 		const target = event.target as HTMLElement
-		const chordElement = target.parentElement as HTMLElement
-		const chordId = chordElement.dataset.chordId
-		if (!chordId) return
+		const itemElement = target.closest('.progressionItem') as HTMLElement
+		const itemId = itemElement?.dataset.itemId
+		if (!itemId) return
 
-		const chord = progressionStore.getChord(chordId)
-		if (!chord) return
+		const item = progressionStore.getItem(itemId)
+		if (!item) return
 
-		isResizingChord = true
-		resizingChordId = chordId
-		resizeHandle = handle
+		isResizingItem = true
+		resizingItemId = itemId
 		resizeStartX = event.clientX
-		resizeStartTime = chord.startTime ?? 0
-		resizeStartDuration = chord.duration ?? 0
-		progressionStore.selectChord(chordId)
+		resizeStartDuration = item.durationBeats ?? 0
+		progressionStore.selectItem(itemId)
 
 		event.stopPropagation()
 		event.preventDefault()
 	}
 
 	const handleMouseMove = (event: MouseEvent) => {
-		if (!middleElement) return
+		if (!itemAreaElement) return
 
-		const containerWidth = middleElement.offsetWidth
-		const beatWidth = containerWidth / totalBeats
-
-		if (isResizingChord && resizingChordId) {
-			const chord = progressionStore.getChord(resizingChordId)
-			if (!chord) return
+		if (isResizingItem && resizingItemId) {
+			const item = progressionStore.getItem(resizingItemId)
+			if (!item) return
 
 			const deltaX = event.clientX - resizeStartX
-			const deltaBeats = Math.round((deltaX / beatWidth) * 4) / 4 // Snap to quarter beats
+			const deltaBeats = Math.round(deltaX / PIXELS_PER_BEAT / RESIZE_INCREMENT_BEATS) * RESIZE_INCREMENT_BEATS
+			const newDuration = Math.max(MIN_DURATION_BEATS, resizeStartDuration + deltaBeats)
 
-			if (resizeHandle === 'left') {
-				const newStartTime = Math.max(0, resizeStartTime + deltaBeats)
-				const endTime = resizeStartTime + resizeStartDuration
-				const newDuration = Math.max(MIN_DURATION_BEATS, endTime - newStartTime)
-
-				progressionStore.updateChord({
-					id: resizingChordId,
-					startTime: newStartTime,
-					duration: newDuration,
-					modifiedTime: Date.now()
-				})
-			} else if (resizeHandle === 'right') {
-				const newDuration = Math.max(MIN_DURATION_BEATS, resizeStartDuration + deltaBeats)
-				progressionStore.updateChord({
-					id: resizingChordId,
-					duration: newDuration,
-					modifiedTime: Date.now()
-				})
-			}
+			progressionStore.updateItem({
+				id: resizingItemId,
+				durationBeats: newDuration
+			})
 			return
 		}
 
 		// Check if mouse has moved beyond threshold to start dragging
-		if (isMouseDownOnChord && !isDraggingChord && draggedChordId) {
+		if (isMouseDownOnItem && !isDraggingItem && draggedItemId) {
 			const deltaX = Math.abs(event.clientX - dragStartX)
 			if (deltaX >= DRAG_THRESHOLD_PIXELS) {
-				isDraggingChord = true
+				isDraggingItem = true
+				console.log('Drag threshold reached, isDraggingItem:', isDraggingItem)
 			}
 		}
 
-		if (!isDraggingChord || !draggedChordId) return
+		// Update ghost item position
+		if (isDraggingItem) {
+			ghostItemMouseX = event.clientX
+			ghostItemMouseY = event.clientY
+		}
 
-		const chord = progressionStore.getChord(draggedChordId)
-		if (!chord) return
+		if (!isDraggingItem || !draggedItemId || !itemAreaElement) return
 
-		const deltaX = event.clientX - dragStartX
-		const deltaBeats = Math.round((deltaX / beatWidth) * 4) / 4 // Snap to quarter beats
-		const newStartTime = Math.max(0, dragStartTime + deltaBeats)
+		console.log('Dragging item:', draggedItemId)
 
-		progressionStore.updateChord({
-			id: draggedChordId,
-			startTime: newStartTime,
-			modifiedTime: Date.now()
-		})
+		// Calculate which item position we're hovering over
+		const items = progressionStore.items
+		const rect = itemAreaElement.getBoundingClientRect()
+		const mouseX = event.clientX - rect.left
+		const mousePositionBeats = mouseX / PIXELS_PER_BEAT
+
+		// Find the index where the dragged item should be inserted
+		let newIndex = 0
+		let accumulatedBeats = 0
+
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i]
+			if (item.id === draggedItemId) continue // Skip the dragged item
+
+			const itemMidpoint = accumulatedBeats + item.durationBeats / 2
+			if (mousePositionBeats < itemMidpoint) break
+
+			newIndex++
+			accumulatedBeats += item.durationBeats
+		}
+
+		console.log('Calculated newIndex:', newIndex, 'dragStartIndex:', dragStartIndex)
+
+		// Reorder the item if needed
+		if (newIndex !== dragStartIndex) {
+			console.log('Reordering item from', dragStartIndex, 'to', newIndex)
+			progressionStore.reorderItem({ itemId: draggedItemId, newIndex })
+			dragStartIndex = newIndex
+		}
 	}
 
 	const handleMouseUp = () => {
-		if (isResizingChord && resizingChordId) {
-			progressionStore.resolveConflictsForChord(resizingChordId)
-		}
-
-		if (isDraggingChord && draggedChordId) {
-			progressionStore.resolveConflictsForChord(draggedChordId)
-		}
-
 		// Timeout prevents click from firing after drag
 		setTimeout(() => {
-			resizeHandle = null
-			isDraggingChord = false
-			isMouseDownOnChord = false
-			draggedChordId = null
-			isResizingChord = false
-			resizingChordId = null
+			isDraggingItem = false
+			isMouseDownOnItem = false
+			draggedItemId = null
+			isResizingItem = false
+			resizingItemId = null
 		}, 100)
+	}
+
+	const handleAddRest = () => {
+		progressionStore.addRest()
 	}
 
 	const handleMiddleClick = (event: MouseEvent) => {
 		event.stopPropagation()
+	}
+
+	const handleWheel = (event: WheelEvent) => {
+		if (!middleElement) return
+		event.preventDefault()
+		middleElement.scrollLeft += event.deltaY
 	}
 
 	const togglePlayback = () => {
@@ -199,153 +342,303 @@
 	}
 </script>
 
-<svelte:window onkeydown={handleKeyDown} />
+<svelte:window onkeydown={handleKeyDown} onmousemove={handleMouseMove} onmouseup={handleMouseUp} />
 
 <div class="ProgressionPanel">
 	<div class="top">
-		<p>Progression</p>
-		<SelectProgressionLength />
-		<SelectPatternLength />
-		<Button variant="ghost" size="icon" onclick={togglePlayback} class="playButton">
-			{#if playbackStore.isPlaying}
-				<Icon icon="mingcute:pause-fill" class="size-5" />
-			{:else}
-				<Icon icon="mingcute:play-fill" class="size-5" />
+		<div class="gap-3 flex items-center">
+			<p>Progression</p>
+			<span
+				class="font-bold text-muted-foreground tracking-wider bg-secondary px-2 py-1 border-border/50 rounded-full border text-[10px] uppercase"
+			>
+				{totalBars}
+				{totalBars === 1 ? 'BAR' : 'BARS'}
+			</span>
+
+			<div class="gap-1 ml-2 flex items-center">
+				<Button
+					variant="ghost"
+					size="icon"
+					onclick={togglePlayback}
+					class="playButton h-7 w-7 rounded-sm hover:bg-background/80"
+				>
+					{#if playbackStore.isPlaying}
+						<Icon icon="mingcute:stop-fill" class="size-4 text-primary" />
+					{:else}
+						<Icon icon="mingcute:play-fill" class="size-4 text-primary" />
+					{/if}
+				</Button>
+				<Button
+					variant="ghost"
+					size="icon"
+					onclick={handleDownloadMidi}
+					class="downloadButton h-7 w-7 rounded-sm hover:bg-background/80"
+				>
+					<Icon icon="mingcute:download-2-fill" class="size-4 text-muted-foreground" />
+				</Button>
+			</div>
+		</div>
+
+		<div class="flex-1"></div>
+
+		<div class="gap-3 flex items-center">
+			{#if selectedItem}
+				<div class="controls-group">
+					<div class="px-3 border-border/50 flex items-center border-r">
+						<span class="text-xs font-medium text-foreground/80 whitespace-nowrap">
+							{selectedItem.durationBeats / BEATS_PER_BAR}
+							{selectedItem.durationBeats / BEATS_PER_BAR === 1 ? 'bar' : 'bars'}
+						</span>
+					</div>
+
+					<Button
+						variant="ghost"
+						size="icon"
+						class="h-8 w-8 rounded-sm hover:bg-background/80"
+						onclick={() => adjustDuration(-1)}
+						title="Decrease duration"
+					>
+						<Icon icon="mingcute:minimize-line" class="size-4" />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						class="h-8 w-8 rounded-sm hover:bg-background/80"
+						onclick={() => adjustDuration(1)}
+						title="Increase duration"
+					>
+						<Icon icon="mingcute:add-line" class="size-4" />
+					</Button>
+
+					<div class="divider"></div>
+
+					<Button
+						variant="ghost"
+						size="icon"
+						class="h-8 w-8 rounded-sm hover:bg-background/80"
+						onclick={() => moveItem(-1)}
+						title="Move left"
+					>
+						<Icon icon="mingcute:arrow-left-line" class="size-4" />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						class="h-8 w-8 rounded-sm hover:bg-background/80"
+						onclick={() => moveItem(1)}
+						title="Move right"
+					>
+						<Icon icon="mingcute:arrow-right-line" class="size-4" />
+					</Button>
+
+					<div class="divider"></div>
+
+					<Button
+						variant="ghost"
+						size="icon"
+						class="h-8 w-8 rounded-sm text-destructive hover:text-destructive hover:bg-destructive/10"
+						onclick={handleDelete}
+						title="Delete"
+					>
+						<Icon icon="mingcute:delete-2-line" class="size-4" />
+					</Button>
+				</div>
 			{/if}
-		</Button>
-		<Button variant="ghost" size="icon" onclick={handleDownloadMidi} class="downloadButton">
-			<Icon icon="mingcute:download-2-fill" class="size-5" />
-		</Button>
+
+			<div class="controls-group">
+				<SelectPatternLength />
+			</div>
+
+			<div class="controls-group">
+				<Button variant="ghost" size="sm" class="h-8 px-3 rounded-sm hover:bg-background/80" onclick={handleAddRest}>
+					<Icon icon="mingcute:time-fill" class="size-4 mr-2 text-muted-foreground" />
+					Rest
+				</Button>
+			</div>
+		</div>
 	</div>
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<div
-		class="middle"
-		bind:this={middleElement}
-		onclick={handleMiddleClick}
-		onmousemove={handleMouseMove}
-		onmouseup={handleMouseUp}
-	>
-		<div class="timingMarkers">
-			{#each timingMarkers as beat, index (beat)}
-				{@const beatPercent = (index / timingMarkers.length) * 100}
-				<div class="timingMarker" style="left: {beatPercent}%">
-					{beat}
+	<div class="middle" bind:this={middleElement} onclick={handleMiddleClick} onwheel={handleWheel}>
+		<div class="itemArea" bind:this={itemAreaElement} style="width: {itemAreaWidth}px;">
+			{#each markers as marker}
+				<div class="barMarker" style="left: {marker.pixel}px;">
+					<div class="barMarkerLine"></div>
+					<span class="barMarkerText">{marker.label}</span>
+					<!-- Render 3 beat lines within this bar (the 4th is the first line of next bar) -->
+					{#each [1, 2, 3] as beatOffset}
+						<div class="beatLine" style="left: {beatOffset * PIXELS_PER_BEAT}px;"></div>
+					{/each}
 				</div>
 			{/each}
-		</div>
-
-		<div class="chordArea">
-			{#each progressionStore.chords as chord (chord.id)}
-				<ProgressionDockChord
-					{chord}
-					{totalBeats}
-					isDragging={draggedChordId === chord.id}
-					selectChord={handleChordClick}
-					onChordMouseDown={handleChordMouseDown}
+			{#each progressionStore.items as item, index (item.id)}
+				<ProgressionChordCard
+					{item}
+					{index}
+					pixelsPerBeat={PIXELS_PER_BEAT}
+					gapSize={GAP_BETWEEN_ITEMS}
+					isDragging={draggedItemId === item.id}
+					selectItem={handleItemClick}
+					onItemMouseDown={handleItemMouseDown}
 					onResizeMouseDown={handleResizeMouseDown}
 				/>
 			{/each}
 		</div>
 	</div>
 
-	<div class="bottom">
-		<p></p>
-	</div>
+	{#if ghostItem && isDraggingItem}
+		<div
+			class="ghostItem"
+			style="
+				left: {ghostItemMouseX}px;
+				top: {ghostItemMouseY}px;
+			"
+		>
+			<span class="ghostItemText">
+				{#if ghostItem.type === 'rest'}
+					REST
+				{:else}
+					{ghostItem.symbol}
+				{/if}
+			</span>
+		</div>
+	{/if}
 </div>
 
 <style>
 	.ProgressionPanel {
 		position: fixed;
-		bottom: 0;
+		bottom: var(--bottombar-height);
 		left: 0;
 		width: 100%;
-		height: 160px;
-		padding: 6px 12px 12px;
+		height: var(--progression-height);
+		padding: 16px 32px;
 		display: flex;
 		flex-direction: column;
 		background-color: var(--background);
-		border-top: 1px solid var(--muted);
+		border-top: var(--border-thick);
+		box-shadow: 0 -4px 0px var(--color-ink);
+		z-index: 50;
 	}
 
 	.top {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		gap: 8px;
-		padding: 4px 0 12px;
+		gap: 24px;
+		padding-bottom: 16px;
+		height: 56px;
 	}
 
 	.top p {
 		margin: 0;
-		font-weight: 600;
-		font-size: 14px;
+		font-weight: 700;
+		font-size: 16px;
+		color: var(--foreground);
+		letter-spacing: -0.02em;
+		font-family: var(--font-display);
 	}
 
-	:global(.playButton) {
-		height: 32px;
-		width: 32px;
+	.controls-group {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		background-color: var(--color-paper);
+		padding: 4px;
+		border-radius: 0px;
+		border: var(--border-thick);
+		box-shadow: var(--shadow-hard);
 	}
 
-	:global(.downloadButton) {
-		height: 32px;
-		width: 32px;
+	.divider {
+		width: 3px;
+		height: 20px;
+		background-color: var(--color-ink);
+		margin: 0 8px;
+		opacity: 1;
 	}
 
 	.middle {
 		flex: 1;
-		border-radius: 2px;
-		border: 1px solid var(--muted);
+		border-radius: 0px;
+		background-color: var(--timeline-bg);
+		border: var(--border-thick);
 		position: relative;
 		display: flex;
 		flex-direction: column;
 		overflow-x: auto;
-
-		background:
-			repeating-linear-gradient(
-				to right,
-				hsl(0, 0%, 20%) 0px,
-				hsl(0, 0%, 20%) 1px,
-				transparent 1px,
-				transparent calc(100% / 16)
-			),
-			repeating-linear-gradient(to right, hsl(0, 0%, 8%) 0%, hsl(0, 0%, 8%) 25%, hsl(0, 0%, 12%) 25%, hsl(0, 0%, 12%) 50%);
+		overflow-y: hidden;
+		box-shadow: inset 4px 4px 0px rgba(0, 0, 0, 0.1);
 	}
 
-	.timingMarkers {
-		position: relative;
-		height: 18px;
-		width: 100%;
-		border-bottom: 1px solid var(--muted);
-		background: hsl(var(--background));
-		pointer-events: none;
-	}
-
-	.timingMarker {
-		position: absolute;
-		top: 0px;
-		font-size: 11px;
-		font-weight: 600;
-		color: var(--muted-foreground);
-		opacity: 0.7;
-		padding-left: 4px;
-	}
-
-	.chordArea {
+	.itemArea {
 		position: relative;
 		flex: 1;
-		width: 100%;
+		min-width: 100%;
+		overflow: hidden;
+		/* Add a subtle grid pattern */
+		background-image: linear-gradient(to right, var(--timeline-grid) 1px, transparent 1px);
+		background-size: 80px 100%; /* Matches PIXELS_PER_BEAT */
 	}
 
-	.bottom {
+	.ghostItem {
+		position: fixed;
+		transform: translate(-50%, -50%) rotate(5deg);
+		pointer-events: none;
+		z-index: 1000;
+		background: var(--popover);
+		color: var(--popover-foreground);
+		border: var(--border-thick);
+		border-radius: 0px;
+		padding: 8px 16px;
+		font-size: 14px;
+		font-weight: 600;
+		box-shadow: var(--shadow-hard);
+		opacity: 0.95;
+		font-family: var(--font-display);
+	}
+
+	.ghostItemText {
+		white-space: nowrap;
+	}
+
+	.barMarker {
+		position: absolute;
+		top: 0;
+		z-index: 10;
 		display: flex;
 		flex-direction: row;
-		align-items: center;
-		padding: 4px 0;
+		align-items: flex-start;
+		pointer-events: none;
+		height: 100%;
 	}
 
-	.bottom p {
-		margin: 0;
+	.barMarkerLine {
+		width: 2px;
+		height: 100%;
+		background-color: var(--color-ink);
+		opacity: 0.5;
+	}
+
+	.beatLine {
+		position: absolute;
+		top: 0;
+		width: 1px;
+		height: 100%;
+		background-color: var(--color-ink);
+		opacity: 0.2;
+	}
+
+	.barMarkerText {
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--color-ink);
+		margin-left: 8px;
+		margin-top: 8px;
+		white-space: nowrap;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		font-family: var(--font-mono);
 	}
 </style>

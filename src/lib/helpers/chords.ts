@@ -163,23 +163,20 @@ export const generateChord = (args: GenerateArgsT | string): ChordT => {
 
   const chord: ChordT = {
     id: chordId,
-    octaveOffset: 0,
-    rootNote: rootNote,
+    name: name,
     symbol: symbol,
+    rootNote: rootNote,
+    octaveOffset: 0,
     voicing: 'closed',
     inversion: 0,
-    durationBeats: 4,
-    bassNote: bassNote,
-    notes: notesWithOctaves,
-    minVelocity: 64,
-    maxVelocity: 127
+    bassNote: bassNote
   }
 
   return chord
 }
 
 // Add octave numbers to note letters, wrapping up an octave when going down in pitch
-const addOctavesToNotes = (noteLetters: string[], startOctave: number): string[] => {
+export const addOctavesToNotes = (noteLetters: string[], startOctave: number): string[] => {
   const hasNoNotes = noteLetters.length === 0
   if (hasNoNotes) return []
 
@@ -221,11 +218,11 @@ type ApplyVoicingAndInversionArgsT = {
 }
 
 // Apply both voicing and inversion transformations to a chord's notes
-export const applyVoicingAndInversion = (args: ApplyVoicingAndInversionArgsT): ChordT => {
+export const applyVoicingAndInversion = (args: ApplyVoicingAndInversionArgsT): any => {
   const targetVoicing = args.voicing ?? args.chord.voicing
   const targetInversion = args.inversion ?? args.chord.inversion
 
-  const baseNotes = [...args.chord.notes]
+  const baseNotes = [...(args.chord as any).notes]
   const hasNoNotes = baseNotes.length === 0
   if (hasNoNotes) return args.chord
 
@@ -237,7 +234,7 @@ export const applyVoicingAndInversion = (args: ApplyVoicingAndInversionArgsT): C
 
   const newBassNote = voicedNotes[0] || args.chord.bassNote
 
-  const newChord: ChordT = {
+  const newChord = {
     ...args.chord,
     voicing: targetVoicing,
     inversion: targetInversion,
