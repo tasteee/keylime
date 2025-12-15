@@ -2,13 +2,15 @@
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { progressionStore } from '$lib/stores/progression.svelte'
 	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
+	import Icon from '@iconify/svelte'
+	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
 
 	type ProgressionChordCardPropsT = {
 		item: ProgressionItemT
 		index: number
 		isDragging: boolean
+		isResizing: boolean
 		pixelsPerBeat: number
-		gapSize: number
 		selectItem: (event: MouseEvent) => void
 		onItemMouseDown: (event: MouseEvent) => void
 		onResizeMouseDown: (event: MouseEvent) => void
@@ -18,9 +20,6 @@
 	const isRest = $derived(props.item.type === 'rest')
 	const isSelected = $derived(props.item.id === progressionStore.selectedItemId)
 
-	// Position and width are now based on pixels - startTime is calculated from item order
-	// Add cumulative gap offset based on item index
-	const leftPosition = $derived(`${(props.item.startTime ?? 0) * props.pixelsPerBeat + props.index * props.gapSize}px`)
 	const width = $derived(`${(props.item.durationBeats ?? 0) * props.pixelsPerBeat}px`)
 
 	// Check if chord is modified from original (only applicable to chords)
@@ -85,6 +84,8 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
 	class="progressionItem"
+	data-is-dragging={props.isDragging}
+	data-is-resizing={props.isResizing}
 	class:isRest
 	class:isSelected
 	onclick={props.selectItem}
@@ -96,28 +97,19 @@
 	data-item-type={props.item.type}
 	data-item-starttime={props.item.startTime}
 	data-item-duration={props.item.durationBeats}
-	data-is-dragging={props.isDragging}
-	style="
-    left: {leftPosition};
-    width: {width};
-  "
+	style="width: {width};"
 >
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="dragHandle" onmousedown={onDragHandleMouseDown}>
-		<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-			<path
-				d="M8 6L12 10L16 6M8 18L12 14L16 18"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				transform="rotate(90 12 12)"
-			/>
-		</svg>
+		{#if props.isDragging}
+			<Icon icon="mingcute:hand-grab-line" width="55" height="55" class="resizingIcon" style="color: black;" />
+		{:else}
+			<Icon icon="mingcute:selector-horizontal-fill" width="24" height="24" />
+		{/if}
 	</div>
 
 	<div class="itemContent">
-		<span class="itemText">{displayText}</span>
+		<ChordSymbolDisplay symbol={props.item.symbol} />
 		{#if isModified}
 			<span class="modifiedIndicator">●</span>
 		{/if}
@@ -125,77 +117,63 @@
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="resizeHandle resizeHandleRight" onmousedown={handleResizeRight}>
-		<div class="resizeHandleBar"></div>
+		{#if props.isResizing}
+			<Icon icon="mingcute:hand-grab-line" width="55" height="55" class="resizingIcon" style="color: black;" />
+		{:else}
+			<div class="resizeHandleBar"></div>
+		{/if}
 	</div>
 </div>
 
 <style>
 	.progressionItem {
-		height: calc(100% - 24px);
-		top: 24px;
-		border-radius: 0px;
-		border: var(--border-thick);
-		cursor: default;
-		position: absolute;
-		display: flex;
 		align-items: center;
-		justify-content: center;
-		user-select: none;
-		transition: all 0.1s ease-in-out;
-		background-color: var(--chord-bg);
+		background-color: #efefef;
+		border-radius: 16px;
+		border: 3px solid #747474;
 		color: var(--chord-fg);
-		box-shadow: var(--shadow-hard);
-		overflow: visible;
+		cursor: default;
+		display: flex;
+		flex-shrink: 0;
 		font-family: var(--font-sans);
+		height: 64px;
+		justify-content: center;
+		overflow: visible;
+		position: relative;
+		transition: all 0.025s ease-in-out;
+		user-select: none;
+		z-index: 10;
 	}
 
 	.progressionItem:hover {
-		transform: translate(-2px, -2px) rotate(1deg);
-		box-shadow: var(--shadow-hard-hover);
-		z-index: 10;
-		border-color: var(--color-ink);
+		background: #f5f5f5;
 	}
 
 	.progressionItem.isSelected {
-		background-color: var(--chord-selected-bg);
+		background: linear-gradient(to bottom right, var(--color-cyan), #02e7e7);
 		color: var(--chord-selected-fg);
 		border-color: var(--chord-selected-border);
-		box-shadow: var(--shadow-hard-active);
-		transform: translate(4px, 4px);
 		z-index: 20;
 	}
 
+	/* Rest State Styles */
 	.progressionItem.isRest {
-		background-color: var(--color-stipple);
+		background-color: #e5e5e5;
 		color: var(--muted-foreground);
 		border-style: dashed;
 		border-width: 3px;
+		border-color: #71717b;
 		opacity: 1;
 		box-shadow: none;
 	}
 
 	.progressionItem.isRest:hover {
-		border-color: var(--color-ink);
-		transform: translate(-2px, -2px);
-		box-shadow: var(--shadow-hard-hover);
+		background: #f5f5f5;
 	}
 
 	.progressionItem.isRest.isSelected {
-		background-color: var(--color-stipple);
 		color: var(--foreground);
-		border-color: var(--color-ink);
-		border-style: solid;
-		box-shadow: var(--shadow-hard-active);
-		transform: translate(4px, 4px);
-	}
-
-	/* So dragging an item makes it appear above other items. */
-	[data-is-dragging='true'] {
-		cursor: grabbing;
-		z-index: 999;
-		opacity: 0.9;
-		transform: scale(1.05) rotate(2deg);
-		box-shadow: var(--shadow-hard-hover);
+		background: #fff;
 	}
 
 	.itemContent {
@@ -208,30 +186,45 @@
 		z-index: 2;
 	}
 
-	.itemText {
-		font-weight: 700;
-		letter-spacing: -0.01em;
-		font-family: var(--font-display);
-		font-size: 18px;
-	}
-
-	.isRest .itemText {
-		font-size: 14px;
-		letter-spacing: 0.1em;
-		font-weight: 600;
-		text-transform: uppercase;
-		font-family: var(--font-mono);
-	}
-
 	.modifiedIndicator {
 		font-size: 12px;
 		color: var(--color-pop-pink);
 	}
 
+	.dragHandle {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 28px;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: grab;
+		opacity: 0;
+		transition: opacity 0.2s ease;
+		z-index: 11;
+		color: var(--color-ink);
+	}
+
+	.progressionItem:hover .dragHandle {
+		opacity: 0.5;
+	}
+
+	.dragHandle:hover {
+		opacity: 1 !important;
+		color: var(--color-pop-pink);
+		background: linear-gradient(to right, rgba(0, 0, 0, 0.03), transparent);
+	}
+
+	.dragHandle:active {
+		cursor: grabbing;
+	}
+
 	.resizeHandle {
 		position: absolute;
 		top: 0;
-		width: 16px;
+		width: 24px;
 		height: 100%;
 		z-index: 10;
 		cursor: col-resize;
@@ -268,33 +261,95 @@
 		background: linear-gradient(to left, rgba(0, 0, 0, 0.03), transparent);
 	}
 
-	.dragHandle {
+	.resizingIcon {
+		display: none;
 		position: absolute;
-		top: 0;
-		left: 0;
-		width: 28px;
-		height: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		cursor: grab;
+		pointer-events: none;
+	}
+
+	[data-is-dragging='true'] {
+		cursor: none !important;
+		z-index: 999;
+		opacity: 0.9;
+		transform: scale(1.05) rotate(1deg);
+	}
+
+	[data-is-dragging='true'] .dragHandle {
+		opacity: 1;
+	}
+
+	[data-is-dragging='true'] .resizingIcon {
+		display: block;
+	}
+
+	/* Active Resizing State */
+	[data-is-resizing='true'] {
+		cursor: none !important;
+	}
+
+	[data-is-resizing='true'] .resizeHandle {
+		opacity: 1;
+		cursor: none !important;
+	}
+
+	[data-is-resizing='true'] .resizeHandleBar {
+		display: none;
+	}
+
+	[data-is-resizing='true'] .resizingIcon {
+		display: block;
+	}
+
+	/* Disable all hover effects during drag or resize on ANY card */
+	:global([data-is-dragging='true']) .progressionItem:hover,
+	:global([data-is-resizing='true']) .progressionItem:hover {
+		background-color: #efefef;
+	}
+
+	:global([data-is-dragging='true']) .progressionItem.isRest:hover,
+	:global([data-is-resizing='true']) .progressionItem.isRest:hover {
+		background-color: var(--color-stipple);
+		border-color: var(--border-thick);
+	}
+
+	:global([data-is-dragging='true']) .progressionItem:hover .dragHandle,
+	:global([data-is-resizing='true']) .progressionItem:hover .dragHandle {
 		opacity: 0;
-		transition: opacity 0.2s ease;
-		z-index: 11;
-		color: var(--color-ink);
 	}
 
-	.progressionItem:hover .dragHandle {
-		opacity: 0.5;
+	:global([data-is-dragging='true']) .progressionItem:hover .resizeHandle,
+	:global([data-is-resizing='true']) .progressionItem:hover .resizeHandle {
+		opacity: 0;
 	}
 
-	.dragHandle:hover {
-		opacity: 1 !important;
-		color: var(--color-pop-pink);
-		background: linear-gradient(to right, rgba(0, 0, 0, 0.03), transparent);
+	:global([data-is-dragging='true']) .dragHandle:hover,
+	:global([data-is-resizing='true']) .dragHandle:hover {
+		opacity: 0;
+		background: none;
 	}
 
-	.dragHandle:active {
-		cursor: grabbing;
+	:global([data-is-dragging='true']) .resizeHandle:hover,
+	:global([data-is-resizing='true']) .resizeHandle:hover {
+		opacity: 0;
+		background: none;
+	}
+
+	/* Disable all cursors during drag/resize operations */
+	:global([data-is-dragging='true']) .progressionItem,
+	:global([data-is-dragging='true']) .dragHandle,
+	:global([data-is-dragging='true']) .resizeHandle,
+	:global([data-is-dragging='true']) .itemContent,
+	:global([data-is-resizing='true']) .progressionItem,
+	:global([data-is-resizing='true']) .dragHandle,
+	:global([data-is-resizing='true']) .resizeHandle,
+	:global([data-is-resizing='true']) .itemContent {
+		cursor: none !important;
+		pointer-events: none;
+	}
+
+	/* Allow the active dragging/resizing card to receive pointer events */
+	[data-is-dragging='true'],
+	[data-is-resizing='true'] {
+		pointer-events: auto;
 	}
 </style>

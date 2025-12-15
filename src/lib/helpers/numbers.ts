@@ -1,6 +1,6 @@
 type CreateReverserOptionsT = {
-	min: number
-	max: number
+  min: number
+  max: number
 }
 
 // toNumber(123) // 123
@@ -9,32 +9,32 @@ type CreateReverserOptionsT = {
 // toNumber(null) // 0
 // toNumber([]) // 0
 export const toNumber = (target: string | number): number => {
-	if (typeof target === 'number') return target
+  if (typeof target === 'number') return target
 
-	if (typeof target === 'string') {
-		const parsed = parseFloat(target)
-		return isNaN(parsed) ? 0 : parsed
-	}
+  if (typeof target === 'string') {
+    const parsed = parseFloat(target)
+    return isNaN(parsed) ? 0 : parsed
+  }
 
-	return 0
+  return 0
 }
 
 type CreateClampOptionsT = {
-	min: number
-	max: number
+  min: number
+  max: number
 }
 
 const clamp = (min: number, value: number, max: number): number => {
-	if (value < min) return min
-	if (value > max) return max
-	return value
+  if (value < min) return min
+  if (value > max) return max
+  return value
 }
 
 // createClamp({ min: 0, max: 1 })(0.5) // 0.5
 // createClamp({ min: 0, max: 1 })(-0.5) // 0
 // createClamp({ min: 0, max: 1 })(1.5) // 1
 const createClamp = (options: CreateClampOptionsT) => {
-	return (value: number) => clamp(options.min, value, options.max)
+  return (value: number) => clamp(options.min, value, options.max)
 }
 
 // createReverser({ min: 0, max: 2 })(0) // 2
@@ -43,14 +43,14 @@ const createClamp = (options: CreateClampOptionsT) => {
 // createReverser({ min: -1, max: 1 })(-1) // 1
 // createReverser({ min: -1, max: 1 })(0) // 0
 const createReverser = (options: CreateReverserOptionsT) => {
-	if (options.min >= options.max) throw new Error('Invalid range: min must be less than max')
+  if (options.min >= options.max) throw new Error('Invalid range: min must be less than max')
 
-	return (value: number): number => {
-		const isTooHigh = value > options.max
-		const isTooLow = value < options.min
-		if (isTooHigh || isTooLow) throw new Error('reverser: value out of bounds - ' + value)
-		return options.max - (value - options.min)
-	}
+  return (value: number): number => {
+    const isTooHigh = value > options.max
+    const isTooLow = value < options.min
+    if (isTooHigh || isTooLow) throw new Error('reverser: value out of bounds - ' + value)
+    return options.max - (value - options.min)
+  }
 }
 
 // if value exceeds max, loops back to min and continues up
@@ -60,17 +60,53 @@ const createReverser = (options: CreateReverserOptionsT) => {
 // loopClamp(1, 0, 4) // 4 because 0 is 1 step below 1, so we loop to 4
 // loopClamp(1, 7, 4) // 3 because 7 is 3 steps above 4, so we loop to 1, then 2, then 3
 const loopClamp = (min: number, value: number, max: number): number => {
-	if (min >= max) throw new Error('Invalid range: min must be less than max')
-	const range = max - min + 1
-	const zeroBasedValue = value - min
-	const wrapped = ((zeroBasedValue % range) + range) % range
-	return min + wrapped
+  if (min >= max) throw new Error('Invalid range: min must be less than max')
+  const range = max - min + 1
+  const zeroBasedValue = value - min
+  const wrapped = ((zeroBasedValue % range) + range) % range
+  return min + wrapped
+}
+
+const decimalToFraction = (decimal: number): { numerator: number; denominator: number } => {
+  const tolerance = 1.0e-6
+  let numerator = 1
+  let denominator = 1
+  let fraction = numerator / denominator
+
+  while (Math.abs(fraction - decimal) > tolerance) {
+    if (fraction < decimal) {
+      numerator++
+    } else {
+      denominator++
+      numerator = Math.round(decimal * denominator)
+    }
+    fraction = numerator / denominator
+  }
+
+  return { numerator, denominator }
+}
+
+export const toFractionString = (value: number) => {
+  const wholeNumber = Math.floor(value)
+  const decimal = value - wholeNumber
+
+  const hasNoDecimal = decimal === 0
+  if (hasNoDecimal) return wholeNumber.toString()
+
+  const { numerator, denominator } = decimalToFraction(decimal)
+  const fractionString = `${numerator}/${denominator}`
+
+  const hasNoWholeNumber = wholeNumber === 0
+  if (hasNoWholeNumber) return fractionString
+
+  return `${wholeNumber} ${fractionString}`
 }
 
 export const numbers = {
-	toNumber,
-	clamp,
-	createClamp,
-	loopClamp,
-	createReverser
+  toNumber,
+  clamp,
+  createClamp,
+  loopClamp,
+  createReverser,
+  toFractionString
 }

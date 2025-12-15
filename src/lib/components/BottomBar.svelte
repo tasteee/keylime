@@ -12,52 +12,33 @@
 	const isMidiDeviceSelected = $derived(isMidi && output.midiDeviceName)
 </script>
 
-<div class="BottomBar">
+<div class="BottomBar herPanel progressionPanel">
+	<div class="herPanelTitleBox">
+		<span class="herPanelTitle">Output</span>
+	</div>
+
 	<div class="left">
-		<div class="controls-group">
-			<SelectVolume />
-		</div>
+		<SelectVolume />
 
-		<div class="controls-group">
-			<SelectVelocity />
-		</div>
+		<SelectVelocity />
 
-		<div class="controls-group">
-			<SelectOutputType />
+		<SelectOutputType />
 
-			{#if isInstrument}
-				<SelectInstrument />
-			{/if}
+		{#if isInstrument}
+			<SelectInstrument />
+		{/if}
 
-			{#if isMidi}
-				<SelectMidiDevice />
-			{/if}
+		{#if isMidi}
+			<SelectMidiDevice />
+		{/if}
 
-			{#if isMidiDeviceSelected}
-				<SelectMidiChannel />
-			{/if}
-		</div>
+		{#if isMidiDeviceSelected}
+			<SelectMidiChannel />
+		{/if}
 	</div>
 </div>
 
 <style>
-	.BottomBar {
-		position: fixed;
-		bottom: 0;
-		left: 0;
-		width: 100%;
-		height: var(--bottombar-height);
-		padding: 0 32px;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		background-color: var(--bar-bg);
-		border-top: var(--border-thick);
-		z-index: 60;
-		gap: 32px;
-		box-shadow: 0 -4px 0px var(--color-ink);
-	}
-
 	.left {
 		display: flex;
 		align-items: center;
@@ -68,10 +49,11 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		padding: 6px 8px;
-		background-color: var(--card);
-		border: var(--border-thick);
+		padding: 0px 8px;
+		height: 36px;
+		/* background-color: var(--card); */
+		/* border: var(--border-thick); */
 		border-radius: 0px;
-		box-shadow: var(--shadow-hard);
+		/* box-shadow: var(--shadow-hard); */
 	}
 </style>

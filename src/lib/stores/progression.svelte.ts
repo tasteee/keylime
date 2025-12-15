@@ -57,7 +57,20 @@ class ProgressionStore {
       durationBeats: 4 // Default to 4 beats
     }
 
-    this.baseItems = [...this.baseItems, chordWithTimelineData]
+    // Insert after selected item if one exists, otherwise append to end
+    const hasSelectedItem = this.selectedItemId !== null
+    if (hasSelectedItem) {
+      const selectedIndex = this.baseItems.findIndex((item) => item.id === this.selectedItemId)
+      if (selectedIndex !== -1) {
+        const newItems = [...this.baseItems]
+        newItems.splice(selectedIndex + 1, 0, chordWithTimelineData)
+        this.baseItems = newItems
+      } else {
+        this.baseItems = [...this.baseItems, chordWithTimelineData]
+      }
+    } else {
+      this.baseItems = [...this.baseItems, chordWithTimelineData]
+    }
 
     // Automatically select the newly added chord
     this.selectedItemId = chordWithTimelineData.id
@@ -67,11 +80,26 @@ class ProgressionStore {
     const restItem: ProgressionRestT = {
       id: `rest-${Date.now()}`,
       type: 'rest',
+      symbol: 'REST',
+      rootNote: 'REST',
       startTime: 0, // Will be calculated in derived
       durationBeats: 4 // Default to 4 beats
     }
 
-    this.baseItems = [...this.baseItems, restItem]
+    // Insert after selected item if one exists, otherwise append to end
+    const hasSelectedItem = this.selectedItemId !== null
+    if (hasSelectedItem) {
+      const selectedIndex = this.baseItems.findIndex((item) => item.id === this.selectedItemId)
+      if (selectedIndex !== -1) {
+        const newItems = [...this.baseItems]
+        newItems.splice(selectedIndex + 1, 0, restItem)
+        this.baseItems = newItems
+      } else {
+        this.baseItems = [...this.baseItems, restItem]
+      }
+    } else {
+      this.baseItems = [...this.baseItems, restItem]
+    }
 
     // Automatically select the newly added rest
     this.selectedItemId = restItem.id
@@ -149,7 +177,16 @@ class ProgressionStore {
       startTime: 0 // Will be calculated in derived
     } as ProgressionItemT
 
-    this.baseItems = [...this.baseItems, duplicatedItem]
+    // Insert right after the selected item
+    const selectedIndex = this.baseItems.findIndex((item) => item.id === this.selectedItemId)
+    if (selectedIndex !== -1) {
+      const newItems = [...this.baseItems]
+      newItems.splice(selectedIndex + 1, 0, duplicatedItem)
+      this.baseItems = newItems
+    } else {
+      this.baseItems = [...this.baseItems, duplicatedItem]
+    }
+
     this.selectedItemId = duplicatedItem.id
   }
 

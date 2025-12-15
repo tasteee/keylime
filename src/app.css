@@ -1,1 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Cal+Sans&family=Google+Sans+Flex:opsz,wght@6..144,1..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mozilla+Headline:wght@200..700&family=Mozilla+Text:wght@200..700&family=Rubik:ital,wght@0,300..900;1,300..900&family=Savate:ital,wght@0,200..900;1,200..900&family=Stack+Sans+Headline:wght@200..700&family=Stack+Sans+Notch:wght@200..700&family=Stack+Sans+Text:wght@200..700&family=TikTok+Sans:opsz,wght@12..36,300..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap');
 
+.herPanel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  gap: 16px;
+  padding: 0 16px;
+  background-color: #EFEFEF;
+  /* background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 1)), url('/d.png');
+  background-size: 120% 120%;
+  background-repeat: no-repeat;
+  background-position: bottom left;
+  background-blend-mode: luminosity; */
+
+  border: 3px solid #747474;
+  border-radius: 12px;
+  height: 64px;
+  flex-shrink: 0;
+  /* box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(0, 0, 0, 0.1), 0 4px 4px rgba(0, 0, 0, 0.1); */
+}
+
+.herPanelTitleBox {
+  display: flex;
+  /* flex-direction: column; */
+  /* gap: 8px; */
+  /* width: 160px; */
+  /* border: 2px solid #747474; */
+  /* border-radius: 12px; */
+  /* padding: 8px 12px; */
+}
+
+.herPanelSubtitle {
+  margin: 0;
+  font-weight: 500;
+  font-size: 14px;
+  color: #747474;
+  line-height: 85%;
+
+}
+
+.herBadge {
+  border: 2px solid #646464;
+  border-radius: 2px;
+  /* background: #fff; */
+  color: #646464;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  text-transform: uppercase;
+}
+
+.herText2 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #A5A5A5;
+}
+
+.herSelectTrigger {
+  gap: 8px;
+}
+
+.menuTriggerDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.menuTriggerLabel {
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-right: 8px;
+
+}
+
+.herColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+
+.herRow {
+  display: flex;
+  flex-direction: row;
+}
+
+
+
+
+
+.herPanelTitle {
+  margin: 0;
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--foreground);
+  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  line-height: 85%;
+}
+
+.herPanelTitleSmall {
+  font-size: 14px;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+:root [data-is-dragging='true'],
+:root [data-is-resizing='true'],
+:root [data-is-dragging='true'] *:hover {
+  cursor: none !important;
+}
+
+.herSelect.isLabeledRow {
+  display: flex;
+  justify-content: space-between;
+}

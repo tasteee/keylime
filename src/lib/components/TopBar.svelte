@@ -13,7 +13,7 @@
 	<div class="left">
 		<div class="logo">
 			<div class="logo-icon">
-				<Icon icon="mingcute:lemon-line" class="size-5" />
+				<Icon icon="mingcute:lemon-squeezy-fill" class="size-5" />
 			</div>
 			<span class="logo-text">KEYLIME</span>
 		</div>
@@ -41,34 +41,20 @@
 			</Button>
 		</nav>
 	</div>
-
-	<div class="center">
-		<div class="controls-group">
-			<SelectKey />
-			<SelectScale />
-			<SelectOctave />
-		</div>
-	</div>
-
-	<div class="right">
-		<!-- Placeholder for future right-aligned items like settings or user profile -->
-	</div>
 </div>
 
 <style>
 	.TopBar {
 		position: relative;
 		width: 100%;
-		height: var(--topbar-height);
+		height: 60px;
+		flex-shrink: 0;
 		padding: 0 32px;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		background-color: var(--bar-bg);
-		border-bottom: var(--border-thick);
 		z-index: 50;
 		gap: 32px;
-		box-shadow: var(--bar-shadow);
 	}
 
 	.left {
@@ -89,19 +75,13 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 36px;
-		height: 36px;
-		background: var(--color-pop-pink);
 		color: var(--color-ink);
-		border-radius: 999px;
 		border: 3px solid var(--color-ink);
-		box-shadow: 2px 2px 0px var(--color-ink);
 	}
 
 	.logo-text {
 		font-family: var(--font-display);
 		font-size: 24px;
-		transform: rotate(-2deg);
 	}
 
 	.logo-text {
@@ -123,10 +103,7 @@
 	.nav {
 		display: flex;
 		gap: 4px;
-		background-color: var(--secondary);
 		padding: 4px;
-		border-radius: var(--radius-md);
-		border: 1px solid var(--border);
 	}
 
 	.center {

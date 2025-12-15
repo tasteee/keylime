@@ -7,11 +7,11 @@
 <Popover.Root>
 	<Popover.Trigger
 		data-slot="select-trigger"
-		class="h-8 hover:bg-muted/50 px-2 rounded-md text-sm inline-flex min-w-[100px] items-center justify-between border-none bg-transparent whitespace-nowrap shadow-none transition-colors focus:ring-0"
+		class="herSelectTrigger h-8 hover:bg-muted/50 px-2 text-sm inline-flex min-w-[100px] items-center justify-between border-none bg-transparent whitespace-nowrap shadow-none transition-colors focus:ring-0"
 	>
-		<span class="text-xs">
-			<span class="text-muted-foreground mr-1">Velocity</span>
-			<span class="font-medium text-foreground">{output.minVelocity}-{output.maxVelocity}</span>
+		<span class="menuTriggerDisplay">
+			<span class="menuTriggerLabel">Velocity</span>
+			<span style="font-weight: 400; width: 50px;">{output.minVelocity}-{output.maxVelocity}</span>
 		</span>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"

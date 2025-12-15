@@ -16,7 +16,7 @@
 	const isMidiDeviceSelected = $derived(isMidi && output.midiDeviceName)
 </script>
 
-<div class="page lightTheme">
+<div class="app lightTheme">
 	<div class="controls">
 		<div class="controlsRow">
 			<SelectKey />
@@ -46,7 +46,7 @@
 </div>
 
 <style>
-	.page {
+	.app {
 		display: flex;
 		flex-direction: column;
 		justify-content: end;

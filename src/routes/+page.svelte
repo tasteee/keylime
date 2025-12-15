@@ -29,7 +29,7 @@
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<div class="page lightTheme">
+<div class="app lightTheme">
 	<TopBar bind:activeView />
 
 	<div class="content">
@@ -47,23 +47,19 @@
 </div>
 
 <style>
-	.page {
+	.app {
 		display: flex;
 		flex-direction: column;
 		height: 100vh;
 		overflow: hidden;
-		background-color: var(--background);
+		padding: 12px;
 	}
-
 	.content {
 		display: flex;
 		flex-direction: column;
-		justify-content: end;
 		flex: 1;
 		gap: 8px;
-		padding: 8px;
-		padding-bottom: calc(var(--progression-height) + var(--bottombar-height) + 16px);
-		overflow-y: hidden;
-		position: relative;
+		min-height: 0;
+		overflow: hidden;
 	}
 </style>

@@ -40,6 +40,8 @@ type ProgressionChordT = ChordT & {
 type ProgressionRestT = {
   id: string
   type: 'rest'
+  symbol: 'REST',
+  rootNote: 'REST',
   startTime: number // beats - position in progression timeline
   durationBeats: number // beats - length in progression timeline
 }

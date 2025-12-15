@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../lib/styles/global.css'
+	import '../app.css'
 	import { ModeWatcher } from 'mode-watcher'
 	import favicon from '$lib/assets/favicon.svg'
 	import DialogChordModifier from '$lib/components/DialogChordModifier.svelte'

@@ -1,14 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tilt+Neon&family=TikTok+Sans:wght@400;700&display=swap');
 
-@theme {
-  --font-display: 'Permanent Marker', cursive;
-  --font-mono: 'Space Mono', monospace;
-  --font-sans: 'Space Mono', monospace;
+:root {
+  --stackTextFont: "Stack Sans Text", sans-serif;
+
+
+  --font-display: var(--stackTextFont);
+  --font-mono: 'TikTok Sans', sans-serif;
+  --font-sans: var(--stackTextFont);
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 4px);
   --radius-sm: calc(var(--radius) - 8px);
-  
+
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 }
@@ -75,9 +78,9 @@
   --shadow-hard: 4px 4px 0px var(--color-ink);
   --shadow-hard-hover: 6px 6px 0px var(--color-ink);
   --shadow-hard-active: 0px 0px 0px var(--color-ink);
-  
+
   /* Component Specifics */
-  
+
   /* TopBar & BottomBar */
   --bar-bg: var(--color-paper);
   --bar-border: var(--color-ink);
@@ -89,9 +92,9 @@
   --chord-border: var(--color-ink);
   --chord-radius: 0px;
   --chord-shadow: var(--shadow-hard);
-  
+
   --chord-hover-shadow: var(--shadow-hard-hover);
-  
+
   --chord-selected-bg: var(--color-cyan);
   --chord-selected-fg: var(--color-ink);
   --chord-selected-border: var(--color-ink);

@@ -4,17 +4,13 @@
 	import { type VariantProps, tv } from 'tailwind-variants'
 
 	export const buttonVariants = tv({
-		base: 'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-bold uppercase outline-none transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 border-[3px] border-black',
+		base: 'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[12px] text-sm font-bold uppercase outline-none transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 border-[3px] border-black',
 		variants: {
 			variant: {
-				default:
-					'bg-primary text-primary-foreground shadow-[4px_4px_0px_#000] hover:shadow-[6px_6px_0px_#000] hover:-translate-x-[2px] hover:-translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px]',
-				destructive:
-					'bg-destructive text-destructive-foreground shadow-[4px_4px_0px_#000] hover:shadow-[6px_6px_0px_#000] hover:-translate-x-[2px] hover:-translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px]',
-				outline:
-					'bg-background text-foreground shadow-[4px_4px_0px_#000] hover:shadow-[6px_6px_0px_#000] hover:-translate-x-[2px] hover:-translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px]',
-				secondary:
-					'bg-secondary text-secondary-foreground shadow-[4px_4px_0px_#000] hover:shadow-[6px_6px_0px_#000] hover:-translate-x-[2px] hover:-translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px]',
+				default: 'bg-primary text-primary-foreground  hover:shadow-[6px_6px_0px_#000] active:shadow-none ',
+				destructive: 'bg-destructive text-destructive-foreground  hover:shadow-[6px_6px_0px_#000] active:shadow-none ',
+				outline: 'bg-background text-foreground active:shadow-none ',
+				secondary: 'bg-secondary text-secondary-foreground  active:shadow-none ',
 				ghost:
 					'hover:bg-accent hover:text-accent-foreground border-transparent shadow-none hover:shadow-none hover:translate-x-0 hover:translate-y-0 active:translate-x-0 active:translate-y-0',
 				link: 'text-primary underline-offset-4 hover:underline border-none shadow-none hover:shadow-none hover:translate-x-0 hover:translate-y-0 active:translate-x-0 active:translate-y-0'

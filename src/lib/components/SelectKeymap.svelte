@@ -16,7 +16,7 @@
 	<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[120px] border-none bg-transparent shadow-none focus:ring-0">
 		<span class="text-xs">
 			<span class="text-muted-foreground mr-1">Keymap</span>
-			<span class="font-medium text-foreground">{mainStore.selectedKeymap}</span>
+			<span>{mainStore.selectedKeymap}</span>
 		</span>
 	</Select.Trigger>
 	<Select.Content>

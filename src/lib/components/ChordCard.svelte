@@ -4,6 +4,7 @@
 	import { progressionStore } from '$lib/stores/progression.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
+	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
 
 	type ChordCardPropsT = {
 		chord: ChordT
@@ -67,13 +68,14 @@
 	role="button"
 	tabindex={0}
 >
-	<div class="chordSymbol">{props.chord.symbol}</div>
+	<ChordSymbolDisplay symbol={props.chord.symbol} />
 
 	<div class="actions">
 		<Button
 			variant="ghost"
 			size="icon"
-			class="h-7 w-7 cursor-pointer rounded-full transition-colors"
+			class="h-7 w-7 cursor-pointer transition-colors"
+			style="border-radius: 6px;"
 			onclick={addChordToProgression}
 			title="Add to progression"
 		>
@@ -84,49 +86,37 @@
 
 <style>
 	.chordCard {
-		position: relative;
-		height: 96px;
+		/* border: 3px solid #747474; */
+		/* background-color: #fff; */
+		/* border-radius: 12px; */
+		border: 2px solid #747474;
+		color: var(--chord-fg);
+		cursor: pointer;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		background-color: var(--chord-bg);
-		color: var(--chord-fg);
-		border: var(--border-thick);
-		border-radius: 0px;
-		box-shadow: var(--shadow-hard);
-		cursor: pointer;
-		user-select: none;
-		transition: all 0.1s ease-in-out;
-		overflow: visible;
 		font-family: var(--font-sans);
+		height: 96px;
+		justify-content: center;
+		overflow: visible;
+		padding: 12px 24px;
+		position: relative;
+		transition: all 0.1s ease-in-out;
+		user-select: none;
+		z-index: 10;
+		border-width: 1px;
+		border-color: #8f8f98;
 	}
 
 	.chordCard:hover {
-		transform: translate(-2px, -2px) rotate(1deg);
-		box-shadow: var(--shadow-hard-hover);
-		z-index: 10;
-		border-color: var(--color-ink);
-	}
-
-	.chordCard:active {
-		transform: translate(4px, 4px);
-		box-shadow: var(--shadow-hard-active);
-	}
-
-	.chordSymbol {
-		font-family: var(--font-display);
-		font-size: 24px;
-		font-weight: 400;
-		letter-spacing: normal;
-		z-index: 1;
-		color: var(--foreground);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		background-color: #efefef;
+		/* border: 3px solid #747474; */
 	}
 
 	.actions {
 		position: absolute;
-		top: 6px;
-		right: 6px;
+		top: 32px;
+		right: 16px;
 		opacity: 0;
 		transform: translateY(-4px);
 		transition: all 0.2s ease;

@@ -16,6 +16,12 @@ type ChordModifierStateT = {
   voicing: VoicingT
 }
 
+type InitialStateSnapshotT = {
+  octaveOffset: number
+  inversion: number
+  voicing: VoicingT
+}
+
 class ChordModifierStore {
   state: ChordModifierStateT = $state({
     isOpen: false,
@@ -25,6 +31,8 @@ class ChordModifierStore {
     inversion: 0,
     voicing: 'closed'
   })
+
+  private initialStateSnapshot: InitialStateSnapshotT | null = null
 
   // Get the current chord being modified (fully computed with all modifications)
   currentChord = $derived.by(() => {
@@ -63,6 +71,12 @@ class ChordModifierStore {
     this.state.octaveOffset = gridChord.octaveOffset
     this.state.inversion = gridChord.inversion
     this.state.voicing = gridChord.voicing as VoicingT
+    // Save initial state for discard functionality
+    this.initialStateSnapshot = {
+      octaveOffset: gridChord.octaveOffset,
+      inversion: gridChord.inversion,
+      voicing: gridChord.voicing as VoicingT
+    }
   }
 
   openForProgressionChord = (args: { chordId: string }) => {
@@ -76,12 +90,19 @@ class ChordModifierStore {
     this.state.octaveOffset = progressionChord.octaveOffset
     this.state.inversion = progressionChord.inversion
     this.state.voicing = progressionChord.voicing as VoicingT
+    // Save initial state for discard functionality
+    this.initialStateSnapshot = {
+      octaveOffset: progressionChord.octaveOffset,
+      inversion: progressionChord.inversion,
+      voicing: progressionChord.voicing as VoicingT
+    }
   }
 
   closeDialog = () => {
     this.state.isOpen = false
     this.state.chordId = null
     this.state.source = null
+    this.initialStateSnapshot = null
   }
 
   updateOctaveOffset = (value: number) => {
@@ -100,6 +121,33 @@ class ChordModifierStore {
     this.state.voicing = value
     this.saveToProgressionIfNeeded()
     this.playCurrentChord()
+  }
+
+  resetModifiers = () => {
+    this.state.octaveOffset = 0
+    this.state.inversion = 0
+    this.state.voicing = 'closed'
+    this.saveToProgressionIfNeeded()
+    this.playCurrentChord()
+  }
+
+  confirmChanges = () => {
+    this.saveToProgressionIfNeeded()
+    this.closeDialog()
+  }
+
+  discardChanges = () => {
+    if (!this.initialStateSnapshot) {
+      this.closeDialog()
+      return
+    }
+
+    // Restore initial state
+    this.state.octaveOffset = this.initialStateSnapshot.octaveOffset
+    this.state.inversion = this.initialStateSnapshot.inversion
+    this.state.voicing = this.initialStateSnapshot.voicing
+    this.saveToProgressionIfNeeded()
+    this.closeDialog()
   }
 
   private saveToProgressionIfNeeded = () => {
