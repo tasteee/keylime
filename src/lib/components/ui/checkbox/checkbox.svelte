@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Checkbox as CheckboxPrimitive } from "bits-ui";
-	import CheckIcon from "@lucide/svelte/icons/check";
-	import MinusIcon from "@lucide/svelte/icons/minus";
-	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
+	import { Checkbox as CheckboxPrimitive } from 'bits-ui'
+	import CheckIcon from '@lucide/svelte/icons/check'
+	import MinusIcon from '@lucide/svelte/icons/minus'
+	import { cn, type WithoutChildrenOrChild } from '$lib/utils.js'
 
 	let {
 		ref = $bindable(null),
@@ -10,14 +10,14 @@
 		indeterminate = $bindable(false),
 		class: className,
 		...restProps
-	}: WithoutChildrenOrChild<CheckboxPrimitive.RootProps> = $props();
+	}: WithoutChildrenOrChild<CheckboxPrimitive.RootProps> = $props()
 </script>
 
 <CheckboxPrimitive.Root
 	bind:ref
 	data-slot="checkbox"
 	class={cn(
-		"border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive shadow-xs peer flex size-4 shrink-0 items-center justify-center rounded-[4px] border outline-none transition-shadow focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
+		'border-black bg-white data-[state=checked]:text-black peer size-5 flex shrink-0 items-center justify-center rounded-none border-[3px] shadow-[2px_2px_0px_#000] transition-all outline-none focus-visible:border-[#CCFF00] focus-visible:shadow-[4px_4px_0px_#00FFFF] focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-[#FF69B4]',
 		className
 	)}
 	bind:checked

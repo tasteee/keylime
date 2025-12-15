@@ -8,10 +8,10 @@
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.selectedKey}>
-	<Select.Trigger>
-		<span>
-			<span style="font-weight: 500;">Key: </span>
-			{mainStore.selectedKey}
+	<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[70px] border-none bg-transparent shadow-none focus:ring-0">
+		<span class="menuTriggerDisplay">
+			<span class="menuTriggerLabel">Key</span>
+			<span style="font-weight: 400;">{mainStore.selectedKey}</span>
 		</span>
 	</Select.Trigger>
 	<Select.Content>

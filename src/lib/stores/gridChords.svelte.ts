@@ -6,8 +6,6 @@ type GridChordModifiersT = {
   octaveOffset: number
   inversion: number
   voicing: VoicingT
-  minVelocity: number
-  maxVelocity: number
 }
 
 type GridChordMapT = {
@@ -35,9 +33,7 @@ class GridChordsStore {
         id: chordId,
         octaveOffset: modifiers.octaveOffset,
         inversion: modifiers.inversion,
-        voicing: modifiers.voicing,
-        minVelocity: modifiers.minVelocity,
-        maxVelocity: modifiers.maxVelocity
+        voicing: modifiers.voicing
       }
 
       return chord
@@ -55,9 +51,7 @@ class GridChordsStore {
     return {
       octaveOffset: 0,
       inversion: 0,
-      voicing: 'closed',
-      minVelocity: 60,
-      maxVelocity: 75
+      voicing: 'closed'
     }
   }
 
@@ -66,17 +60,13 @@ class GridChordsStore {
     octaveOffset?: number
     inversion?: number
     voicing?: VoicingT
-    minVelocity?: number
-    maxVelocity?: number
   }) => {
     const currentModifiers = this.chordModifiers[args.chordId] || this.getDefaultModifiers()
 
     this.chordModifiers[args.chordId] = {
       octaveOffset: args.octaveOffset ?? currentModifiers.octaveOffset,
       inversion: args.inversion ?? currentModifiers.inversion,
-      voicing: args.voicing ?? currentModifiers.voicing,
-      minVelocity: args.minVelocity ?? currentModifiers.minVelocity,
-      maxVelocity: args.maxVelocity ?? currentModifiers.maxVelocity
+      voicing: args.voicing ?? currentModifiers.voicing
     }
   }
 

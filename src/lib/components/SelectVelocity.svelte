@@ -1,17 +1,17 @@
 <script lang="ts">
-	import * as Popover from '$lib/components/ui/popover/index.js';
-	import SliderVelocity from '$lib/components/SliderVelocity.svelte';
-	import output from '$lib/stores/output.svelte';
+	import * as Popover from '$lib/components/ui/popover/index.js'
+	import SliderVelocity from '$lib/components/SliderVelocity.svelte'
+	import output from '$lib/stores/output.svelte'
 </script>
 
 <Popover.Root>
 	<Popover.Trigger
 		data-slot="select-trigger"
-		class="inline-flex h-9 w-[180px] items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+		class="herSelectTrigger h-8 hover:bg-muted/50 px-2 text-sm inline-flex min-w-[100px] items-center justify-between border-none bg-transparent whitespace-nowrap shadow-none transition-colors focus:ring-0"
 	>
-		<span>
-			<span style="font-weight: 500;">Velocity: </span>
-			{output.minVelocity}-{output.maxVelocity}
+		<span class="menuTriggerDisplay">
+			<span class="menuTriggerLabel">Velocity</span>
+			<span style="font-weight: 400; width: 50px;">{output.minVelocity}-{output.maxVelocity}</span>
 		</span>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
@@ -23,12 +23,12 @@
 			stroke-width="2"
 			stroke-linecap="round"
 			stroke-linejoin="round"
-			class="lucide lucide-chevron-down h-4 w-4"
+			class="lucide lucide-chevron-down h-4 w-4 opacity-50"
 		>
 			<path d="m6 9 6 6 6-6" />
 		</svg>
 	</Popover.Trigger>
-	<Popover.Content class="w-[300px] p-4">
+	<Popover.Content class="herPopover p-4 w-[300px]">
 		<div class="velocitySliderContainer">
 			<SliderVelocity />
 		</div>

@@ -1,19 +1,20 @@
 <script lang="ts">
-	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js'
+	import * as Select from '$lib/components/ui/select/index.js'
 	import output from '../stores/output.svelte'
 </script>
 
-<ToggleGroup.Root class="SelectOutputType" type="single" bind:value={output.type}>
-	<ToggleGroup.Item class="toggleGroupItem" value="Instrument">Instrument</ToggleGroup.Item>
-	<ToggleGroup.Item class="toggleGroupItem" value="MIDI">MIDI</ToggleGroup.Item>
-</ToggleGroup.Root>
-
-<style>
-	:global(.SelectOutputType) {
-		border: 1px solid var(--input);
-	}
-	:global(.toggleGroupItem) {
-		flex: 0 0 auto !important;
-		min-width: fit-content !important;
-	}
-</style>
+<Select.Root type="single" bind:value={output.type}>
+	<Select.Trigger
+		size="sm"
+		class="SelectOutputType herSelectTrigger h-8 hover:bg-muted/50 px-2 min-w-[100px] border-none bg-transparent shadow-none focus:ring-0"
+	>
+		<span class="menuTriggerDisplay">
+			<span class="menuTriggerLabel">Destination</span>
+			<span style="font-weight: 400;">{output.type}</span>
+		</span>
+	</Select.Trigger>
+	<Select.Content>
+		<Select.Item value="Instrument">Instrument</Select.Item>
+		<Select.Item value="MIDI">MIDI</Select.Item>
+	</Select.Content>
+</Select.Root>

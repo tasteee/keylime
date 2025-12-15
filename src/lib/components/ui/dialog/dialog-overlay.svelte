@@ -16,7 +16,7 @@
 	bind:ref
 	data-slot="dialog-overlay"
 	class={cn(
-		'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 inset-0 bg-black/80 fixed z-50',
+		'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 inset-0 bg-black/40 fixed z-50',
 		className
 	)}
 	{...restProps}

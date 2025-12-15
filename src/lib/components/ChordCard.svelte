@@ -1,43 +1,16 @@
 <script lang="ts">
-	import * as Item from '$lib/components/ui/item'
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
 	import { progressionStore } from '$lib/stores/progression.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
-	import { applyVoicingAndInversion } from '$lib/helpers/chords'
-	import { Note } from 'tonal'
+	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
 
 	type ChordCardPropsT = {
 		chord: ChordT
 	}
 
 	const props: ChordCardPropsT = $props()
-
-	// Apply modifiers to the chord for display and playback
-	const modifiedChord = $derived.by(() => {
-		let chord = props.chord
-
-		// Apply voicing and inversion
-		chord = applyVoicingAndInversion({
-			chord,
-			voicing: props.chord.voicing as VoicingT,
-			inversion: props.chord.inversion
-		})
-
-		// Apply octave offset
-		const octaveOffset = props.chord.octaveOffset
-		if (octaveOffset !== 0) {
-			const interval = octaveOffset > 0 ? `${octaveOffset * 7 + 1}P` : `-${Math.abs(octaveOffset) * 7 + 1}P`
-			chord = {
-				...chord,
-				notes: chord.notes.map((note) => Note.transpose(note, interval)),
-				bassNote: Note.transpose(chord.bassNote, interval)
-			}
-		}
-
-		return chord
-	})
 
 	const handleContextMenu = (event: MouseEvent) => {
 		event.preventDefault()
@@ -53,7 +26,7 @@
 
 		// Create a new chord instance for the progression
 		const chordToAdd: ChordT = {
-			...modifiedChord,
+			...props.chord,
 			id: crypto.randomUUID()
 		}
 
@@ -67,7 +40,7 @@
 		if (!isLeftButton) return
 		event.preventDefault()
 		event.stopPropagation()
-		playbackStore.playChord(modifiedChord.notes)
+		playbackStore.playChord(props.chord)
 	}
 
 	const onMouseUp = (event: MouseEvent) => {
@@ -77,38 +50,82 @@
 		event.preventDefault()
 		event.stopPropagation()
 
-		// Stop each note in the chord
-		modifiedChord.notes.forEach((note) => {
-			playbackStore.stopNote({ note })
-		})
+		// Stop playback handled by playChord internally
 	}
 
 	const onMouseLeave = () => {
-		// Stop all notes when mouse leaves while pressed
-		modifiedChord.notes.forEach((note) => {
-			playbackStore.stopNote({ note })
-		})
+		// Stop playback handled by playChord internally
 	}
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div oncontextmenu={handleContextMenu}>
-	<Item.Root
-		variant="outline"
-		onmousedown={onMouseDown}
-		onmouseup={onMouseUp}
-		onmouseleave={onMouseLeave}
-		role="button"
-		tabindex={0}
-		class="cursor-pointer select-none"
-	>
-		<Item.Content>
-			<Item.Title>{modifiedChord.symbol}</Item.Title>
-		</Item.Content>
-		<Item.Actions>
-			<Button variant="outline" size="sm" onclick={addChordToProgression}>
-				<Icon icon="mingcute:add-line" class="size-3" />
-			</Button>
-		</Item.Actions>
-	</Item.Root>
+<div
+	class="chordCard"
+	onmousedown={onMouseDown}
+	onmouseup={onMouseUp}
+	onmouseleave={onMouseLeave}
+	oncontextmenu={handleContextMenu}
+	role="button"
+	tabindex={0}
+>
+	<ChordSymbolDisplay symbol={props.chord.symbol} />
+
+	<div class="actions">
+		<Button
+			variant="ghost"
+			size="icon"
+			class="h-7 w-7 cursor-pointer transition-colors"
+			style="border-radius: 6px;"
+			onclick={addChordToProgression}
+			title="Add to progression"
+		>
+			<Icon icon="mingcute:add-line" class="size-4" />
+		</Button>
+	</div>
 </div>
+
+<style>
+	.chordCard {
+		/* border: 3px solid #747474; */
+		/* background-color: #fff; */
+		/* border-radius: 12px; */
+		border: 2px solid #747474;
+		color: var(--chord-fg);
+		cursor: pointer;
+		display: flex;
+		flex-direction: column;
+		font-family: var(--font-sans);
+		height: 96px;
+		justify-content: center;
+		overflow: visible;
+		padding: 12px 24px;
+		position: relative;
+		transition: all 0.1s ease-in-out;
+		user-select: none;
+		z-index: 10;
+		border-width: 1px;
+		border-color: #8f8f98;
+	}
+
+	.chordCard:hover {
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		background-color: #efefef;
+		/* border: 3px solid #747474; */
+	}
+
+	.actions {
+		position: absolute;
+		top: 32px;
+		right: 16px;
+		opacity: 0;
+		transform: translateY(-4px);
+		transition: all 0.2s ease;
+		z-index: 10;
+	}
+
+	.chordCard:hover .actions,
+	.actions:hover {
+		opacity: 1;
+		transform: translateY(0);
+	}
+</style>

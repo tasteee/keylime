@@ -14,7 +14,7 @@
 
 	const props: PatternEditorSignalPropsT = $props()
 
-	const backgroundColor = $derived(props.isSelected ? 'var(--foreground)' : 'var(--muted-foreground)')
+	const backgroundColor = $derived(props.isSelected ? 'var(--primary)' : 'var(--secondary-foreground)')
 	// Convert beat-based timing to pixel positions
 	// startTime is in beats, beatsPerCell tells us how many beats per cell
 	const leftPosition = $derived((props.signal.startTime / props.beatsPerCell) * props.cellWidth)
@@ -34,6 +34,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
 	class="signal"
+	class:selected={props.isSelected}
 	onclick={props.onSignalClick}
 	onmousedown={props.onSignalMouseDown}
 	ondblclick={props.onSignalDoubleClick}
@@ -47,6 +48,7 @@
     left: {leftPosition}px;
     width: {width}px;
     top: 1px;
+	height: 30px;
     opacity: {signalOpacity};
   "
 >
@@ -61,13 +63,30 @@
 	[data-is-dragging='true'] {
 		cursor: grabbing;
 		z-index: 999;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+		transform: scale(1.02);
 	}
 
 	.signal {
-		height: 20px;
-		border-radius: 2px;
+		border-radius: 3px;
 		cursor: grab;
 		position: relative;
+		transition:
+			background-color 0.1s,
+			transform 0.1s,
+			box-shadow 0.1s;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	}
+
+	.signal:hover {
+		filter: brightness(1.1);
+	}
+
+	.signal.selected {
+		box-shadow:
+			0 0 0 1px var(--background),
+			0 0 0 2px var(--primary);
+		z-index: 10;
 	}
 
 	.signal:active {
@@ -77,24 +96,33 @@
 	.resizeHandle {
 		position: absolute;
 		top: 0;
-		width: 2px;
+		width: 6px; /* Wider handle for easier grabbing */
 		height: 100%;
 		z-index: 10;
 		opacity: 0;
+		transition: opacity 0.1s;
 	}
 
 	.resizeHandleLeft {
 		left: 0;
 		cursor: ew-resize;
+		border-top-left-radius: 3px;
+		border-bottom-left-radius: 3px;
 	}
 
 	.resizeHandleRight {
 		right: 0;
 		cursor: ew-resize;
+		border-top-right-radius: 3px;
+		border-bottom-right-radius: 3px;
+	}
+
+	.signal:hover .resizeHandle {
+		opacity: 1;
+		background: rgba(255, 255, 255, 0.2);
 	}
 
 	.resizeHandle:hover {
-		opacity: 1;
-		background: rgba(255, 255, 255, 0.3);
+		background: rgba(255, 255, 255, 0.5) !important;
 	}
 </style>
