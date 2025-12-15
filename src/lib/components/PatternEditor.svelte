@@ -37,7 +37,7 @@
 
 	// Grid layout constants
 	// 1 beat = 4 cells, 1 bar = 4 beats = 16 cells
-	const CELL_WIDTH = 16 // in pixels
+	const CELL_WIDTH = 32 // in pixels
 	const CELLS_PER_BEAT = 4
 	const BEATS_PER_CELL = 1 / CELLS_PER_BEAT // 0.25 beats per cell
 
@@ -550,7 +550,7 @@
 	.signalRowLabel {
 		width: 100px;
 		min-width: 100px;
-		height: 24px;
+		height: 32px;
 		padding: 0px 12px;
 		display: flex;
 		align-items: center;
@@ -600,16 +600,16 @@
 	}
 
 	.signalGridRow {
-		--beatWidth: 64px;
+		--beatWidth: 128px;
 		--barCount: 16;
-		--cellWidth: 16px;
+		--cellWidth: 32px;
 		--beatsPerBar: 4;
 		--barWidth: calc(var(--beatWidth) * var(--beatsPerBar));
 
-		width: calc(var(--barWidth) * var(--barCount)); /* 3072px */
+		width: calc(var(--barWidth) * var(--barCount)); /* 6144px */
 		min-width: calc(var(--barWidth) * var(--barCount));
-		height: 24px;
-		min-height: 24px;
+		height: 32px;
+		min-height: 32px;
 		flex-shrink: 0;
 		position: relative;
 		background-color: transparent;

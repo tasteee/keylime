@@ -47,8 +47,8 @@
     background: {backgroundColor};
     left: {leftPosition}px;
     width: {width}px;
-    top: 2px;
-	height: 20px;
+    top: 1px;
+	height: 30px;
     opacity: {signalOpacity};
   "
 >

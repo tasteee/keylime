@@ -3,6 +3,13 @@
 	import SliderVolume from '$lib/components/SliderVolume.svelte'
 	import Icon from '@iconify/svelte'
 	import output from '$lib/stores/output.svelte'
+	import playbackStore from '$lib/stores/playback.svelte'
+
+	$effect(() => {
+		const currentVolume = output.volume
+		const isPianoLoaded = playbackStore.isLoaded && playbackStore.piano
+		if (isPianoLoaded) playbackStore.piano.output.setVolume(currentVolume)
+	})
 </script>
 
 <Popover.Root>
@@ -29,7 +36,7 @@
 			<path d="m6 9 6 6 6-6" />
 		</svg>
 	</Popover.Trigger>
-	<Popover.Content class="p-4 w-[300px]">
+	<Popover.Content class="herPopover p-4 w-[300px]">
 		<div class="volumeSliderContainer">
 			<SliderVolume />
 		</div>
@@ -43,5 +50,9 @@
 		gap: 12px;
 		align-items: center;
 		width: 100%;
+	}
+
+	.herPopover {
+		border: 2px solid black;
 	}
 </style>

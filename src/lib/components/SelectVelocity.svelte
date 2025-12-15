@@ -28,7 +28,7 @@
 			<path d="m6 9 6 6 6-6" />
 		</svg>
 	</Popover.Trigger>
-	<Popover.Content class="p-4 w-[300px]">
+	<Popover.Content class="herPopover p-4 w-[300px]">
 		<div class="velocitySliderContainer">
 			<SliderVelocity />
 		</div>

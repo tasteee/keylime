@@ -88,6 +88,7 @@ class PlaybackStore {
     if (!this.context) this.context = new AudioContext()
     const pianoInstance = await new SplendidGrandPiano(this.context).load
     this.piano = pianoInstance
+    this.piano.output.setVolume(output.volume)
     this.isLoaded = true
     this.isLoading = false
   }
