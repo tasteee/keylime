@@ -14,15 +14,15 @@
 
 <Select.Root type="single" onValueChange={handleSelect} value={patternStore.patternDurationBars.toString()}>
 	<Select.Trigger
-		class="h-8 text-xs font-medium hover:bg-background/80 w-[140px] border-transparent bg-transparent focus:ring-0 focus:ring-offset-0"
+		class="h-8 text-xs font-medium hover:bg-background/80 min-w-[140px] border-transparent bg-transparent focus:ring-0 focus:ring-offset-0"
 	>
-		<div class="gap-1 flex items-center">
-			<span class="text-muted-foreground">Pattern:</span>
-			<span class="text-foreground font-semibold">
+		<span class="herMenuTriggerDisplay">
+			<span class="herMenuTriggerLabel">Duration</span>
+			<span class="herMenuTriggerValue">
 				{patternStore.patternDurationBars}
 				{patternStore.patternDurationBars === 1 ? 'Bar' : 'Bars'}
 			</span>
-		</div>
+		</span>
 	</Select.Trigger>
 	<Select.Content>
 		{#each patternLengthOptions as option}

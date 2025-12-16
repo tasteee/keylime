@@ -1,309 +1,380 @@
-@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Cal+Sans&family=Google+Sans+Flex:opsz,wght@6..144,1..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mozilla+Headline:wght@200..700&family=Mozilla+Text:wght@200..700&family=Rubik:ital,wght@0,300..900;1,300..900&family=Savate:ital,wght@0,200..900;1,200..900&family=Stack+Sans+Headline:wght@200..700&family=Stack+Sans+Notch:wght@200..700&family=Stack+Sans+Text:wght@200..700&family=TikTok+Sans:opsz,wght@12..36,300..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geologica:wght,CRSV@100..900,0&display=swap');
+@import '@fontsource/plus-jakarta-sans/400.css';
+@import '@fontsource/plus-jakarta-sans/500.css';
+@import '@fontsource/plus-jakarta-sans/600.css';
+@import '@fontsource/plus-jakarta-sans/700.css';
 
 :root {
-  /* =========================
-     Neutral scale (given)
-     ========================= */
-  --color-n0: #F7F7F7;
-  --color-n1: #EEEEEE;
-  --color-n2: #E5E5E5;
-  --color-n3: #D6D6D6;
-  --color-n4: #C3C3C3;
-  --color-n5: #B1B1B1;
-  --color-n6: #9A9A9A;
-  --color-n7: #6F6F6F;
-  --color-n8: #3F3F3F;
-  --color-n9: #1F1F1F;
+  /* =========================================
+     1. PRIMITIVES (The Raw Palette)
+     A 12-step scale allows for subtle surface interactions.
+     Tint: Cool Slate (premium, industrial feel)
+     ========================================= */
 
-  /* =========================
-     Surface hierarchy
-     ========================= */
-  --surface-app: linear-gradient(-15deg, #c3c3c3, #e5e5e5);
-  --surface-base: var(--color-n2);
-  --surface-panel: var(--color-n0);
-  --surface-panel-2: var(--color-n1);
-  --surface-panel-3: var(--color-n3);
-  --surface-inset: var(--color-n4);
+  /* White & Black constants */
+  --base-white: #ffffff;
+  --base-black: #000000;
 
-  /* =========================
-     Text
-     ========================= */
-  --text-heading: var(--color-n9);
-  --text-primary: var(--color-n8);
-  --text-secondary: var(--color-n7);
-  --text-muted: var(--color-n6);
-  --text-disabled: color-mix(in srgb, var(--color-n6) 60%, transparent);
+  /* Neutral Scale (00 = Lightest, 11 = Darkest) */
+  --n-00: #F9FAFB;
+  /* App Background */
+  --n-01: #F3F4F6;
+  /* Subtle Surface */
+  --n-02: #E5E7EB;
+  /* UI Element Background */
+  --n-03: #D1D5DB;
+  /* Hover States */
+  --n-04: #9CA3AF;
+  /* Disabled / Watermarks */
+  --n-05: #6B7280;
+  /* Tertiary Text / Icons */
+  --n-06: #4B5563;
+  /* Secondary Text */
+  --n-07: #374151;
+  /* Primary Text (Soft) */
+  --n-08: #1F2937;
+  /* Primary Text (Strong) */
+  --n-09: #111827;
+  /* Headings */
+  --n-10: #030712;
+  /* High Contrast */
+  --n-11: #000000;
+  /* Pure Black */
 
-  /* =========================
-     Borders & dividers
-     ========================= */
-  --border-0: color-mix(in srgb, var(--color-n5) 40%, transparent);
-  --border-1: var(--color-n5);
-  --border-2: var(--color-n6);
+  /* Alpha/Glass Scales (For that modern overlay look) */
+  --n-alpha-1: rgba(0, 0, 0, 0.04);
+  --n-alpha-2: rgba(0, 0, 0, 0.08);
+  --n-alpha-3: rgba(0, 0, 0, 0.12);
+  --n-alpha-4: rgba(0, 0, 0, 0.20);
+  --n-alpha-5: rgba(0, 0, 0, 0.40);
 
-  /* =========================
-     Shadows (cool / neutral)
-     ========================= */
-  --shadow-0:
-    0 1px 2px rgba(0, 0, 0, 0.08);
+  /* Danger Scale (Curved for UI needs) */
+  --d-00: #FFF1F2;
+  /* Background */
+  --d-01: #FFE4E6;
+  /* Hover Background */
+  --d-02: #FECDD3;
+  /* Borders */
+  --d-03: #FDA4AF;
+  /* Decorative */
+  --d-04: #F43F5E;
+  /* UI Focus/Active */
+  --d-05: #E11D48;
+  /* Solid Buttons */
+  --d-06: #BE123C;
+  /* Hover Solid */
+  --d-07: #9F1239;
+  /* Text Primary */
+  --d-08: #881337;
+  /* Text Dark */
 
-  --shadow-1:
-    0 4px 12px rgba(0, 0, 0, 0.10);
+  /* Accent/Brand (Optional - tuned to Blue/Indigo) */
+  --a-00: #EEF2FF;
+  --a-05: #6366F1;
+  --a-07: #4338CA;
 
-  --shadow-2:
-    0 8px 24px rgba(0, 0, 0, 0.12);
+  -vc-01: 2px solid #b8457f;
 
-  --shadow--1:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --disabled-button-bg: #9ca3af;
 
-  /* =========================
-     Focus & interaction
-     ========================= */
-  --focus-ring:
-    0 0 0 1px var(--color-n6),
-    0 0 0 3px color-mix(in srgb, var(--color-n6) 35%, transparent);
+  /* =========================================
+     2. SEMANTICS (Usage Tokens)
+     Use these variables in your code, not the raw scales.
+     ========================================= */
 
-  /* =========================
-     Radius & spacing primitives
-     ========================= */
-  --radius-0: 4px;
-  --radius-1: 6px;
-  --radius-2: 10px;
-  --radius-3: 16px;
+  /* Surfaces */
+  --bg-app: var(--base-white);
+  --bg-panel: var(--n-00);
+  /* Main panels */
+  --bg-panel-hover: var(--n-01);
+  --bg-element: var(--n-01);
+  /* Inputs, cards inside panels */
+  --bg-element-hover: var(--n-02);
+  --bg-element-active: var(--n-03);
+  --bg-inset: rgba(0, 0, 0, 0.03);
+  /* For recessed areas */
 
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
+  /* Typography */
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "Geologica", monospace;
 
-  /* =========================
-     Typography
-     ========================= */
-  --font-body: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: var(--font-body);
+  --txt-heading: var(--n-10);
+  --txt-primary: var(--n-08);
+  --txt-secondary: var(--n-06);
+  --txt-tertiary: var(--n-05);
+  --txt-disabled: var(--n-04);
+  --txt-inverse: var(--base-white);
+  --txt-danger: var(--d-07);
 
-  --line-height-body: 1.5;
-  --line-height-heading: 1.15;
+  /* Borders & Dividers */
+  /* The "Hairline" look is very popular */
+  --border-subtle: var(--n-02);
+  --border-default: var(--n-03);
+  --border-strong: var(--n-05);
+  --border-focus: var(--n-08);
+  --border-danger: var(--d-02);
+
+  /* Shadows (Colored shadows > Gray shadows) */
+  --shadow-color: 220 3% 15%;
+  /* HSL values for cleaner blending */
+
+  --shadow-xs: 0px 1px 2px hsl(var(--shadow-color) / 0.05);
+  --shadow-sm:
+    0px 1px 2px hsl(var(--shadow-color) / 0.1),
+    0px 2px 4px hsl(var(--shadow-color) / 0.05);
+  --shadow-md:
+    0px 4px 6px -1px hsl(var(--shadow-color) / 0.1),
+    0px 2px 4px -1px hsl(var(--shadow-color) / 0.06);
+  --shadow-lg:
+    0px 10px 15px -3px hsl(var(--shadow-color) / 0.1),
+    0px 4px 6px -2px hsl(var(--shadow-color) / 0.05);
+
+  /* The "Chiseled" Inner Shadow (Innovative Depth) */
+  --shadow-inset-ring: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-inner-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+
+  /* Focus Rings */
+  --ring-offset: 2px;
+  --ring-width: 2px;
+  --ring-color: var(--n-03);
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Animations */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* =========================
-   Global reset
-   ========================= */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  height: 100%;
-}
+/* =========================================
+   3. GLOBAL RESET & BASE
+   ========================================= */
 
 body {
   margin: 0;
-  font-family: var(--font-body);
-  line-height: var(--line-height-body);
-  color: var(--text-primary);
-  background: var(--surface-app);
+  background-color: var(--bg-app);
+  /* Optional: Subtle Noise Texture for that "Crafted" feel */
+  background-image: radial-gradient(circle at 50% 0%, #ffffff 0%, var(--n-01) 100%);
+  color: var(--txt-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* =========================
-   Headings
-   ========================= */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  color: var(--text-heading);
-  font-family: var(--font-display);
-  line-height: var(--line-height-heading);
-  font-weight: 600;
+/* =========================================
+   4. UTILITY CLASSES (Reusable Styles)
+   ========================================= */
+
+/* Typography Presets */
+.text-display {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--txt-heading);
 }
 
-/* =========================
-   Panels (core building block)
-   ========================= */
-.panel {
-  background: var(--surface-panel);
+.text-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+/* Border Styles - The "High Quality" Look */
+.border-ui {
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
 }
 
-.panel[data-level="2"] {
-  background: var(--surface-panel-2);
+.border-glass {
+  border: 1px solid var(--n-alpha-2);
 }
 
-.panel[data-level="3"] {
-  background: var(--surface-panel-3);
+/* 
+  The "Chiseled" Look: 
+  A technique used by top designers to give depth to flat elements 
+  using a subtle top inner white highlight.
+*/
+.chisel-top {
+  box-shadow:
+    var(--shadow-sm),
+    var(--shadow-inner-top);
 }
 
-/* =========================
-   Inset regions
-   ========================= */
-.inset {
-  background: var(--surface-inset);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-inset);
+/* Interaction States */
+.interactive {
+  transition: all 0.15s var(--ease-smooth);
+  cursor: pointer;
 }
 
-/* =========================
-   Text utilities
-   ========================= */
-.text-secondary {
-  color: var(--text-secondary);
+.interactive:hover {
+  background-color: var(--bg-element-hover);
+  transform: translateY(-1px);
+  /* Micro-interaction */
 }
 
-.text-muted {
-  color: var(--text-muted);
+.interactive:active {
+  background-color: var(--bg-element-active);
+  transform: translateY(0px);
 }
 
-.text-disabled {
-  color: var(--text-disabled);
-}
-
-/* =========================
-   Focus handling
-   ========================= */
-:focus-visible {
+.interactive:focus-visible {
   outline: none;
-  box-shadow: var(--focus-ring);
+  box-shadow:
+    0 0 0 var(--ring-offset) var(--bg-app),
+    0 0 0 calc(var(--ring-offset) + var(--ring-width)) var(--n-08);
 }
 
+/* =========================================
+   5. COMPONENT UPDATES (Refactoring your code)
+   ========================================= */
 
-
+/* Updated Panel Style */
 .herPanel {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: start;
   gap: 16px;
-  padding: 0 16px;
-  height: 64px;
-  flex-shrink: 0;
-  background-color: #EFEFEF;
-  /* background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 1)), url('/d.png');
-  background-size: 120% 120%;
-  background-repeat: no-repeat;
-  background-position: bottom left;
-  background-blend-mode: luminosity; */
+  padding: 0px 16px;
+  height: 56px;
+  /* Slightly taller for modern touch targets */
 
-  border: 1px solid #747474;
-  border-radius: 12px;
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
-  /* box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(0, 0, 0, 0.1), 0 4px 4px rgba(0, 0, 0, 0.1); */
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+
+  /* Modern Depth */
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.herPanelTitleBox {
-  display: flex;
-  /* flex-direction: column; */
-  /* gap: 8px; */
-  /* width: 160px; */
-  /* border: 2px solid #747474; */
-  /* border-radius: 12px; */
-  /* padding: 8px 12px; */
+/* Floating panel variant (Glassmorphism) */
+.herPanel.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--n-alpha-2);
+}
+
+.herPanelTitle {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--txt-heading);
+  letter-spacing: -0.01em;
+  /* Tighter tracking for headings */
 }
 
 .herPanelSubtitle {
-  margin: 0;
+  font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 14px;
-  color: #747474;
-  line-height: 85%;
-
+  font-size: 13px;
+  color: var(--txt-secondary);
 }
 
-.herPanelControls {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-}
-
+/* Updated Badge */
 .herBadge {
-  border: 2px solid #646464;
-  border-radius: 2px;
-  /* background: #fff; */
-  color: #646464;
-  font-size: 12px;
-  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+
+  /* Pill shape is trendier than boxy */
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-element);
+
+  color: var(--txt-secondary);
+  font-family: var(--font-mono);
+  /* Tech feel */
+  font-size: 11px;
   font-weight: 600;
-  padding: 2px 6px;
+  letter-spacing: 0.02em;
+  padding: 4px 8px;
   text-transform: uppercase;
 }
 
-.herText2 {
-  font-size: 14px;
-  font-weight: 500;
-  color: #A5A5A5;
+/* Danger Badge Variant */
+.herBadge.danger {
+  background: var(--d-00);
+  border-color: var(--d-02);
+  color: var(--d-07);
 }
 
-.herSelectTrigger {
-  gap: 8px;
-}
-
-.menuTriggerDisplay {
+/* Inputs / Select Triggers */
+[data-slot="select-trigger"] {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  justify-content: space-between;
+
+  height: 36px;
+  padding: 1px 10px 0 12px;
+
+  background: var(--base-white);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+
+  color: var(--txt-primary);
+  font-size: 13px;
+
+  box-shadow: var(--shadow-xs);
+  transition: all 0.2s var(--ease-smooth);
 }
 
+[data-slot="select-trigger"]:hover {
+  border-color: var(--border-strong);
+  background: var(--n-00);
+}
+
+[data-slot="select-trigger"]:focus {
+  border-color: var(--n-08);
+  box-shadow: 0 0 0 2px var(--n-02);
+}
+
+/* Menu Typography */
 .herMenuTriggerLabel {
+  color: var(--txt-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05rem;
   text-transform: uppercase;
-  font-weight: 800;
-  margin-right: 8px;
-  font-size: 12px;
 }
 
 .herMenuTriggerValue {
+  color: var(--txt-primary);
   font-weight: 400;
+  letter-spacing: 0.05rem;
+
+  font-size: 11px;
 }
 
-.herColumn {
+.herMenuTriggerDisplay {
   display: flex;
-  flex-direction: column;
+  gap: 8px;
+  align-items: center;
 }
 
-
-.herRow {
+.herPanelControls {
+  margin-left: auto;
   display: flex;
-  flex-direction: row;
-}
-
-
-
-
-
-.herPanelTitle {
-  margin: 0;
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--foreground);
-  letter-spacing: -0.02em;
-  font-family: var(--font-display);
-  line-height: 85%;
-}
-
-.herPanelTitleSmall {
-  font-size: 14px;
-  white-space: nowrap;
-  font-weight: 600;
-}
-
-:root [data-is-dragging='true'],
-:root [data-is-resizing='true'],
-:root [data-is-dragging='true'] *:hover {
-  cursor: none !important;
-}
-
-.herSelect.isLabeledRow {
-  display: flex;
-  justify-content: space-between;
+  gap: 8px;
 }

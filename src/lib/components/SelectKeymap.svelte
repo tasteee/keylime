@@ -14,9 +14,9 @@
 
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.selectedKeymap}>
 	<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[120px] border-none bg-transparent shadow-none focus:ring-0">
-		<span class="text-xs">
+		<span class="herMenuTriggerDisplay">
 			<span class="herMenuTriggerLabel">Keymap</span>
-			<span>{mainStore.selectedKeymap}</span>
+			<span class="herMenuTriggerValue">{mainStore.selectedKeymap}</span>
 		</span>
 	</Select.Trigger>
 	<Select.Content>

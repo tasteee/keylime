@@ -1,4 +1,5 @@
 <script lang="ts">
+	import '../lib/styles/theme.css'
 	import '../lib/styles/global.css'
 	import '../app.css'
 	import { ModeWatcher } from 'mode-watcher'

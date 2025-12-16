@@ -30,8 +30,8 @@
 
 	.ChordSymbolDisplay.isRest {
 		letter-spacing: 0.5px;
-		color: #71717b;
-		font-weight: 400;
+		color: var(--n-04);
+		font-weight: 600;
 	}
 
 	.variation {

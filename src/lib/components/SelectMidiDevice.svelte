@@ -36,7 +36,7 @@
 
 <Select.Root type="single" onValueChange={handleSelect} value={output.midiDeviceName}>
 	<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[140px] border-none bg-transparent shadow-none focus:ring-0">
-		<span class="menuTriggerDisplay">
+		<span class="herMenuTriggerDisplay">
 			<span class="herMenuTriggerLabel">Device</span>
 			<span class="herMenuTriggerValue">{output.midiDeviceName || 'Select Device'}</span>
 		</span>

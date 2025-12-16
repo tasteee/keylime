@@ -4,20 +4,22 @@
 	import SelectKey from './SelectKey.svelte'
 	import SelectOctave from './SelectOctave.svelte'
 	import SelectScale from './SelectScale.svelte'
+	import Box from './Box.svelte'
 
 	const gridChords = $derived(gridChordsStore.gridChords)
 </script>
 
-<div class="herPanel chordsPanel">
-	<div class="herPanelTitleBox">
-		<span class="herPanelTitle">Chords</span>
-	</div>
-	<SelectKey />
-	<SelectScale />
-	<SelectOctave />
-</div>
-
 <section class="ChordCardGrid">
+	<Box align="center" justify="between" width="100%" marginBottom="8px">
+		<div class="herPanelTitleBox">
+			<span class="herPanelTitle">Chords</span>
+		</div>
+		<Box gap="8px" align="center">
+			<SelectKey />
+			<SelectScale />
+			<SelectOctave />
+		</Box>
+	</Box>
 	<div class="containerrr">
 		{#each gridChords as chord}
 			<ChordCard {chord} />
@@ -29,7 +31,7 @@
 	.ChordCardGrid {
 		width: 100%;
 		min-height: 0;
-		flex: 0.95;
+		flex: 1;
 	}
 
 	.containerrr {

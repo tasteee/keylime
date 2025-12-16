@@ -334,7 +334,7 @@
 		flex: 1;
 		border-radius: 0px;
 		background-color: var(--timeline-bg);
-		border: 3px solid #747474;
+		border: 2px solid var(--n-04);
 		position: relative;
 		display: flex;
 		flex-direction: column;

@@ -17,7 +17,7 @@
 		data-slot="select-trigger"
 		class="h-8 hover:bg-muted/50 px-2 rounded-md text-sm inline-flex min-w-[100px] items-center justify-between border-none bg-transparent whitespace-nowrap shadow-none transition-colors focus:ring-0"
 	>
-		<span class="menuTriggerDisplay">
+		<span class="herMenuTriggerDisplay">
 			<Icon icon="mingcute:volume-line" class="herMenuTriggerLabel" style="scale: 1.5;" />
 			<span style="width: 30px; font-weight: 400;">{output.volume}</span>
 		</span>

@@ -129,8 +129,8 @@
 	.progressionItem {
 		align-items: center;
 		background-color: #efefef;
-		border-radius: 16px;
-		border: 3px solid #747474;
+		border-radius: 8px;
+		border: 1px solid var(--n-04);
 		color: var(--chord-fg);
 		cursor: default;
 		display: flex;
@@ -161,8 +161,8 @@
 		background-color: #e5e5e5;
 		color: var(--muted-foreground);
 		border-style: dashed;
-		border-width: 3px;
-		border-color: #71717b;
+		border-width: 2px;
+		border-color: var(--n-04);
 		opacity: 1;
 		box-shadow: none;
 	}

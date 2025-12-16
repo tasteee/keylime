@@ -8,10 +8,13 @@
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.selectedScale}>
-	<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[100px] border-none bg-transparent shadow-none focus:ring-0">
-		<span class="text-xs">
+	<Select.Trigger
+		class="h-8 hover:bg-muted/50 px-2 min-w-[140px] border-none bg-transparent shadow-none focus:ring-0"
+		style="max-height: 36px;"
+	>
+		<span class="herMenuTriggerDisplay">
 			<span class="herMenuTriggerLabel">Scale</span>
-			<span>{mainStore.selectedScale}</span>
+			<span class="herMenuTriggerValue">{mainStore.selectedScale}</span>
 		</span>
 	</Select.Trigger>
 	<Select.Content>

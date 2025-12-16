@@ -4,6 +4,7 @@
 		class?: string
 		isHoverable?: boolean
 	}
+
 	let { children, class: className = '', isHoverable = false }: PropsT = $props()
 </script>
 
