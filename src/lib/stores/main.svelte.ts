@@ -1,7 +1,5 @@
 import KEYMAPS_CONFIG from '$lib/constants/keymaps.json';
-import CHORD_MODE_CONFIGS from '$lib/constants/chordModes.json';
 import { Scale, Note } from 'tonal';
-import range from 'array-range';
 
 const getFinalNote = (note: string) => {
   // 1. make sure there are no DOUBLE SHARPS: F## -> G, C## -> D, etc.
@@ -50,8 +48,6 @@ class MainStore {
   mousePlayingNote = $state(null) as string | null;
   rootOctave = $state('3');
   bpm = $state(108);
-  patternLengthBars = $state(1); // Pattern loops every N bars (default 1 bar)
-  progressionLengthBars = $state(4); // Total progression length in bars (default 4 bars)
 
   keyNoteMap = $derived.by(() => {
     const keymapConfig = KEYMAPS_CONFIG[this.selectedKeymap];
@@ -64,7 +60,6 @@ class MainStore {
       return map;
     }, {} as any);
 
-    console.log('keyNoteMap', keyNoteMap);
     return keyNoteMap;
   });
 

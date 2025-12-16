@@ -1,5 +1,5 @@
 <script lang="ts">
-	import mainStore from '$lib/stores/main.svelte'
+	import { patternStore } from '$lib/stores/pattern.svelte'
 
 	const BAR_COUNT = 16
 	const BEATS_PER_BAR = 4
@@ -9,7 +9,7 @@
 	let hoveredBarIndex: number | null = $state(null)
 
 	const handleBarClick = (index: number) => {
-		mainStore.patternLengthBars = index + 1
+		patternStore.patternDurationBars = index + 1
 	}
 </script>
 
@@ -19,7 +19,7 @@
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="barMarker"
-			class:inactive={i >= mainStore.patternLengthBars}
+			class:inactive={i >= patternStore.patternDurationBars}
 			style="width: {BAR_WIDTH}px"
 			onmouseenter={() => (hoveredBarIndex = i)}
 			onmouseleave={() => (hoveredBarIndex = null)}

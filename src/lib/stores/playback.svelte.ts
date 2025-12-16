@@ -61,6 +61,7 @@ class PlaybackStore {
     const signalRows = patternStore.signalRows
     const patternLengthBeats = patternStore.activePatternLengthBeats
     const progressionLengthBeats = progressionStore.getTotalDuration() // Sum of all chord durations
+
     const performance = generatePerformance({
       chords,
       signals,
@@ -68,6 +69,7 @@ class PlaybackStore {
       patternLengthBeats,
       progressionLengthBeats
     })
+
     const data = JSON.parse(JSON.stringify({ performance, patternLengthBeats, progressionLengthBeats, chords, signals }))
     console.log('Generated performance notes:', data)
     return performance

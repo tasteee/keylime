@@ -1,32 +1,22 @@
-import { SIGNAL_IDS, SIGNAL_ROWS } from '$lib/constants/signalRows'
-import mainStore from './main.svelte'
-
-type MoveSignalToRowOptionsT = {
-  fromRowId: string
-  toRowId: string
-  signalId: string
-}
+import { SIGNAL_ROWS } from '$lib/constants/signalRows'
 
 class PatternStore {
   signals: SignalT[] = $state([])
   signalRows = $state(SIGNAL_ROWS)
-  durationBeats = $state(16) // default 4 bars (16 beats)
+  patternDurationBars = $state(1)
 
-  // Derived: active pattern length in beats (based on bars setting)
-  // 1 bar = 4 beats
   activePatternLengthBeats = $derived.by(() => {
-    const barsToBeats = mainStore.patternLengthBars * 4
+    const barsToBeats = this.patternDurationBars * 4
     return barsToBeats
   })
 
   // Derived: only signals within the active pattern range
   activeSignals = $derived.by(() => {
-    const filteredSignals = this.signals.filter((signal) => {
+    return this.signals.filter((signal) => {
       const signalEndTime = signal.startTime + signal.duration
       const isWithinActiveRange = signal.startTime < this.activePatternLengthBeats
       return isWithinActiveRange
     })
-    return filteredSignals
   })
 
   getSignalById = (id: string): SignalT => {

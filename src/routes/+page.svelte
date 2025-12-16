@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ChordCardGrid from '$lib/components/ChordCardGrid.svelte'
+	import HerProjectInfo from '$lib/components/HerProjectInfo.svelte'
 	import output from '$lib/stores/output.svelte'
 	import PatternEditor from '$lib/components/PatternEditor.svelte'
 	import ProgressionPanel from '$lib/components/ProgressionPanel.svelte'
@@ -33,6 +34,8 @@
 	<TopBar bind:activeView />
 
 	<div class="content">
+		<HerProjectInfo />
+
 		{#if activeView === 'chords'}
 			<ChordCardGrid />
 		{/if}

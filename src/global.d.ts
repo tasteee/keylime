@@ -79,3 +79,29 @@ type PerformanceNoteT = {
   chordId: string
   signalId: string
 }
+
+type ProjectT = {
+  id: string
+  title: string
+  description: string
+  userId: string
+  isPublic: boolean
+  key: string
+  scale: string
+  octave: number
+  bpm: number
+  minVelocity: number
+  maxVelocity: number
+  progressionChords: ProgressionChordT[]
+  patternSignals: SignalT[]
+  patternSignalRows: SignalRowsT
+  patternDurationBars: number
+  createdAt: Date | null
+  updatedAt: Date | null
+}
+
+type MoveSignalToRowOptionsT = {
+  fromRowId: string
+  toRowId: string
+  signalId: string
+}
