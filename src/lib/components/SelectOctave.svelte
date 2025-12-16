@@ -12,8 +12,8 @@
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.rootOctave}>
 	<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[80px] border-none bg-transparent shadow-none focus:ring-0">
 		<span class="menuTriggerDisplay">
-			<span class="menuTriggerLabel">Octave</span>
-			<span style="font-weight: 400;">{mainStore.rootOctave.toString()}</span>
+			<span class="herMenuTriggerLabel">Octave</span>
+			<span class="herMenuTriggerValue">{mainStore.rootOctave.toString()}</span>
 		</span>
 	</Select.Trigger>
 	<Select.Content>

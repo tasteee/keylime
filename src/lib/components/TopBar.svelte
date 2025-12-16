@@ -11,12 +11,12 @@
 
 <div class="TopBar">
 	<div class="left">
-		<div class="logo">
+		<a href="/" class="logo">
 			<!-- <div class="logo-icon">
 				<Icon icon="mingcute:lemon-squeezy-fill" class="size-5" />
 			</div> -->
 			<span class="logo-text">KEYLIME</span>
-		</div>
+		</a>
 
 		<div class="divider"></div>
 
@@ -84,9 +84,7 @@
 		font-weight: 900;
 		font-size: 28px;
 		letter-spacing: 1px;
-		background: linear-gradient(to right, var(--foreground), var(--muted-foreground));
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
+		color: var(--color-n6);
 	}
 
 	.divider {

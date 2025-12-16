@@ -29,7 +29,7 @@
 	.ChordCardGrid {
 		width: 100%;
 		min-height: 0;
-		height: 100%;
+		flex: 0.95;
 	}
 
 	.containerrr {

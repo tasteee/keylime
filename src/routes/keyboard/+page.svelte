@@ -52,7 +52,7 @@
 		justify-content: end;
 		align-items: center;
 		height: 100vh;
-		gap: 8px;
+		gap: 16px;
 		padding: 8px;
 	}
 

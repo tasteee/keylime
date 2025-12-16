@@ -10,7 +10,7 @@
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.selectedScale}>
 	<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[100px] border-none bg-transparent shadow-none focus:ring-0">
 		<span class="text-xs">
-			<span class="text-muted-foreground mr-1">Scale</span>
+			<span class="herMenuTriggerLabel">Scale</span>
 			<span>{mainStore.selectedScale}</span>
 		</span>
 	</Select.Trigger>

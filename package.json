@@ -55,6 +55,7 @@
 		"vitest-browser-svelte": "^1.1.0"
 	},
 	"dependencies": {
+		"@fontsource/plus-jakarta-sans": "^5.2.8",
 		"@iconify/svelte": "^5.0.2",
 		"@node-rs/argon2": "^2.0.2",
 		"@tonaljs/voicing": "^5.1.2",
@@ -63,6 +64,7 @@
 		"await-to-js": "^3.0.0",
 		"midi-writer-js": "^3.1.1",
 		"mode-watcher": "^1.1.0",
+		"phosphor-svelte": "^3.0.1",
 		"postgres": "^3.4.7",
 		"smplr": "^0.16.3",
 		"tonal": "^6.4.2",

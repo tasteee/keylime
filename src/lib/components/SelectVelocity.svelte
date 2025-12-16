@@ -10,7 +10,7 @@
 		class="herSelectTrigger h-8 hover:bg-muted/50 px-2 text-sm inline-flex min-w-[100px] items-center justify-between border-none bg-transparent whitespace-nowrap shadow-none transition-colors focus:ring-0"
 	>
 		<span class="menuTriggerDisplay">
-			<span class="menuTriggerLabel">Velocity</span>
+			<span class="herMenuTriggerLabel">Velocity</span>
 			<span style="font-weight: 400; width: 50px;">{output.minVelocity}-{output.maxVelocity}</span>
 		</span>
 		<svg

@@ -10,18 +10,15 @@
 	const isInstrument = $derived(output.type === 'Instrument')
 	const isMidi = $derived(output.type === 'MIDI')
 	const isMidiDeviceSelected = $derived(isMidi && output.midiDeviceName)
+	const titleClasses = 'outputTitle'
 </script>
 
-<div class="BottomBar herPanel progressionPanel">
-	<div class="herPanelTitleBox">
-		<span class="herPanelTitle">Output</span>
-	</div>
-
+<div class="BottomBar progressionPanel">
 	<div class="left">
-		<SelectVolume />
-
+		<div class="flex">
+			<span class={titleClasses}>Output</span>
+		</div>
 		<SelectVelocity />
-
 		<SelectOutputType />
 
 		{#if isInstrument}
@@ -36,12 +33,29 @@
 			<SelectMidiChannel />
 		{/if}
 	</div>
+	<div class="right">
+		<SelectVolume />
+	</div>
 </div>
 
 <style>
-	.left {
+	.BottomBar {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding: 0 16px;
+		height: 64px;
+		width: 100%;
+		flex-shrink: 0;
+	}
+
+	.left,
+	.right {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
 		gap: 16px;
 	}
 
@@ -55,5 +69,13 @@
 		/* border: var(--border-thick); */
 		border-radius: 0px;
 		/* box-shadow: var(--shadow-hard); */
+	}
+
+	.outputTitle {
+		font-weight: 700;
+		font-size: 16px;
+		color: var(--foreground);
+		letter-spacing: 0px;
+		font-family: var(--font-display);
 	}
 </style>

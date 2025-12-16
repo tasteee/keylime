@@ -1,8 +1,181 @@
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Cal+Sans&family=Google+Sans+Flex:opsz,wght@6..144,1..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mozilla+Headline:wght@200..700&family=Mozilla+Text:wght@200..700&family=Rubik:ital,wght@0,300..900;1,300..900&family=Savate:ital,wght@0,200..900;1,200..900&family=Stack+Sans+Headline:wght@200..700&family=Stack+Sans+Notch:wght@200..700&family=Stack+Sans+Text:wght@200..700&family=TikTok+Sans:opsz,wght@12..36,300..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap');
 
 :root {
-  --grayscale10: #131313;
+  /* =========================
+     Neutral scale (given)
+     ========================= */
+  --color-n0: #F7F7F7;
+  --color-n1: #EEEEEE;
+  --color-n2: #E5E5E5;
+  --color-n3: #D6D6D6;
+  --color-n4: #C3C3C3;
+  --color-n5: #B1B1B1;
+  --color-n6: #9A9A9A;
+  --color-n7: #6F6F6F;
+  --color-n8: #3F3F3F;
+  --color-n9: #1F1F1F;
+
+  /* =========================
+     Surface hierarchy
+     ========================= */
+  --surface-app: linear-gradient(-15deg, #c3c3c3, #e5e5e5);
+  --surface-base: var(--color-n2);
+  --surface-panel: var(--color-n0);
+  --surface-panel-2: var(--color-n1);
+  --surface-panel-3: var(--color-n3);
+  --surface-inset: var(--color-n4);
+
+  /* =========================
+     Text
+     ========================= */
+  --text-heading: var(--color-n9);
+  --text-primary: var(--color-n8);
+  --text-secondary: var(--color-n7);
+  --text-muted: var(--color-n6);
+  --text-disabled: color-mix(in srgb, var(--color-n6) 60%, transparent);
+
+  /* =========================
+     Borders & dividers
+     ========================= */
+  --border-0: color-mix(in srgb, var(--color-n5) 40%, transparent);
+  --border-1: var(--color-n5);
+  --border-2: var(--color-n6);
+
+  /* =========================
+     Shadows (cool / neutral)
+     ========================= */
+  --shadow-0:
+    0 1px 2px rgba(0, 0, 0, 0.08);
+
+  --shadow-1:
+    0 4px 12px rgba(0, 0, 0, 0.10);
+
+  --shadow-2:
+    0 8px 24px rgba(0, 0, 0, 0.12);
+
+  --shadow--1:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* =========================
+     Focus & interaction
+     ========================= */
+  --focus-ring:
+    0 0 0 1px var(--color-n6),
+    0 0 0 3px color-mix(in srgb, var(--color-n6) 35%, transparent);
+
+  /* =========================
+     Radius & spacing primitives
+     ========================= */
+  --radius-0: 4px;
+  --radius-1: 6px;
+  --radius-2: 10px;
+  --radius-3: 16px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* =========================
+     Typography
+     ========================= */
+  --font-body: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: var(--font-body);
+
+  --line-height-body: 1.5;
+  --line-height-heading: 1.15;
 }
+
+/* =========================
+   Global reset
+   ========================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  line-height: var(--line-height-body);
+  color: var(--text-primary);
+  background: var(--surface-app);
+}
+
+/* =========================
+   Headings
+   ========================= */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-heading);
+  font-family: var(--font-display);
+  line-height: var(--line-height-heading);
+  font-weight: 600;
+}
+
+/* =========================
+   Panels (core building block)
+   ========================= */
+.panel {
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.panel[data-level="2"] {
+  background: var(--surface-panel-2);
+}
+
+.panel[data-level="3"] {
+  background: var(--surface-panel-3);
+}
+
+/* =========================
+   Inset regions
+   ========================= */
+.inset {
+  background: var(--surface-inset);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-inset);
+}
+
+/* =========================
+   Text utilities
+   ========================= */
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-disabled {
+  color: var(--text-disabled);
+}
+
+/* =========================
+   Focus handling
+   ========================= */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+
 
 .herPanel {
   display: flex;
@@ -11,6 +184,8 @@
   justify-content: start;
   gap: 16px;
   padding: 0 16px;
+  height: 64px;
+  flex-shrink: 0;
   background-color: #EFEFEF;
   /* background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 1)), url('/d.png');
   background-size: 120% 120%;
@@ -20,8 +195,6 @@
 
   border: 1px solid #747474;
   border-radius: 12px;
-  height: 64px;
-  flex-shrink: 0;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
   /* box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(0, 0, 0, 0.1), 0 4px 4px rgba(0, 0, 0, 0.1); */
 }
@@ -82,11 +255,15 @@
   font-size: 14px;
 }
 
-.menuTriggerLabel {
+.herMenuTriggerLabel {
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 800;
   margin-right: 8px;
+  font-size: 12px;
+}
 
+.herMenuTriggerValue {
+  font-weight: 400;
 }
 
 .herColumn {
@@ -107,7 +284,7 @@
 .herPanelTitle {
   margin: 0;
   font-weight: 700;
-  font-size: 24px;
+  font-size: 18px;
   color: var(--foreground);
   letter-spacing: -0.02em;
   font-family: var(--font-display);

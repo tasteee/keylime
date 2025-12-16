@@ -11,8 +11,8 @@
 		class="h-8 hover:bg-muted/50 px-2 rounded-md text-sm inline-flex min-w-[100px] items-center justify-between border-none bg-transparent whitespace-nowrap shadow-none transition-colors focus:ring-0"
 	>
 		<span class="menuTriggerDisplay">
-			<span class="menuTriggerLabel">BPM</span>
-			<span style="font-weight: 400;">{projectStore.bpm}</span>
+			<span class="herMenuTriggerLabel">BPM</span>
+			<span class="herMenuTriggerValue">{projectStore.bpm}</span>
 		</span>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
