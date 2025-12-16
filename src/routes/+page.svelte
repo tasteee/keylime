@@ -58,7 +58,7 @@
 		display: flex;
 		flex-direction: column;
 		flex: 1;
-		gap: 8px;
+		gap: 16px;
 		min-height: 0;
 		overflow: hidden;
 	}

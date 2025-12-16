@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import PatternEditorSignal from './PatternEditorSignal.svelte'
+	import PatternTimingHeader from './PatternTimingHeader.svelte'
+	import SelectPatternLength from './SelectPatternLength.svelte'
 	import { Input } from '$lib/components/ui/input/index.js'
 	import { Label } from '$lib/components/ui/label/index.js'
 	import { SIGNAL_IDS, SIGNAL_ROWS } from '$lib/constants/signalRows'
@@ -18,6 +20,7 @@
 	let selectedSignalId: string | null = $state(null)
 	let isDraggingSignal = $state(false)
 	let draggingToneId: string | null = $state(null)
+	let dragStartToneId: string | null = $state(null)
 	let draggedSignalId: string | null = $state(null)
 	let dragStartX = $state(0)
 	let dragStartTime = $state(0)
@@ -160,6 +163,7 @@
 
 		isDraggingSignal = true
 		draggingToneId = toneId
+		dragStartToneId = toneId
 		draggedSignalId = signalId
 		dragStartX = event.clientX
 		dragStartTime = signal.startTime
@@ -232,17 +236,41 @@
 			if (isResizingLeft) {
 				const newStartTime = Math.max(0, resizeStartTime + deltaBeats)
 				const endTime = resizeStartTime + resizeStartDuration
-				const newDuration = Math.max(BEATS_PER_CELL, endTime - newStartTime)
+
+				// Ensure we don't extend past the active pattern length
+				const maxEndTime = patternStore.activePatternLengthBeats
+				const effectiveEndTime = Math.min(endTime, maxEndTime)
+
+				const newDuration = effectiveEndTime - newStartTime
+
+				// Reject the resize if it would make the signal smaller than minimum
+				const isAtMinimumDuration = signal.duration === BEATS_PER_CELL
+				const wouldShrinkBelowMinimum = newDuration < BEATS_PER_CELL
+				if (isAtMinimumDuration && wouldShrinkBelowMinimum) return
+
+				const clampedDuration = Math.max(BEATS_PER_CELL, newDuration)
 
 				signal.startTime = newStartTime
-				signal.duration = newDuration
+				signal.duration = clampedDuration
 				signal.modifiedTime = Date.now()
 			}
 
 			const isResizingRight = resizeHandle === 'right'
 			if (isResizingRight) {
-				const newDuration = Math.max(BEATS_PER_CELL, resizeStartDuration + deltaBeats)
-				signal.duration = newDuration
+				const newDuration = resizeStartDuration + deltaBeats
+
+				// Reject the resize if it would make the signal smaller than minimum
+				const isAtMinimumDuration = signal.duration === BEATS_PER_CELL
+				const wouldShrinkBelowMinimum = newDuration < BEATS_PER_CELL
+				if (isAtMinimumDuration && wouldShrinkBelowMinimum) return
+
+				const clampedNewDuration = Math.max(BEATS_PER_CELL, newDuration)
+
+				// Clamp to active pattern length
+				const maxDuration = Math.max(BEATS_PER_CELL, patternStore.activePatternLengthBeats - signal.startTime)
+				const clampedDuration = Math.min(clampedNewDuration, maxDuration)
+
+				signal.duration = clampedDuration
 				signal.modifiedTime = Date.now()
 			}
 			return
@@ -278,6 +306,22 @@
 			})
 
 			draggingToneId = currentRowId
+
+			// Stop the previous note if playing
+			if (currentlyPlayingNote) {
+				playbackStore.stopNote({ note: currentlyPlayingNote })
+				currentlyPlayingNote = null
+			}
+
+			// Play the new note for the new row
+			if (selectedChord) {
+				const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: mainStore.rootOctave })
+				const noteToPlay = getNoteFromSignalRow({ signalRowId: currentRowId, chord: null, chordNotes })
+				if (noteToPlay) {
+					currentlyPlayingNote = noteToPlay
+					playbackStore.playNote({ note: noteToPlay })
+				}
+			}
 		}
 
 		const deltaCells = Math.round(deltaX / CELL_WIDTH)
@@ -313,6 +357,39 @@
 		}
 
 		if (wasDragging) {
+			const signal = patternStore.getSignalById(draggedSignalId as string)
+
+			// If the signal starts after the active pattern length, revert the move
+			if (signal && signal.startTime >= patternStore.activePatternLengthBeats) {
+				signal.startTime = dragStartTime
+				signal.modifiedTime = Date.now()
+
+				if (draggingToneId !== dragStartToneId && dragStartToneId) {
+					patternStore.moveSignalToRow({
+						fromRowId: draggingToneId as string,
+						toRowId: dragStartToneId,
+						signalId: draggedSignalId as string
+					})
+				}
+
+				isDraggingSignal = false
+				draggedSignalId = null
+				draggingToneId = null
+				dragStartToneId = null
+				return
+			}
+
+			// Clamp duration if signal extends beyond active pattern length
+			if (signal) {
+				const signalEndTime = signal.startTime + signal.duration
+				const extendsBeyondActivePattern = signalEndTime > patternStore.activePatternLengthBeats
+				if (extendsBeyondActivePattern) {
+					const maxDuration = patternStore.activePatternLengthBeats - signal.startTime
+					signal.duration = Math.max(BEATS_PER_CELL, maxDuration)
+					signal.modifiedTime = Date.now()
+				}
+			}
+
 			const signalRow = patternStore.signalRows[draggingToneId as SignalRowKeyT]
 			const newSignals = resolveSignalConflicts(signalRow, patternStore.signals)
 			patternStore.signals = [...patternStore.signals, ...newSignals]
@@ -321,6 +398,7 @@
 			isDraggingSignal = false
 			draggedSignalId = null
 			draggingToneId = null
+			dragStartToneId = null
 		}
 
 		if (currentlyPlayingNote) {
@@ -458,14 +536,37 @@
 	<div class="herPanelTitleBox">
 		<span class="herPanelTitle">Pattern</span>
 	</div>
+	<div class="herPanelControls">
+		<SelectPatternLength />
+	</div>
 </div>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="PatternEditor">
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="signalGridBox" bind:this={signalGridBox}>
-		<div class="signalGridRowsBox" onmousemove={handleMouseMove} onmouseup={handleMouseUp}>
+		<div class="signalRowLabelsBox" onmouseup={handleLabelMouseUp}>
+			<div class="signalRowLabelSpacer"></div>
 			{#each SIGNAL_IDS as label, index (label + index)}
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div
+					class="signalRowLabel"
+					data-signal-id={label}
+					onmousedown={handleLabelMouseDown}
+					onmouseenter={handleLabelMouseEnter}
+					onmouseleave={handleLabelMouseLeave}
+				>
+					<span class="labelId">{label}</span>
+					{#if signalRowNotes.get(label)}
+						<span class="labelNote">{signalRowNotes.get(label)}</span>
+					{/if}
+				</div>
+			{/each}
+		</div>
+		<div class="signalGridRowsBox" onmousemove={handleMouseMove} onmouseup={handleMouseUp}>
+			<PatternTimingHeader />
+			{#each SIGNAL_IDS as label, index (label + index)}
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<div class="signalGridRow" ondblclick={handleSignalGridRowDoubleClick} data-tone-id={label}>
@@ -492,24 +593,6 @@
 			<!-- Overlay for inactive pattern area -->
 			<div class="inactivePatternOverlay" style="left: {activePatternWidthPx}px;"></div>
 		</div>
-
-		<div class="signalRowLabelsBox" onmouseup={handleLabelMouseUp}>
-			{#each SIGNAL_IDS as label, index (label + index)}
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div
-					class="signalRowLabel"
-					data-signal-id={label}
-					onmousedown={handleLabelMouseDown}
-					onmouseenter={handleLabelMouseEnter}
-					onmouseleave={handleLabelMouseLeave}
-				>
-					<span class="labelId">{label}</span>
-					{#if signalRowNotes.get(label)}
-						<span class="labelNote">{signalRowNotes.get(label)}</span>
-					{/if}
-				</div>
-			{/each}
-		</div>
 	</div>
 </div>
 
@@ -522,19 +605,19 @@
 		gap: 12px;
 		padding: 0;
 		min-height: 0;
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 	}
 
 	.signalGridBox {
 		width: 100%;
 		flex: 1;
 		display: flex;
-		flex-direction: row-reverse;
-		overflow-y: auto;
-		overflow-x: hidden;
+		flex-direction: row;
+		overflow: auto;
 		border: 1px solid var(--border);
-		border-radius: var(--radius-md);
-		background: var(--card);
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+		border-radius: 8px;
+		/* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); */
+		border: 1px solid #747474;
 	}
 
 	.signalRowLabelsBox {
@@ -544,7 +627,20 @@
 		flex-shrink: 0;
 		background: var(--muted);
 		border-right: 1px solid var(--border);
-		z-index: 20;
+		z-index: 110;
+		position: sticky;
+		left: 0;
+	}
+
+	.signalRowLabelSpacer {
+		height: 32px;
+		width: 100%;
+		flex-shrink: 0;
+		background: var(--muted);
+		border-bottom: 1px solid var(--border);
+		position: sticky;
+		top: 0;
+		z-index: 120;
 	}
 
 	.signalRowLabel {
@@ -562,6 +658,7 @@
 		border-bottom: 1px solid var(--border);
 		flex-shrink: 0;
 		user-select: none;
+		background: #f5f5f5;
 		transition:
 			color 0.1s,
 			background-color 0.1s;
@@ -581,7 +678,7 @@
 
 	.signalRowLabel:hover {
 		color: var(--foreground);
-		background-color: var(--accent);
+		background-color: #ffffff;
 		cursor: pointer;
 	}
 
@@ -593,7 +690,6 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		overflow-x: auto;
 		position: relative;
 		min-height: min-content;
 		background-color: var(--background);
@@ -639,54 +735,16 @@
 		border-bottom: none;
 	}
 
-	/* Custom scrollbar styling */
-	.signalGridBox::-webkit-scrollbar {
-		width: 10px;
-		height: 10px;
-	}
-
-	.signalGridBox::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.signalGridBox::-webkit-scrollbar-thumb {
-		background: var(--border);
-		border-radius: 5px;
-		border: 2px solid var(--card); /* Creates padding effect */
-	}
-
-	.signalGridBox::-webkit-scrollbar-thumb:hover {
-		background: var(--muted-foreground);
-	}
-
-	.signalGridRowsBox::-webkit-scrollbar {
-		width: 10px;
-		height: 10px;
-	}
-
-	.signalGridRowsBox::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.signalGridRowsBox::-webkit-scrollbar-thumb {
-		background: var(--border);
-		border-radius: 5px;
-		border: 2px solid var(--background);
-	}
-
-	.signalGridRowsBox::-webkit-scrollbar-thumb:hover {
-		background: var(--muted-foreground);
-	}
-
 	.inactivePatternOverlay {
 		position: absolute;
-		top: 0;
+		top: 32px; /* Below header */
 		bottom: 0;
 		right: 0;
 		background: var(--background);
-		opacity: 0.5;
-		pointer-events: none;
+		opacity: 0.75;
+		pointer-events: auto;
 		z-index: 100;
+		cursor: not-allowed;
 		backdrop-filter: grayscale(100%);
 	}
 </style>

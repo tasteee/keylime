@@ -86,16 +86,10 @@
 
 <style>
 	.chordCard {
-		/* border: 3px solid #747474; */
-		/* background-color: #fff; */
-		/* border-radius: 12px; */
-		border: 2px solid #747474;
-		color: var(--chord-fg);
 		cursor: pointer;
 		display: flex;
 		flex-direction: column;
-		font-family: var(--font-sans);
-		height: 96px;
+		height: 80px;
 		justify-content: center;
 		overflow: visible;
 		padding: 12px 24px;
@@ -103,8 +97,12 @@
 		transition: all 0.1s ease-in-out;
 		user-select: none;
 		z-index: 10;
-		border-width: 1px;
-		border-color: #8f8f98;
+		outline: 2px solid #747474;
+		outline-offset: -1px;
+	}
+
+	.chordCard:last-child {
+		border-bottom-right-radius: 8px;
 	}
 
 	.chordCard:hover {

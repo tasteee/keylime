@@ -317,9 +317,8 @@
 <style>
 	.mainProgressionPanel {
 		width: 100%;
-		height: 140px;
+		height: 115px;
 		flex-shrink: 0;
-		padding: 12px 0px;
 		display: flex;
 		flex-direction: column;
 		z-index: 50;
@@ -344,6 +343,7 @@
 		max-height: 115px;
 		border-radius: 8px;
 		overflow-y: hidden;
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 	}
 
 	.itemArea {
