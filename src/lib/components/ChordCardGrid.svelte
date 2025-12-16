@@ -38,10 +38,14 @@
 		display: grid;
 		flex: 1;
 		grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
-		border: 2px solid #747474;
+		border: 1px solid #747474;
 		overflow: hidden;
 		overflow-y: auto;
 		width: 100%;
+		border-right: none;
+		border-bottom: none;
+		padding-bottom: 1px;
+		padding-right: 1px;
 		/* background: #f6f6f6; */
 	}
 </style>

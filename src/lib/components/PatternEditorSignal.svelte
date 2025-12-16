@@ -14,7 +14,7 @@
 
 	const props: PatternEditorSignalPropsT = $props()
 
-	const backgroundColor = $derived(props.isSelected ? 'var(--primary)' : 'var(--secondary-foreground)')
+	const backgroundColor = $derived('#131313')
 	// Convert beat-based timing to pixel positions
 	// startTime is in beats, beatsPerCell tells us how many beats per cell
 	const leftPosition = $derived((props.signal.startTime / props.beatsPerCell) * props.cellWidth)
@@ -64,7 +64,7 @@
 		cursor: grabbing;
 		z-index: 999;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-		transform: scale(1.02);
+		transform: scale(1.005);
 	}
 
 	.signal {

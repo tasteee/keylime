@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Cal+Sans&family=Google+Sans+Flex:opsz,wght@6..144,1..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mozilla+Headline:wght@200..700&family=Mozilla+Text:wght@200..700&family=Rubik:ital,wght@0,300..900;1,300..900&family=Savate:ital,wght@0,200..900;1,200..900&family=Stack+Sans+Headline:wght@200..700&family=Stack+Sans+Notch:wght@200..700&family=Stack+Sans+Text:wght@200..700&family=TikTok+Sans:opsz,wght@12..36,300..900&family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap');
 
+:root {
+  --grayscale10: #131313;
+}
+
 .herPanel {
   display: flex;
   flex-direction: row;
@@ -14,10 +18,11 @@
   background-position: bottom left;
   background-blend-mode: luminosity; */
 
-  border: 3px solid #747474;
+  border: 1px solid #747474;
   border-radius: 12px;
   height: 64px;
   flex-shrink: 0;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
   /* box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(0, 0, 0, 0.1), 0 4px 4px rgba(0, 0, 0, 0.1); */
 }
 

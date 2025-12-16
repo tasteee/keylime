@@ -73,32 +73,33 @@
 
   /* Custom Scrollbar to match the aesthetic */
   ::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
   }
 
   ::-webkit-scrollbar-track {
-    background: transparent;
-    border-top: 2px solid #747474;
-    /* border-left: 3px solid var(--color-ink); */
+    background: #e5e5e5;
   }
 
   ::-webkit-scrollbar-thumb {
-    border: 2px solid #747474;
-    border-radius: 3px;
-    background: linear-gradient(180deg, #E1E1E1, #CFCFCF);
-
+    background-color: #747474;
+    border-radius: 10px;
+    border: 4px solid transparent;
+    background-clip: content-box;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #fcfcfc;
+    background-color: #555555;
+  }
 
+  ::-webkit-scrollbar-corner {
+    background: #e5e5e5;
   }
 }
 
 body {
   height: 100vh;
-  background-color: #E1E1E1;
+  background-color: #d6d6d6;
 }
 
 body .page {

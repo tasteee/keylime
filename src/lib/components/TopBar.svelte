@@ -12,9 +12,9 @@
 <div class="TopBar">
 	<div class="left">
 		<div class="logo">
-			<div class="logo-icon">
+			<!-- <div class="logo-icon">
 				<Icon icon="mingcute:lemon-squeezy-fill" class="size-5" />
-			</div>
+			</div> -->
 			<span class="logo-text">KEYLIME</span>
 		</div>
 
@@ -49,7 +49,7 @@
 		width: 100%;
 		height: 60px;
 		flex-shrink: 0;
-		padding: 0 32px;
+		padding: 0 16px;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -81,13 +81,9 @@
 
 	.logo-text {
 		font-family: var(--font-display);
-		font-size: 24px;
-	}
-
-	.logo-text {
-		font-weight: 800;
-		font-size: 20px;
-		letter-spacing: -0.03em;
+		font-weight: 900;
+		font-size: 28px;
+		letter-spacing: 1px;
 		background: linear-gradient(to right, var(--foreground), var(--muted-foreground));
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
