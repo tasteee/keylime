@@ -63,7 +63,9 @@
   h4,
   h5,
   h6 {
-    @apply font-display uppercase;
+    /* @apply font-display uppercase; */
+    font-family: var(--font-display);
+    /* text-transform: uppercase; */
   }
 
   /* Custom Scrollbar to match the aesthetic */
@@ -93,8 +95,11 @@
 }
 
 body {
+  min-height: 100vh;
   height: 100vh;
   background-color: #d6d6d6;
+  /* overflow: hidden; */
+  position: relative;
 }
 
 body .page {
@@ -105,3 +110,48 @@ html,
 body {
   overscroll-behavior: none;
 }
+
+html {
+  /* overflow: hidden; */
+  height: 100%;
+}
+
+
+/* heading */
+.title {
+  color: var(--neutral-text);
+  text-align: center;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  margin: 0px 0px 8px;
+}
+
+/* text */
+.description {
+  color: var(--neutral-text);
+  text-align: center;
+  font-size: 14px;
+  line-height: 20px;
+  margin: 0px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
+
+
+/* 
+
+Button solid primary small
+Button solid primary large
+Button solid secondary small
+Button solid secondary large
+Button outline primary small
+Button outline primary large
+Button outline secondary small
+Button outline secondary large
+Button ghost primary small
+Button ghost primary large
+Button ghost secondary small
+Button ghost secondary large
+
+*/

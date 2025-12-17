@@ -77,7 +77,9 @@
 		border: none;
 		transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 		user-select: none;
-		border-radius: var(--radius-full);
+		border-radius: 8px;
+		height: 36px;
+		max-height: 36px;
 	}
 
 	/* --------------------------
@@ -122,13 +124,12 @@
 	/* 1. SOLID KIND (Default) */
 	.isSolidKind {
 		box-shadow: var(--shadow-surface-sm);
-		color: var(--color-text-secondary);
-		background: var(--color-surface-base);
+		color: var(--var-n=02);
+		background: var(--n-05);
 	}
 
 	/* Solid + Default */
 	.isSolidKind.isDefaultColor:not(:disabled):hover {
-		transform: translateY(-1px);
 		box-shadow: var(--shadow-surface-md);
 		color: var(--color-text-primary);
 	}

@@ -532,14 +532,14 @@
 
 <svelte:window onclick={handleClickOutside} onkeydown={handleKeyDown} />
 
-<div class="herPanel patternPanel">
+<!-- <div class="herPanel patternPanel">
 	<div class="herPanelTitleBox">
 		<span class="herPanelTitle">Pattern</span>
 	</div>
 	<div class="herPanelControls">
 		<SelectPatternLength />
 	</div>
-</div>
+</div> -->
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="PatternEditor">

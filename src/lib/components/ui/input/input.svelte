@@ -24,9 +24,7 @@
 		bind:this={ref}
 		data-slot={dataSlot}
 		class={cn(
-			'border-black bg-white selection:text-black placeholder:text-gray-400 h-10 min-w-0 px-3 pt-1.5 text-sm font-mono font-medium flex w-full rounded-none border-[3px] transition-all outline-none selection:bg-[#FF69B4] disabled:cursor-not-allowed disabled:opacity-50',
-			'focus-visible:border-[#CCFF00] focus-visible:shadow-[4px_4px_0px_#00FFFF] focus-visible:ring-0',
-			'aria-invalid:animate-pulse aria-invalid:border-[#FF9900]',
+			'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring h-10 rounded-md px-3 py-2 text-sm file:text-sm file:font-medium flex w-full border file:border-0 file:bg-transparent focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
 			className
 		)}
 		type="file"
@@ -39,9 +37,7 @@
 		bind:this={ref}
 		data-slot={dataSlot}
 		class={cn(
-			'border-black bg-white selection:text-black placeholder:text-gray-400 h-10 min-w-0 px-3 py-1 text-base md:text-sm font-mono flex w-full rounded-none border-[3px] transition-all outline-none selection:bg-[#FF69B4] disabled:cursor-not-allowed disabled:opacity-50',
-			'focus-visible:border-[#CCFF00] focus-visible:shadow-[4px_4px_0px_#00FFFF] focus-visible:ring-0',
-			'aria-invalid:animate-pulse aria-invalid:border-[#FF9900]',
+			'border-neutral-300 bg-white placeholder:text-muted-foreground h-10 rounded-md px-3 py-2 text-sm font-medium focus-visible:border-primary w-full border-2 transition-all outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50',
 			className
 		)}
 		{type}

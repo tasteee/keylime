@@ -12,6 +12,8 @@
 
 	const props: ChordCardPropsT = $props()
 
+	const isPlaying = $derived(playbackStore.currentlyPlayingChordId === props.chord.id)
+
 	const handleContextMenu = (event: MouseEvent) => {
 		event.preventDefault()
 		event.stopPropagation()
@@ -61,6 +63,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class="chordCard"
+	class:playing={isPlaying}
 	onmousedown={onMouseDown}
 	onmouseup={onMouseUp}
 	onmouseleave={onMouseLeave}
@@ -109,6 +112,11 @@
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		background-color: #efefef;
 		/* border: 3px solid #747474; */
+	}
+
+	.chordCard.playing {
+		background-color: #ffffff;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 	}
 
 	.actions {

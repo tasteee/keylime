@@ -352,8 +352,8 @@
 		min-width: 100%;
 		overflow: hidden;
 		/* Add a subtle grid pattern */
-		/* background-image: linear-gradient(to right, var(--timeline-grid) 1px, transparent 1px); */
-		background-size: 80px 100%; /* Matches PIXELS_PER_BEAT */
+		background-image: linear-gradient(to right, var(--timeline-grid) 1px, transparent 1px);
+		background-size: 82px 100%; /* Matches PIXELS_PER_BEAT */
 		display: flex;
 		flex-direction: row;
 		align-items: flex-start;

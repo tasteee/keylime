@@ -100,8 +100,8 @@
 		font-size: 12px;
 		font-weight: bold;
 		color: var(--grayscale10);
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
+		/* text-transform: uppercase; */
+		/* letter-spacing: 0.5px; */
 	}
 
 	.setDurationText span {

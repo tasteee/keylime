@@ -46,15 +46,27 @@
 <style>
 	.TopBar {
 		position: relative;
-		width: 100%;
-		height: 60px;
 		flex-shrink: 0;
-		padding: 0 16px;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		z-index: 50;
 		gap: 32px;
+
+		/* User Styles */
+		background-color: var(--neutral-backgroundLight);
+		border: 1px solid var(--neutral-separatorSubtle);
+		box-shadow: var(--shadow-s5);
+		height: 64px;
+		border-radius: 16px;
+		transition: 120ms ease-in;
+		width: 100%;
+		margin-left: auto;
+		margin-right: auto;
+		padding-left: 16px;
+		padding-right: 16px;
+		max-width: 1370px;
+		margin-bottom: 16px;
 	}
 
 	.left {
@@ -69,14 +81,6 @@
 		gap: 10px;
 		color: var(--foreground);
 		text-decoration: none;
-	}
-
-	.logo-icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: var(--color-ink);
-		border: 3px solid var(--color-ink);
 	}
 
 	.logo-text {
@@ -98,6 +102,9 @@
 		display: flex;
 		gap: 4px;
 		padding: 4px;
+		background-color: var(--n-01);
+		border-radius: var(--radius-md);
+		border: 1px solid var(--border-subtle);
 	}
 
 	.center {

@@ -15,9 +15,6 @@
 
 <div class="BottomBar progressionPanel">
 	<div class="left">
-		<div class="flex">
-			<span class={titleClasses}>Output</span>
-		</div>
 		<SelectVelocity />
 		<SelectOutputType />
 
@@ -46,7 +43,7 @@
 		justify-content: space-between;
 		gap: 16px;
 		padding: 0 16px;
-		height: 64px;
+		height: 36px;
 		width: 100%;
 		flex-shrink: 0;
 	}

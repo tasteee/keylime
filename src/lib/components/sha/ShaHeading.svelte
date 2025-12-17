@@ -69,8 +69,8 @@
 	.isSmallSize {
 		font-size: var(--font-size-base);
 		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		/* text-transform: uppercase; */
+		/* letter-spacing: 0.05em; */
 	}
 
 	/* Alignments */

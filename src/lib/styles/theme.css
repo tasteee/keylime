@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Tilt+Neon&family=TikTok+Sans:wght@400;700&display=swap');
 
 :root {
-  --stackTextFont: "Stack Sans Text", sans-serif;
+  --stackTextFont: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
 
   --font-display: var(--stackTextFont);
@@ -17,56 +17,201 @@
 }
 
 :root {
-  /* Doodle-Pop Neo-Brutalism Palette */
-  --color-ink: #000000;
-  --color-paper: #FFFFFF;
-  --color-pop-pink: #FF69B4;
-  --color-slime: #EFEFEF;
-  --color-cyan: #00FFFF;
-  --color-safety-orange: #FF9900;
-  --color-stipple: #E5E5E5;
+  /* --- New Design System Variables --- */
+  --neutral-text: #1c1b1f;
+  --neutral-textMuted: #312f37;
+  --neutral-textSubtle: #6c6877;
+  --neutral-textDisabled: #928f9d;
+  --neutral-background: #ffffff;
+  --neutral-iconDefault: #605d6b;
+  --neutral-iconHover: #312f37;
+  --neutral-iconDisabled: #acaab5;
+  --neutral-iconLight: #ffffffd9;
+  --neutral-iconLightDisabled: #ffffff66;
+  --neutral-iconDark: #1c1b1fd9;
+  --neutral-iconDarkDisabled: #1c1b1f66;
+  --neutral-textOnPrimary: #ffffff;
+  --neutral-backgroundSubtle: #f1eff7;
+  --neutral-hover: #f1eff7;
+  --neutral-lightHover: #ffffff29;
+  --neutral-lightActive: #ffffff5c;
+  --neutral-darkHover: #1c1b1f29;
+  --neutral-darkActive: #1c1b1f5c;
+  --neutral-disabled: #e3e1e9;
+  --neutral-separatorSubtle: #e3e1e9;
+  --neutral-backgroundStrong: #d5d3dc;
+  --neutral-actionSecondary: #f1eff7;
+  --neutral-actionSecondaryHover: #e3e1e9;
+  --neutral-actionSecondaryActive: #d5d3dc;
+  --neutral-tooltipBackground: #1c1b1f;
+  --neutral-tooltipBorder: #484551;
+  --neutral-shortcutBackground: #53505e;
+  --neutral-textOnDark: #ffffff;
+  --neutral-textOnLight: #1c1b1f;
+  --neutral-overlay: #1c1b1fa6;
+  --neutral-scrollbar: #928f9d;
+  --neutral-control: #d5d3dc;
+  --neutral-cardBackground: #ffffff;
+  --neutral-cardBackgroundStrong: #ffffff;
+  --neutral-transparentBackground: #ffffffd9;
+  --neutral-backgroundLight: #f8f7fe;
+  --neutral-thumb: #e3e1e9;
+  --neutral-codeBackground: #1c1b1f;
+
+  /* Primary */
+  --primary-text: #573CFA;
+  --primary-icon: #6C5EFA;
+  --primary-action: #6b6bb6;
+  /* User requested accent */
+  --primary-actionHover: #6350FF;
+  --primary-actionActive: #573CFA;
+  --primary-background: #6C5EFA;
+  --primary-backgroundSubtle: #DDE1FF;
+  --primary-textOnDark: #7989FE;
+
+  /* Secondary */
+  --secondary-text: #C45300;
+  --secondary-icon: #FB8D1A;
+
+  /* Success */
+  --success-text: #006D3E;
+  --success-icon: #02864A;
+  --success-action: #007B45;
+  --success-actionHover: #02864A;
+  --success-actionActive: #006D3E;
+
+  /* Danger */
+  --danger-text: #BB0032;
+  --danger-icon: #E8083E;
+  --danger-action: #D20038;
+  --danger-actionHover: #E8083E;
+  --danger-actionActive: #BB0032;
+  --danger-background: #FF867E;
+
+  /* Gradients */
+  --gradient-blue: linear-gradient(70deg, #1D163A -0.25%, #5143EB 49.07%, #8C66F8 100%);
+  --gradient-orange: linear-gradient(70deg, #F7BC0D -0.25%, #F27B1E 49.67%, #FF4D51 100%);
+  --gradient-purple: linear-gradient(70deg, #FF4D51 -0.25%, #CF3DD2 49.07%, #8C66F8 100%);
+  --gradient-violet: linear-gradient(70deg, #CF3DD2 -0.25%, #FF4D51 49.26%, #F27B1E 100%);
+  --gradient-hero: linear-gradient(240deg, #5143EB 0%, #8C66F8 20%, #FF4D51 60%, #F27B1E 100%);
+
+  /* Shadows */
+  --shadow-s1: 0px 0px 1px rgba(28, 26, 39, 0.24);
+  --shadow-s2: 0px 1px 2px rgba(28, 26, 39, 0.12), 0px 0px 1px rgba(28, 26, 39, 0.16);
+
+  /* Flows Basics V2 */
+  --flows-basicsV2-bg-default: #ffffff;
+  --flows-basicsV2-bg-subtle: #fafafa;
+  --flows-basicsV2-bg-strong: #eaeaea;
+  --flows-basicsV2-bg-hover: #f0f0f0;
+  --flows-basicsV2-bg-primary: #573cfa;
+  --flows-basicsV2-bg-primary-hover: #6350ff;
+  --flows-basicsV2-bg-overlay: rgba(0, 0, 0, 0.4);
+  --flows-basicsV2-fg-default: #1a1a1a;
+  --flows-basicsV2-fg-onPrimary: #ffffff;
+  --flows-basicsV2-borderWidth: 1px;
+  --flows-basicsV2-border: var(--flows-basicsV2-borderWidth) solid #d6d6d6;
+  --flows-basicsV2-border-strong: var(--flows-basicsV2-borderWidth) solid #ccc;
+  --flows-basicsV2-border-strong-hover: var(--flows-basicsV2-borderWidth) solid #bababa;
+  --flows-basicsV2-border-primary: var(--flows-basicsV2-borderWidth) solid #573cfa;
+  --flows-basicsV2-shadow: 0px 6px 18px rgba(0, 0, 0, 0.15), 0px 3px 8px rgba(0, 0, 0, 0.03), 0px 0px 1px rgba(0, 0, 0, 0.05);
+  --flows-basicsV2-shadow-large: 0px 10px 48px rgba(0, 0, 0, 0.1), 0px 4px 24px rgba(0, 0, 0, 0.12), 0px 0px 1px rgba(0, 0, 0, 0.05);
+  --flows-basicsV2-borderRadius-xs: 3px;
+  --flows-basicsV2-borderRadius-m: 8px;
+  --flows-basicsV2-borderRadius-l: 12px;
+  --flows-basicsV2-borderRadius-xl: 16px;
+  --flows-basicsV2-size-xs: 2px;
+  --flows-basicsV2-size-s: 8px;
+  --flows-basicsV2-size-m: 12px;
+  --flows-basicsV2-size-l: 16px;
+  --flows-basicsV2-size-xl: 20px;
+  --flows-basicsV2-size-xxl: 24px;
+  --flows-basicsV2-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  --flows-basicsV2-base-font-size: 14px;
+  --flows-basicsV2-base-line-height: 20px;
+  --flows-basicsV2-title-font-size: 16px;
+  --flows-basicsV2-title-line-height: 24px;
+  --flows-basicsV2-title-font-weight: 600;
+  --flows-basicsV2-zIndex: 1500;
+  --flows-basicsV2-tooltip-padding: var(--flows-basicsV2-size-xl);
+  --flows-basicsV2-tooltip-overlayBackground: var(--flows-basicsV2-bg-overlay);
+  --flows-basicsV2-tooltip-overlayBorderRadius: var(--flows-basicsV2-borderRadius-m);
+  --flows-basicsV2-tooltip-overlayPadding: 4px;
+  --flows-basicsV2-tooltip-minWidth: 200px;
+  --flows-basicsV2-tooltip-maxWidth: 320px;
+  --flows-basicsV2-modal-overlayBackground: var(--flows-basicsV2-bg-overlay);
+  --flows-basicsV2-modal-padding: var(--flows-basicsV2-size-xxl);
+  --flows-basicsV2-modal-minWidth: 320px;
+  --flows-basicsV2-modal-maxWidth: 640px;
+  --flows-basicsV2-modal-size-small: 420px;
+  --flows-basicsV2-modal-size-medium: 480px;
+  --flows-basicsV2-modal-button-max-width: 600px;
+  --flows-basicsV2-banner-screenEdgePadding: var(--flows-basicsV2-size-xl);
+  --flows-basicsV2-banner-padding: var(--flows-basicsV2-size-xl);
+  --flows-basicsV2-banner-minWidth: 200px;
+  --flows-basicsV2-banner-maxWidth: 320px;
+  --flows-basicsV2-button-font-size: 15px;
+  --flows-basicsV2-button-line-height: 24px;
+  --flows-basicsV2-primary-button-gradient: linear-gradient(#ffffff14, #fff0);
+  --flows-basicsV2-primary-button-shadow: inset 0 1px #ffffff1f, 0 1px 2px #0a0d120d;
+  --flows-basicsV2-secondary-button-shadow: inset 0 -2px 0 0 #fafafa, 0 1px 2px 0 #0d0d0d0d;
+  --flows-basicsV2-progress-dots-size: 10px;
+  --flows-basicsV2-progress-dots-gap: 6px;
+  --shadow-s3: 0px 3px 4px rgba(28, 26, 39, 0.06), 0px 1px 2px rgba(28, 26, 39, 0.08), 0px 0px 1px rgba(28, 26, 39, 0.16);
+  --shadow-s4: 0px 6px 8px rgba(28, 26, 39, 0.08), 0px 3px 4px rgba(28, 26, 39, 0.1), 0px 0px 1px rgba(28, 26, 39, 0.16);
+  --shadow-s5: 0px 12px 16px rgba(28, 26, 39, 0.08), 0px 8px 12px rgba(28, 26, 39, 0.12), 0px 0px 1px rgba(28, 26, 39, 0.16);
+  --shadow-s6: 0px 16px 24px rgba(28, 26, 39, 0.08), 0px 10px 16px rgba(28, 26, 39, 0.12), 0px 0px 1px rgba(28, 26, 39, 0.16);
+  --shadow-web: 16px 32px 32px rgba(18, 16, 21, 0.02), 8px 16px 16px rgba(18, 16, 21, 0.02), 4px 8px 8px rgba(18, 16, 21, 0.02), 2px 4px 4px rgba(18, 16, 21, 0.02), 1px 2px 2px rgba(18, 16, 21, 0.02);
+
+  /* --- Mappings to Shadcn/UI & App Variables --- */
+
+  /* Base Palette Mappings */
+  --color-paper: var(--neutral-background);
+  --color-ink: var(--neutral-text);
+  --color-stipple: var(--neutral-backgroundSubtle);
+  --color-pop-pink: var(--primary-action);
 
   /* Base */
-  --background: var(--color-paper);
-  --foreground: var(--color-ink);
+  --background: var(--neutral-background);
+  --foreground: var(--neutral-text);
 
   /* Cards */
-  --card: var(--color-paper);
-  --card-foreground: var(--color-ink);
+  --card: var(--neutral-cardBackground);
+  --card-foreground: var(--neutral-text);
 
   /* Popovers */
-  --popover: var(--color-paper);
-  --popover-foreground: var(--color-ink);
+  --popover: var(--neutral-cardBackground);
+  --popover-foreground: var(--neutral-text);
 
-  /* Primary - Electric Pink */
-  --primary: var(--color-pop-pink);
-  --primary-foreground: var(--color-ink);
+  /* Primary */
+  --primary: var(--primary-action);
+  --primary-foreground: var(--neutral-textOnPrimary);
 
-  /* Secondary - Slime Green */
-  --secondary: var(--color-slime);
-  --secondary-foreground: var(--color-ink);
+  /* Secondary */
+  --secondary: var(--neutral-actionSecondary);
+  --secondary-foreground: var(--neutral-text);
 
   /* Muted */
-  --muted: var(--color-stipple);
-  --muted-foreground: var(--color-ink);
+  --muted: var(--neutral-backgroundSubtle);
+  --muted-foreground: var(--neutral-textMuted);
 
-  /* Accent - Cyan Blue */
-  --accent: var(--color-cyan);
-  --accent-foreground: var(--color-ink);
-  --accent-border: var(--color-ink);
+  /* Accent */
+  --accent: var(--primary-action);
+  --accent-foreground: var(--neutral-textOnPrimary);
+  --accent-border: var(--neutral-separatorSubtle);
 
-  /* Destructive - Safety Orange */
-  --destructive: var(--color-safety-orange);
-  --destructive-foreground: var(--color-ink);
+  /* Destructive */
+  --destructive: var(--danger-action);
+  --destructive-foreground: var(--neutral-textOnPrimary);
 
   /* Borders & Inputs */
-  --border: var(--color-ink);
-  --input: var(--color-paper);
-  --ring: var(--color-slime);
+  --border: var(--neutral-separatorSubtle);
+  --input: var(--neutral-control);
+  --ring: var(--primary-action);
 
   /* Radius */
-  --radius: 0px;
-  --radius-pill: 999px;
+  --radius: 0.5rem;
+  --radius-pill: 9999px;
 
   /* Layout Dimensions */
   --progression-height: 200px;
@@ -74,36 +219,36 @@
   --bottombar-height: 60px;
 
   /* Design System Specifics */
-  --border-thick: 3px solid var(--color-ink);
-  --shadow-hard: 4px 4px 0px var(--color-ink);
-  --shadow-hard-hover: 6px 6px 0px var(--color-ink);
-  --shadow-hard-active: 0px 0px 0px var(--color-ink);
+  --border-thick: 1px solid var(--border);
+  --shadow-hard: var(--shadow-s2);
+  --shadow-hard-hover: var(--shadow-s4);
+  --shadow-hard-active: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
 
   /* Component Specifics */
 
   /* TopBar & BottomBar */
-  --bar-bg: var(--color-paper);
-  --bar-border: var(--color-ink);
-  --bar-shadow: var(--shadow-hard);
+  --bar-bg: var(--neutral-background);
+  --bar-border: var(--border);
+  --bar-shadow: var(--shadow-s2);
 
   /* Chord Blocks (Cards) */
-  --chord-bg: var(--color-paper);
-  --chord-fg: var(--color-ink);
-  --chord-border: var(--color-ink);
-  --chord-radius: 0px;
-  --chord-shadow: var(--shadow-hard);
+  --chord-bg: var(--neutral-cardBackground);
+  --chord-fg: var(--neutral-text);
+  --chord-border: var(--border);
+  --chord-radius: var(--radius);
+  --chord-shadow: var(--shadow-s2);
 
-  --chord-hover-shadow: var(--shadow-hard-hover);
+  --chord-hover-shadow: var(--shadow-s4);
 
-  --chord-selected-bg: var(--color-cyan);
-  --chord-selected-fg: var(--color-ink);
-  --chord-selected-border: var(--color-ink);
+  --chord-selected-bg: var(--primary);
+  --chord-selected-fg: var(--primary-foreground);
+  --chord-selected-border: var(--primary);
   --chord-selected-shadow: var(--shadow-hard-active);
 
   /* Timeline / Grid */
-  --timeline-bg: var(--color-stipple);
-  --timeline-grid: var(--color-ink);
-  --timeline-marker: var(--color-pop-pink);
+  --timeline-bg: var(--neutral-backgroundSubtle);
+  --timeline-grid: var(--neutral-separatorSubtle);
+  --timeline-marker: var(--primary);
 }
 
 .dark {

@@ -33,7 +33,7 @@
 
 	const classes = $derived(
 		cn(
-			'herButton',
+			'ShaButton herButton',
 			size === 'small' && 'isSmall',
 			size === 'large' && 'isLarge',
 			color === 'gray' && 'isGray',
@@ -65,21 +65,27 @@
 
 <style>
 	:global(.herButton) {
-		display: inline-flex;
+		/* border: 2px solid transparent; */
 		align-items: center;
-		justify-content: center;
-		border-radius: 6px;
+		background: var(--n-50);
+		border-radius: 4px;
+		color: var(--n-00);
+		cursor: pointer;
+		display: inline-flex;
+		font-size: 12px;
 		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.025em;
+		gap: 6px;
+		height: 36px;
+		justify-content: center;
+		/* letter-spacing: 0.5px; */
+		outline-offset: -2px;
+		outline: 2px solid transparent;
+		padding: 0px 8px;
+		/* text-transform: uppercase; */
 		transition: all 0.15s ease;
 		user-select: none;
-		gap: 6px;
-		/* border: 2px solid transparent; */
-		outline: 2px solid transparent;
-		outline-offset: -2px;
-		cursor: pointer;
 		white-space: nowrap;
+		background: #4b5563;
 	}
 
 	:global(.herButton:active) {

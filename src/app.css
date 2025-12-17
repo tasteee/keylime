@@ -95,7 +95,8 @@
   /* For recessed areas */
 
   /* Typography */
-  --font-sans: "Plus Jakarta Sans", sans-serif;
+  /* --font-sans: "Plus Jakarta Sans", sans-serif; */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   --font-mono: "Geologica", monospace;
 
   --txt-heading: var(--n-10);
@@ -113,6 +114,53 @@
   --border-strong: var(--n-05);
   --border-focus: var(--n-08);
   --border-danger: var(--d-02);
+
+
+  /* Backgrounds */
+  --color-bg-app: #F2F3F6;
+  /* The canvas */
+  --color-surface-base: #F7F8FA;
+  /* Cards/Panels */
+  --color-surface-dim: #E6E8EC;
+  /* Pressed states / Track backgrounds */
+
+  /* Text */
+  --color-text-primary: #1A1C20;
+  --color-text-secondary: #646872;
+  --color-text-tertiary: #A0A3AD;
+
+  /* Accents (Music Context) */
+  --color-accent-primary: #667EEA;
+  /* Primary Action / Playhead */
+  --color-accent-secondary: #FF9A9E;
+  /* Recording / Highlight */
+
+
+  /* ------------------------------ */
+  /* ☁️ DEPTH: The Secret Sauce     */
+  /* ------------------------------ */
+
+  /* Level 1: Flat/Inset (Pressed buttons, Slots) */
+  --shadow-inner-sm: inset 0px 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-inner-md: inset 0px 2px 4px rgba(0, 0, 0, 0.06), inset 0px 1px 1px rgba(255, 255, 255, 0.8);
+
+  /* Level 2: Surface (Cards, Standard Buttons) */
+  /* Combines a drop shadow with an inner white "rim light" for definition */
+  --shadow-surface-sm:
+    0px 1px 2px rgba(0, 0, 0, 0.05),
+    inset 0px 0px 0px 1px rgba(255, 255, 255, 0.6);
+
+  --shadow-surface-md:
+    0px 4px 6px -1px rgba(0, 0, 0, 0.04),
+    0px 2px 4px -1px rgba(0, 0, 0, 0.02),
+    inset 0px 0px 0px 1px rgba(255, 255, 255, 0.5);
+
+  /* Level 3: Float (Dropdowns, Dragging Chords) */
+  --shadow-float-lg:
+    0px 20px 25px -5px rgba(0, 0, 0, 0.08),
+    0px 10px 10px -5px rgba(0, 0, 0, 0.03),
+    inset 0px 0px 0px 1px rgba(255, 255, 255, 0.8);
+
 
   /* Shadows (Colored shadows > Gray shadows) */
   --shadow-color: 220 3% 15%;
@@ -261,13 +309,13 @@ body {
   height: 56px;
   /* Slightly taller for modern touch targets */
 
-  background-color: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  /* background-color: var(--bg-panel); */
+  /* border: 1px solid var(--border-subtle); */
+  /* border-radius: var(--radius-md); */
 
   /* Modern Depth */
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  /* box-shadow: var(--shadow-sm); */
+  /* transition: border-color 0.2s, box-shadow 0.2s; */
 }
 
 /* Floating panel variant (Glassmorphism) */
@@ -352,19 +400,16 @@ body {
 
 /* Menu Typography */
 .herMenuTriggerLabel {
-  color: var(--txt-tertiary);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.05rem;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  color: var(--txt-secondary);
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .herMenuTriggerValue {
   color: var(--txt-primary);
-  font-weight: 400;
-  letter-spacing: 0.05rem;
-
-  font-size: 11px;
+  font-weight: 500;
+  font-size: 12px;
 }
 
 .herMenuTriggerDisplay {
@@ -377,4 +422,82 @@ body {
   margin-left: auto;
   display: flex;
   gap: 8px;
+}
+
+/* --- New Design System Typography & Utilities --- */
+
+body {
+  color: var(--neutral-textMuted);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 400;
+  margin: 0px;
+  font-family: var(--font-sans);
+}
+
+h1 {
+  color: var(--neutral-text);
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 800;
+  margin: 0px;
+  font-family: var(--font-sans);
+}
+
+h2 {
+  color: var(--neutral-text);
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: 700;
+  margin: 0px 0px 16px;
+  font-family: var(--font-sans);
+}
+
+h3 {
+  color: var(--neutral-text);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 700;
+  margin: 0px;
+  font-family: var(--font-sans);
+}
+
+.shadow-s1 {
+  box-shadow: var(--shadow-s1);
+}
+
+/* Flows Basics V2 Classes */
+.flows_basicsV2_modal_center {
+  place-self: center;
+}
+
+.flows_basicsV2_modal_width_medium {
+  width: 100%;
+  max-width: var(--flows-basicsV2-modal-size-medium);
+}
+
+.flows_basicsV2_modal_modal {
+  pointer-events: auto;
+  background-color: var(--flows-basicsV2-bg-default);
+  border: var(--flows-basicsV2-border);
+  color: var(--flows-basicsV2-fg-default);
+  border-radius: var(--flows-basicsV2-borderRadius-xl);
+  box-shadow: var(--flows-basicsV2-shadow-large);
+  padding: var(--flows-basicsV2-size-xxl);
+  position: relative;
+  box-sizing: border-box;
+  animation: flows-basicsV2-scaleIn .15s ease-out;
+  position: absolute;
+}
+
+@keyframes flows-basicsV2-scaleIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }

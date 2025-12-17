@@ -46,6 +46,7 @@ class PlaybackStore {
   context = $state(null) as unknown as AudioContext
   piano = $state(null) as unknown as SplendidGrandPiano
   activeChords = $state(new Set()) as Set<string>
+  currentlyPlayingChordId = $state(null) as string | null
   isLoading = $state(false)
   isLoaded = $state(false)
   isPlaying = $state(false)
@@ -113,6 +114,9 @@ class PlaybackStore {
     // Stop any currently playing chord
     this.stopAllScheduledNotes()
 
+    // Track currently playing chord
+    this.currentlyPlayingChordId = chord.id
+
     // Derive notes from chord at play time
     const notes = chordToNotes({ chord, rootOctave: main.rootOctave })
 
@@ -128,6 +132,7 @@ class PlaybackStore {
       notes.forEach((note) => {
         this.stopNote({ note })
       })
+      this.currentlyPlayingChordId = null
     }, durationMs)
   }
 

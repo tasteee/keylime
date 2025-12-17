@@ -150,7 +150,7 @@
 	}
 
 	.progressionItem.isSelected {
-		background: linear-gradient(to bottom right, var(--color-cyan), #02e7e7);
+		background-color: #ffffff;
 		color: var(--chord-selected-fg);
 		border-color: var(--chord-selected-border);
 		z-index: 20;

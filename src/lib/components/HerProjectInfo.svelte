@@ -5,6 +5,7 @@
 	import DialogProjectSettings from './DialogProjectSettings.svelte'
 	import { Button } from 'bits-ui'
 	import Box from './Box.svelte'
+	import ShaButton from './sha/ShaButton.svelte'
 
 	let isSettingsOpen = $state(false)
 
@@ -31,11 +32,11 @@
 
 	<div class="herPanelControls">
 		<SelectBpm />
-		<Button.Root class="ShaBB" onclick={openSettings}>Settings</Button.Root>
+		<ShaButton class="ShaBB" onclick={openSettings}>Settings</ShaButton>
 
 		<Box gap="8px">
-			<Button.Root class="ShaBB">Options</Button.Root>
-			<Button.Root class="ShaBB">Save</Button.Root>
+			<ShaButton class="ShaBB">Options</ShaButton>
+			<ShaButton class="ShaBB">Save</ShaButton>
 		</Box>
 	</div>
 </div>
@@ -53,6 +54,7 @@
 		height: 36px;
 		border-radius: 4px;
 	}
+
 	.herPanelTitleBox {
 		gap: 8px;
 		align-items: center;

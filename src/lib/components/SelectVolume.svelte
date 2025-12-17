@@ -15,7 +15,8 @@
 <Popover.Root>
 	<Popover.Trigger
 		data-slot="select-trigger"
-		class="h-8 hover:bg-muted/50 px-2 rounded-md text-sm inline-flex min-w-[100px] items-center justify-between border-none bg-transparent whitespace-nowrap shadow-none transition-colors focus:ring-0"
+		class="h-8 hover:bg-muted/50 px-2 min-w-[90px] border-none bg-transparent shadow-none focus:ring-0"
+		style="max-height: 36px;"
 	>
 		<span class="herMenuTriggerDisplay">
 			<Icon icon="mingcute:volume-line" class="herMenuTriggerLabel" style="scale: 1.5;" />
