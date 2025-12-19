@@ -3,7 +3,7 @@
 	import HerButton from './HerButton.svelte'
 	import SelectBpm from './SelectBpm.svelte'
 	import DialogProjectSettings from './DialogProjectSettings.svelte'
-	import { Button } from 'bits-ui'
+	import { Button } from '$lib/components/ui/button'
 	import Box from './Box.svelte'
 	import ShaButton from './sha/ShaButton.svelte'
 
@@ -20,49 +20,38 @@
 	const dirtyIndicatorText = $derived(projectStore.isDirty ? '●' : '')
 </script>
 
-<div class="herPanel">
-	<div class="herPanelTitleBox">
+<Box class="ProjectInfoBar" padding="0 12px" height="48px" align="center" justify="between">
+	<Box gap="12px" align="center">
 		<span class="herPanelTitle">Project</span>
 		{#if dirtyIndicatorText}
 			<span class="dirtyIndicator">{dirtyIndicatorText}</span>
 		{/if}
-	</div>
+		<span class="projectTitle">{projectStore.title}</span>
+	</Box>
 
-	<span class="projectTitle">{projectStore.title}</span>
-
-	<div class="herPanelControls">
+	<Box gap="8px">
 		<SelectBpm />
-		<ShaButton class="ShaBB" onclick={openSettings}>Settings</ShaButton>
+		<Button onclick={openSettings}>Settings</Button>
 
 		<Box gap="8px">
-			<ShaButton class="ShaBB">Options</ShaButton>
-			<ShaButton class="ShaBB">Save</ShaButton>
+			<Button>Options</Button>
+			<Button>Save</Button>
 		</Box>
-	</div>
-</div>
+	</Box>
+</Box>
 
 <DialogProjectSettings isOpen={isSettingsOpen} onOpenChange={handleSettingsOpenChange} />
 
 <style>
-	:global(.ShaBB) {
-		background: #4b5563;
-		color: var(--n-00);
-		font-size: 12px;
-		letter-spacing: 0.5px;
-		font-weight: 600;
-		padding: 0px 8px;
-		height: 36px;
-		border-radius: 4px;
-	}
-
-	.herPanelTitleBox {
-		gap: 8px;
-		align-items: center;
+	:global(.ProjectInfoBar) {
+		background: var(--colorWhite);
+		border-bottom: 1px solid var(--n-03);
+		/* border-top: 1px solid var(--n-03); */
 	}
 
 	.dirtyIndicator {
-		color: #ff6b9d;
-		font-size: 20px;
+		color: var(--a);
+		font-size: 12px;
 		line-height: 1;
 		animation: pulse 2s ease-in-out infinite;
 	}
@@ -78,9 +67,7 @@
 	}
 
 	.projectTitle {
-		font-size: 16px;
-		font-weight: 600;
+		font-size: 14px;
 		color: #525252;
-		margin-left: -4px;
 	}
 </style>

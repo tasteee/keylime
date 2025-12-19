@@ -49,7 +49,7 @@
 		font-weight: 600;
 		padding: 0px 8px;
 		height: 36px;
-		border-radius: 4px;
+		border-radius: 5px;
 	}
 
 	/* colors: neutral, danger */

@@ -10,15 +10,7 @@
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.rootOctave}>
-	<Select.Trigger
-		class="h-8 hover:bg-muted/50 px-2 min-w-[80px] border-none bg-transparent shadow-none focus:ring-0"
-		style="max-height: 36px;"
-	>
-		<span class="herMenuTriggerDisplay">
-			<span class="herMenuTriggerLabel">Octave</span>
-			<span class="herMenuTriggerValue">{mainStore.rootOctave.toString()}</span>
-		</span>
-	</Select.Trigger>
+	<Select.Trigger size="small" label="Octave" value={mainStore.rootOctave.toString()} />
 	<Select.Content>
 		<Select.Item value="0">0</Select.Item>
 		<Select.Item value="1">1</Select.Item>

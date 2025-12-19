@@ -70,7 +70,7 @@
 }
 
 body {
-  background-color: var(--color-bg-app);
+  /* background-color: var(--color-bg-app); */
   color: var(--color-text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -84,6 +84,6 @@ body {
 
 /* Utility for focus states - crucial for keyboard-first apps */
 :focus-visible {
-  outline: 2px solid var(--color-accent-primary);
+  outline: 2px solid var(--a);
   outline-offset: 2px;
 }

@@ -49,7 +49,7 @@
 	.checkbox-box {
 		width: 20px;
 		height: 20px;
-		border-radius: 6px; /* Soft square */
+		border-radius: 5px; /* Soft square */
 		border: none;
 
 		/* Unchecked: Recessed Look */
@@ -64,7 +64,7 @@
 
 	/* Checked: Popped & Colored */
 	.isChecked {
-		background: var(--color-accent-primary);
+		background: var(--a);
 		box-shadow: 0px 2px 4px rgba(102, 126, 234, 0.3);
 	}
 

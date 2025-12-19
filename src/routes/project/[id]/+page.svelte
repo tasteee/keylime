@@ -1,11 +1,11 @@
 <script lang="ts">
 	import ChordCardGrid from '$lib/components/ChordCardGrid.svelte'
-	import HerProjectInfo from '$lib/components/HerProjectInfo.svelte'
+	import ProjectInfoBar from '$lib/components/ProjectInfoBar.svelte'
 	import output from '$lib/stores/output.svelte'
 	import PatternEditor from '$lib/components/PatternEditor.svelte'
 	import ProgressionPanel from '$lib/components/ProgressionPanel.svelte'
 	import TopBar from '$lib/components/TopBar.svelte'
-	import BottomBar from '$lib/components/BottomBar.svelte'
+	import InfoBar from '$lib/components/InfoBar.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { browser } from '$app/environment'
 	import { onMount } from 'svelte'
@@ -49,19 +49,20 @@
 	<TopBar bind:activeView />
 
 	<div class="content">
-		<HerProjectInfo />
+		<ProjectInfoBar />
 
 		{#if activeView === 'chords'}
 			<ChordCardGrid />
 		{/if}
 
-		{#if activeView === 'patterns'}
+		{#if activeView === 'pattern'}
 			<PatternEditor />
 		{/if}
 
 		<ProgressionPanel />
-		<BottomBar />
+		<!-- <BottomBar /> -->
 	</div>
+	<InfoBar />
 </div>
 
 <style>
@@ -70,13 +71,11 @@
 		flex-direction: column;
 		height: 100%;
 		overflow: hidden;
-		padding: 12px;
 	}
 	.content {
 		display: flex;
 		flex-direction: column;
 		flex: 1;
-		gap: 16px;
 		min-height: 0;
 		overflow: hidden;
 	}

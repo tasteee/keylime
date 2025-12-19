@@ -12,31 +12,31 @@
      ========================================= */
 
   /* White & Black constants */
-  --base-white: #ffffff;
-  --base-black: #000000;
+  --colorWhite: #ffffff;
+  --colorBlack: #1c1b1f;
 
   /* Neutral Scale (00 = Lightest, 11 = Darkest) */
-  --n-00: #F9FAFB;
+  --n-00: #F8F9FC;
   /* App Background */
-  --n-01: #F3F4F6;
+  --n-01: #F2F3F6;
   /* Subtle Surface */
-  --n-02: #E5E7EB;
+  --n-02: #E2E5E9;
   /* UI Element Background */
   --n-03: #D1D5DB;
   /* Hover States */
-  --n-04: #9CA3AF;
+  --n-04: #9DA3AE;
   /* Disabled / Watermarks */
-  --n-05: #6B7280;
+  --n-05: #6C7381;
   /* Tertiary Text / Icons */
-  --n-06: #4B5563;
+  --n-06: #4D5562;
   /* Secondary Text */
-  --n-07: #374151;
+  --n-07: #394150;
   /* Primary Text (Soft) */
-  --n-08: #1F2937;
+  --n-08: #202936;
   /* Primary Text (Strong) */
-  --n-09: #111827;
+  --n-09: #111927;
   /* Headings */
-  --n-10: #030712;
+  --n-10: #030813;
   /* High Contrast */
   --n-11: #000000;
   /* Pure Black */
@@ -68,10 +68,24 @@
   --d-08: #881337;
   /* Text Dark */
 
-  /* Accent/Brand (Optional - tuned to Blue/Indigo) */
-  --a-00: #EEF2FF;
-  --a-05: #6366F1;
-  --a-07: #4338CA;
+  /* Accent/Brand (Optional - tuned to green */
+  /* --a-01: #E6F6F0;
+  --a-02: #BFF0DA;
+  --a-03: #80E6BA;
+  --a-04: #34D399;
+  --a-05: #06885f;
+  --a-07: #06885f;
+  --a-08: #054E3C; */
+
+  --a: #ef4aac;
+  --a-01: #fde8f4;
+  --a-02: #f9b9df;
+  --a-03: #f58ac9;
+  --a-04: #f05bb4;
+  --a-05: #d31385;
+  --a-06: #a40f67;
+  --a-07: #750a4a;
+  --a-08: #46062c;
 
   -vc-01: 2px solid #b8457f;
 
@@ -83,7 +97,7 @@
      ========================================= */
 
   /* Surfaces */
-  --bg-app: var(--base-white);
+  --bg-app: var(--colorWhite);
   --bg-panel: var(--n-00);
   /* Main panels */
   --bg-panel-hover: var(--n-01);
@@ -104,7 +118,7 @@
   --txt-secondary: var(--n-06);
   --txt-tertiary: var(--n-05);
   --txt-disabled: var(--n-04);
-  --txt-inverse: var(--base-white);
+  --txt-inverse: var(--colorWhite);
   --txt-danger: var(--d-07);
 
   /* Borders & Dividers */
@@ -117,20 +131,22 @@
 
 
   /* Backgrounds */
-  --color-bg-app: #F2F3F6;
+  --color-bg-app: var(--n-01);
   /* The canvas */
-  --color-surface-base: #F7F8FA;
+  --color-surface-base: var(--n-00);
   /* Cards/Panels */
-  --color-surface-dim: #E6E8EC;
+  --color-surface-dim: var(--n-02);
   /* Pressed states / Track backgrounds */
 
+  --color-panel-bg: var(--n-01);
+
   /* Text */
-  --color-text-primary: #1A1C20;
-  --color-text-secondary: #646872;
-  --color-text-tertiary: #A0A3AD;
+  --color-text-primary: var(--n-09);
+  --color-text-secondary: var(--n-06);
+  --color-text-tertiary: var(--n-04);
 
   /* Accents (Music Context) */
-  --color-accent-primary: #667EEA;
+  --color-accent-primary: #06885f;
   /* Primary Action / Playhead */
   --color-accent-secondary: #FF9A9E;
   /* Recording / Highlight */
@@ -203,10 +219,11 @@
    ========================================= */
 
 body {
+  background: var(--n-00);
   margin: 0;
-  background-color: var(--bg-app);
+  /* background-color: var(--bg-app); */
   /* Optional: Subtle Noise Texture for that "Crafted" feel */
-  background-image: radial-gradient(circle at 50% 0%, #ffffff 0%, var(--n-01) 100%);
+  /* background-image: radial-gradient(circle at 50% 0%, #ffffff 0%, var(--n-01) 100%); */
   color: var(--txt-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -377,7 +394,7 @@ body {
   height: 36px;
   padding: 1px 10px 0 12px;
 
-  background: var(--base-white);
+  background: var(--colorWhite);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
 
@@ -500,4 +517,8 @@ h3 {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
+}
+
+[data-bits-floating-content-wrapper] {
+  z-index: 99999999 !important;
 }

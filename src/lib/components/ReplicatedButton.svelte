@@ -7,13 +7,14 @@
 		iconAfter?: boolean
 		disabled?: boolean
 		class?: string
+		onclick?: () => void
 	}
 
 	// NEVER DESTRUCTURE PROPS EVER!
 	const props: ReplicatedButtonPropsT = $props()
 </script>
 
-<button type="button" class="replicated-button {props.class ?? ''}" disabled={props.disabled}>
+<button type="button" class="replicated-button {props.class ?? ''}" disabled={props.disabled} onclick={props.onclick}>
 	{#if props.icon && !props.iconAfter}
 		<span class="icon-wrapper">
 			{@render props.icon()}
@@ -34,7 +35,7 @@
 		background-color: rgb(255, 255, 255);
 		block-size: 28px;
 		border: none;
-		border-radius: 8px;
+		border-radius: 5px;
 		box-shadow:
 			rgba(28, 26, 39, 0.12) 0px 1px 2px 0px,
 			rgba(28, 26, 39, 0.16) 0px 0px 1px 0px;

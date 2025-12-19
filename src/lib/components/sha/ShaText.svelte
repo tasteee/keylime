@@ -101,7 +101,7 @@
 		color: var(--color-text-secondary);
 	}
 	.isAccentColor {
-		color: var(--color-accent-primary);
+		color: var(--a);
 	}
 	.isDangerColor {
 		color: #ff5a5f;

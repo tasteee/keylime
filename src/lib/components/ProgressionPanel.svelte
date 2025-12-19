@@ -7,9 +7,12 @@
 	import main from '$lib/stores/main.svelte'
 	import Icon from '@iconify/svelte'
 	import { exportPerformanceAsMidi } from '$lib/helpers/midiExport'
-	import SelectPatternLength from './SelectPatternLength.svelte'
-	import HerButton from './HerButton.svelte'
 	import { toFractionString } from '$lib/helpers/numbers'
+	import { DownloadSimple, Plus } from 'phosphor-svelte'
+	import { Button } from './ui/button'
+	import BottomBar from './BottomBar.svelte'
+	import ShaDivider from './sha/ShaDivider.svelte'
+	import Box from './Box.svelte'
 
 	let isDraggingItem = $state(false)
 	let draggedItemId: string | null = $state(null)
@@ -239,82 +242,122 @@
 
 <svelte:window onkeydown={handleKeyDown} onmousemove={handleMouseMove} onmouseup={handleMouseUp} />
 
-<div class="herPanel progressionPanel">
-	<div class="herPanelTitleBox">
-		<span class="herPanelTitle">Progression</span>
-	</div>
-
-	<span class="text-xs font-medium text-foreground/80 whitespace-nowrap">
-		{toFractionString(totalBars)}
-		{totalBars === 1 ? 'BAR' : 'BARS'}
-	</span>
-
-	<div class="gap-1 ml-2 flex items-center">
-		<HerButton onclick={togglePlayback} kind="outline" size="large" class="mr-1">
-			{#if playbackStore.isPlaying}
-				<Icon icon="mingcute:stop-fill" width="20px" height="20px" />
-			{:else}
-				<Icon icon="mingcute:play-fill" width="20px" height="20px" />
-			{/if}
-		</HerButton>
-		<HerButton onclick={handleDownloadMidi} kind="outline" size="large" class="mr-1">
-			<Icon icon="mingcute:download-2-fill" width="20px" height="20px" />
-		</HerButton>
-	</div>
-
-	<HerButton kind="outline" size="large" onclick={handleAddRest}>
-		<Icon icon="mingcute:plus-fill" width="12" />
-		Add Rest
-	</HerButton>
-
-	<ProgressionSelectionControls />
-</div>
-
-<div class="mainProgressionPanel" data-is-dragging={isDraggingItem || isResizingItem} data-is-resizing={isResizingItem}>
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<div class="middle" bind:this={middleElement} onclick={handleMiddleClick} onwheel={handleWheel}>
-		<div class="itemArea" bind:this={itemAreaElement} style="width: {itemAreaWidth}px;">
-			<ProgressionTimingMarkers
-				pixelsPerBeat={PIXELS_PER_BEAT}
-				beatsPerBar={BEATS_PER_BAR}
-				maxMarkerBars={MAX_MARKER_BARS}
-			/>
-			{#each progressionStore.items as item, index (item.id)}
-				<ProgressionChordCard
-					{item}
-					{index}
-					pixelsPerBeat={PIXELS_PER_BEAT}
-					isDragging={isDraggingItem && draggedItemId === item?.id}
-					isResizing={isResizingItem && resizingItemId === item?.id}
-					selectItem={handleItemClick}
-					onItemMouseDown={handleItemMouseDown}
-					onResizeMouseDown={handleResizeMouseDown}
-				/>
-			{/each}
-		</div>
-	</div>
-
-	{#if ghostItem && isDraggingItem}
-		<div
-			class="ghostItem"
-			style="
-				left: {ghostItemMouseX}px;
-				top: {ghostItemMouseY}px;
-			"
-		>
-			<span class="ghostItemText">
-				{#if ghostItem.type === 'rest'}
-					REST
+<div class="progressionPanelContainer">
+	<!-- Toolbar -->
+	<div class="progressionToolbar">
+		<Box gap="16px" align="center">
+			<Button onclick={togglePlayback} size="large" color="neutral" isIcon={true}>
+				{#if playbackStore.isPlaying}
+					<Icon icon="mingcute:stop-fill" width="20px" height="20px" />
 				{:else}
-					{ghostItem.symbol}
+					<Icon icon="mingcute:play-fill" width="20px" height="20px" />
 				{/if}
-			</span>
+			</Button>
+
+			<div class="titleSection">
+				<span class="herPanelTitle">Progression</span>
+				<span class="progressionBarCount text-xs font-medium text-foreground/80 whitespace-nowrap uppercase">
+					{toFractionString(totalBars)}
+					{totalBars === 1 ? 'BAR' : 'BARS'}
+				</span>
+			</div>
+		</Box>
+		<ShaDivider margin="24px" />
+
+		<Box gap="16px" align="center">
+			<Button size="small" onclick={handleDownloadMidi}>
+				<DownloadSimple size={16} weight="bold" />
+				<span>Download</span>
+			</Button>
+
+			<Button size="small" onclick={handleAddRest}>
+				<Plus size={16} weight="bold" />
+				<span>Add Rest</span>
+			</Button>
+		</Box>
+
+		<ShaDivider margin="24px" />
+
+		<ProgressionSelectionControls />
+	</div>
+
+	<!-- Main Progression Area -->
+	<div class="mainProgressionPanel" data-is-dragging={isDraggingItem || isResizingItem} data-is-resizing={isResizingItem}>
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<div class="middle" bind:this={middleElement} onclick={handleMiddleClick} onwheel={handleWheel}>
+			<div class="itemArea" bind:this={itemAreaElement} style="width: {itemAreaWidth}px;">
+				<ProgressionTimingMarkers
+					pixelsPerBeat={PIXELS_PER_BEAT}
+					beatsPerBar={BEATS_PER_BAR}
+					maxMarkerBars={MAX_MARKER_BARS}
+				/>
+				{#each progressionStore.items as item, index (item.id)}
+					<ProgressionChordCard
+						{item}
+						{index}
+						pixelsPerBeat={PIXELS_PER_BEAT}
+						isDragging={isDraggingItem && draggedItemId === item?.id}
+						isResizing={isResizingItem && resizingItemId === item?.id}
+						selectItem={handleItemClick}
+						onItemMouseDown={handleItemMouseDown}
+						onResizeMouseDown={handleResizeMouseDown}
+					/>
+				{/each}
+			</div>
 		</div>
-	{/if}
+
+		{#if ghostItem && isDraggingItem}
+			<div
+				class="ghostItem"
+				style="
+					left: {ghostItemMouseX}px;
+					top: {ghostItemMouseY}px;
+				"
+			>
+				<span class="ghostItemText">
+					{#if ghostItem.type === 'rest'}
+						REST
+					{:else}
+						{ghostItem.symbol}
+					{/if}
+				</span>
+			</div>
+		{/if}
+	</div>
+
+	<BottomBar />
 </div>
 
 <style>
+	.progressionPanelContainer {
+		width: 100vw;
+		position: relative;
+		left: 50%;
+		right: 50%;
+		margin-left: -50vw;
+		margin-right: -50vw;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.progressionToolbar {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		/* gap: 16px; */
+		padding: 0px 24px;
+		height: 54px;
+		background-color: var(--color-panel-bg);
+		border-bottom: 1px solid var(--n-03);
+		border-top: 1px solid var(--n-03);
+	}
+
+	.titleSection {
+		display: flex;
+		flex-direction: column;
+	}
+
 	.mainProgressionPanel {
 		width: 100%;
 		height: 115px;
@@ -324,26 +367,18 @@
 		z-index: 50;
 	}
 
-	.controls-group {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
 	.middle {
 		flex: 1;
 		border-radius: 0px;
-		background-color: var(--timeline-bg);
-		border: 2px solid var(--n-04);
+		background-color: var(--n-00);
 		position: relative;
 		display: flex;
 		flex-direction: column;
 		overflow-x: auto;
 		overflow-y: hidden;
 		max-height: 115px;
-		border-radius: 8px;
 		overflow-y: hidden;
-		box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+		/* box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px; */
 	}
 
 	.itemArea {
@@ -352,8 +387,9 @@
 		min-width: 100%;
 		overflow: hidden;
 		/* Add a subtle grid pattern */
-		background-image: linear-gradient(to right, var(--timeline-grid) 1px, transparent 1px);
-		background-size: 82px 100%; /* Matches PIXELS_PER_BEAT */
+		/* background-image: linear-gradient(to right, var(--timeline-grid) 1px, transparent 1px); */
+		/* background-size: 82px 100%; */
+		/* Matches PIXELS_PER_BEAT */
 		display: flex;
 		flex-direction: row;
 		align-items: flex-start;
@@ -379,5 +415,10 @@
 
 	.ghostItemText {
 		white-space: nowrap;
+	}
+
+	.progressionBarCount {
+		position: relative;
+		top: -5px;
 	}
 </style>

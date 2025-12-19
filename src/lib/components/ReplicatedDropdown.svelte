@@ -130,7 +130,7 @@
 		background-color: rgb(255, 255, 255);
 		block-size: 28px;
 		border: none;
-		border-radius: 8px;
+		border-radius: 5px;
 		box-shadow:
 			rgba(28, 26, 39, 0.12) 0px 1px 2px 0px,
 			rgba(28, 26, 39, 0.16) 0px 0px 1px 0px;
@@ -222,7 +222,7 @@
 		left: 0;
 		background-color: rgb(255, 255, 255);
 		border: 1px solid rgb(227, 225, 233);
-		border-radius: 12px;
+		border-radius: 5px;
 		box-shadow:
 			rgba(28, 26, 39, 0.08) 0px 6px 8px 0px,
 			rgba(28, 26, 39, 0.1) 0px 3px 4px 0px,
@@ -276,7 +276,7 @@
 		appearance: none;
 		background-color: transparent;
 		border: none;
-		border-radius: 6px;
+		border-radius: 5px;
 		color: rgb(28, 27, 31);
 		cursor: pointer;
 		display: flex;

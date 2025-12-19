@@ -65,12 +65,12 @@
 	}
 	.isMediumSize {
 		font-size: var(--font-size-lg);
-	} /* Default H2/H3 feel */
+	}
+
+	/* Default H2/H3 feel */
 	.isSmallSize {
 		font-size: var(--font-size-base);
 		font-weight: 600;
-		/* text-transform: uppercase; */
-		/* letter-spacing: 0.05em; */
 	}
 
 	/* Alignments */

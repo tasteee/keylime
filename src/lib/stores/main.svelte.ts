@@ -43,6 +43,7 @@ class MainStore {
   selectedChordMode = $state('Off');
   isScaleLockActive = $state(true);
   currentOpenPopoverId = $state(null) as string | null;
+  infoText = $state('');
 
   pressedNotes = $state([]) as string[];
   mousePlayingNote = $state(null) as string | null;

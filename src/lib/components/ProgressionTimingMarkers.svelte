@@ -54,7 +54,7 @@
 	}
 
 	.barMarkerLine {
-		width: 2px;
+		width: 1px;
 		height: 100%;
 		background-color: var(--n-06);
 		opacity: 0.5;
@@ -74,10 +74,7 @@
 		font-weight: 600;
 		color: var(--n-06);
 		margin-left: 8px;
-		margin-top: 4px;
 		white-space: nowrap;
-		/* text-transform: uppercase; */
-		/* letter-spacing: 0.05em; */
 		font-family: var(--font-mono);
 	}
 </style>

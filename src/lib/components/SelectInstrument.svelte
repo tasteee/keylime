@@ -14,12 +14,7 @@
 </script>
 
 <Select.Root type="single" name="instrument" bind:value={output.instrument}>
-	<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[140px] border-none bg-transparent shadow-none focus:ring-0">
-		<span class="herMenuTriggerDisplay">
-			<span class="herMenuTriggerLabel">Instrument</span>
-			<span class="herMenuTriggerValue">{currentInstrument}</span>
-		</span>
-	</Select.Trigger>
+	<Select.Trigger size="small" label="Instrument" value={output.instrument} />
 	<Select.Content>
 		<Select.Group>
 			{#each instruments as instrument (instrument.value)}

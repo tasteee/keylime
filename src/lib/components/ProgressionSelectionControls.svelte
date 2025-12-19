@@ -3,8 +3,7 @@
 	import Icon from '@iconify/svelte'
 	import { Button } from '$lib/components/ui/button'
 	import { toFractionString } from '$lib/helpers/numbers'
-	import HerDivider from './HerDivider.svelte'
-	import HerButton from './HerButton.svelte'
+	import SheDivider from '$lib/components/sha/ShaDivider.svelte'
 
 	const BEATS_PER_BAR = 4
 	const MIN_DURATION_BEATS = 1
@@ -23,7 +22,7 @@
 
 	const adjustDuration = (delta: number) => {
 		if (!selectedItem) return
-		const newDuration = Math.max(MIN_DURATION_BEATS, selectedItem.durationBeats + delta)
+		const newDuration = Math.max(MIN_DURATION_BEATS, selectedItem.durationBeats + delta * 0.5)
 		progressionStore.updateItem({
 			id: selectedItem.id,
 			durationBeats: newDuration
@@ -55,7 +54,7 @@
 
 <div class="selectionControls">
 	{#if selectedItem}
-		<p class="herPanelTitleSmall">{selectedTypeText}</p>
+		<!-- <p class="herPanelTitleSmall">{selectedTypeText}</p> -->
 
 		<div class="controls-group">
 			<span class="text-xs font-medium text-foreground/80 whitespace-nowrap">
@@ -63,64 +62,34 @@
 				{selectedItem.durationBeats / BEATS_PER_BAR === 1 ? 'BAR' : 'BARS'}
 			</span>
 
-			<HerDivider />
+			<SheDivider />
 
-			<HerButton
-				kind="ghost"
-				size="large"
-				onclick={() => adjustDuration(-1)}
-				title="Decrease duration"
-				label=""
-				leftIcon="mingcute:minimize-line"
-			/>
+			<Button kind="ghost" isIcon onclick={() => adjustDuration(-1)} title="Decrease duration">
+				<Icon icon="mingcute:minimize-line" class="w-5 h-5" />
+			</Button>
 
-			<HerButton
-				kind="ghost"
-				size="large"
-				onclick={() => adjustDuration(1)}
-				title="Increase duration"
-				label=""
-				leftIcon="mingcute:add-line"
-			/>
+			<Button kind="ghost" isIcon onclick={() => adjustDuration(1)} title="Increase duration">
+				<Icon icon="mingcute:add-line" class="w-5 h-5" />
+			</Button>
 
-			<HerDivider />
+			<SheDivider />
 
-			<HerButton
-				kind="ghost"
-				size="large"
-				onclick={() => moveItem(-1)}
-				title="Move Left"
-				leftIcon="mingcute:arrow-left-line"
-				label=""
-			/>
+			<Button kind="ghost" isIcon onclick={() => moveItem(-1)} title="Move Left">
+				<Icon icon="mingcute:arrow-left-line" class="w-5 h-5" />
+			</Button>
 
-			<HerButton
-				kind="ghost"
-				size="large"
-				onclick={() => moveItem(1)}
-				title="Move Right"
-				leftIcon="mingcute:arrow-right-line"
-				label=""
-			/>
+			<Button kind="ghost" isIcon onclick={() => moveItem(1)} title="Move Right">
+				<Icon icon="mingcute:arrow-right-line" class="w-5 h-5" />
+			</Button>
 
-			<HerDivider />
+			<SheDivider />
 
-			<HerButton
-				kind="ghost"
-				size="large"
-				onclick={handleDuplicate}
-				title="Duplicate"
-				leftIcon="mingcute:copy-2-fill"
-				label=""
-			/>
-			<HerButton
-				kind="ghost"
-				size="large"
-				onclick={handleDelete}
-				title="Delete"
-				rightIcon="mingcute:delete-2-fill"
-				label=""
-			/>
+			<Button kind="ghost" isIcon onclick={handleDuplicate} title="Duplicate">
+				<Icon icon="mingcute:copy-2-fill" class="w-5 h-5" />
+			</Button>
+			<Button kind="ghost" isIcon onclick={handleDelete} title="Delete">
+				<Icon icon="mingcute:delete-2-fill" class="w-5 h-5" />
+			</Button>
 		</div>
 	{/if}
 </div>
@@ -137,5 +106,8 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
+		border: 1px solid var(--n-03);
+		padding: 4px 8px 4px 12px;
+		border-radius: 6px;
 	}
 </style>

@@ -92,7 +92,7 @@
 
 	/* Checked State */
 	.isChecked {
-		background: var(--color-accent-primary);
+		background: var(--a);
 		box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
 	}
 

@@ -42,10 +42,12 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 16px;
-		padding: 0 16px;
-		height: 36px;
+		padding: 8px 16px;
+		/* height: 36px; */
 		width: 100%;
 		flex-shrink: 0;
+		border-top: 1px solid var(--n-03);
+		background: var(--n-01);
 	}
 
 	.left,

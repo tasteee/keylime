@@ -51,28 +51,27 @@
 		position: sticky;
 		top: 0;
 		z-index: 101;
-		background: var(--muted);
-		border-bottom: 1px solid var(--border);
+		background: var(--colorWhite);
+		border-bottom: 1px solid var(--n-03);
 		width: fit-content;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+		/* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); */
 	}
 
 	.barMarker {
 		height: 100%;
-		border-left: 1px solid var(--border);
+		border-left: 1px solid var(--n-03);
 		display: flex;
 		font-size: 10px;
 		font-weight: 600;
-		color: var(--muted-foreground);
+		color: var(--n-05);
 		user-select: none;
 		box-sizing: border-box;
 		position: relative;
 		left: -1px;
-		transition: background-color 0.1s;
 	}
 
 	.barMarker.inactive {
-		background-color: #c3c3c3;
+		background-color: var(--n-03);
 		opacity: 0.5;
 	}
 
@@ -91,17 +90,16 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		opacity: 0.9;
+		opacity: 0.75;
 		z-index: 10;
-		border-right: 1px solid var(--border);
+		background: var(--n-00);
+		/* border-right: 1px solid var(--n-03); */
 	}
 
 	.setDurationText {
 		font-size: 12px;
 		font-weight: bold;
 		color: var(--grayscale10);
-		/* text-transform: uppercase; */
-		/* letter-spacing: 0.5px; */
 	}
 
 	.setDurationText span {

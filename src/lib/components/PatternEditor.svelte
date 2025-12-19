@@ -605,7 +605,8 @@
 		gap: 12px;
 		padding: 0;
 		min-height: 0;
-		box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+		/* border-bottom: 1px solid var(--n-03); */
+		/* border-top: 1px solid var(--n-03); */
 	}
 
 	.signalGridBox {
@@ -614,10 +615,8 @@
 		display: flex;
 		flex-direction: row;
 		overflow: auto;
-		border: 1px solid var(--border);
-		border-radius: 8px;
-		/* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); */
-		border: 1px solid #747474;
+		/* border: 1px solid var(--n-03); */
+		/* border: 1px solid #747474; */
 	}
 
 	.signalRowLabelsBox {
@@ -625,8 +624,8 @@
 		height: fit-content;
 		flex-direction: column;
 		flex-shrink: 0;
-		background: var(--muted);
-		border-right: 1px solid var(--border);
+		background: red;
+		border-right: 1px solid var(--n-03);
 		z-index: 110;
 		position: sticky;
 		left: 0;
@@ -636,8 +635,8 @@
 		height: 32px;
 		width: 100%;
 		flex-shrink: 0;
-		background: var(--muted);
-		border-bottom: 1px solid var(--border);
+		background: var(--colorWhite);
+		border-bottom: 1px solid var(--n-03);
 		position: sticky;
 		top: 0;
 		z-index: 120;
@@ -654,11 +653,11 @@
 		gap: 8px;
 		font-size: 11px;
 		font-weight: 600;
-		color: var(--muted-foreground);
-		border-bottom: 1px solid var(--border);
+		color: var(--n-05);
+		border-bottom: 1px solid var(--n-03);
 		flex-shrink: 0;
 		user-select: none;
-		background: #f5f5f5;
+		background: var(--n-00);
 		transition:
 			color 0.1s,
 			background-color 0.1s;
@@ -671,14 +670,14 @@
 
 	.labelNote {
 		text-align: left;
-		color: var(--primary);
-		font-weight: 500;
+		color: var(--a-03);
+		font-weight: 700;
 		min-width: 28px;
 	}
 
 	.signalRowLabel:hover {
-		color: var(--foreground);
-		background-color: #ffffff;
+		color: var(--n-08);
+		background: var(--colorWhite);
 		cursor: pointer;
 	}
 
@@ -709,7 +708,7 @@
 		flex-shrink: 0;
 		position: relative;
 		background-color: transparent;
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid var(--n-03);
 
 		/* Alternating bar backgrounds + grid lines */
 		background-image:
@@ -718,16 +717,16 @@
 				to right,
 				transparent 0px,
 				transparent calc(var(--cellWidth) - 1px),
-				var(--border) calc(var(--cellWidth) - 1px),
-				var(--border) var(--cellWidth)
+				var(--n-03) calc(var(--cellWidth) - 1px),
+				var(--n-03) var(--cellWidth)
 			),
 			/* Alternating bar shading (every 2 bars) */
 				repeating-linear-gradient(
 					to right,
-					var(--secondary) 0px,
-					var(--secondary) var(--barWidth),
-					transparent var(--barWidth),
-					transparent calc(var(--barWidth) * 2)
+					var(--n-01) 0px,
+					var(--n-01) var(--barWidth),
+					var(--n-00) var(--barWidth),
+					var(--n-00) calc(var(--barWidth) * 2)
 				);
 	}
 
@@ -740,11 +739,11 @@
 		top: 32px; /* Below header */
 		bottom: 0;
 		right: 0;
-		background: var(--background);
-		opacity: 0.75;
+		background: var(--n-03);
+		opacity: 0.7;
 		pointer-events: auto;
 		z-index: 100;
 		cursor: not-allowed;
-		backdrop-filter: grayscale(100%);
+		/* backdrop-filter: grayscale(50%); */
 	}
 </style>

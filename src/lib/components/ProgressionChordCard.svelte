@@ -20,7 +20,7 @@
 	const isRest = $derived(props.item.type === 'rest')
 	const isSelected = $derived(props.item.id === progressionStore.selectedItemId)
 
-	const width = $derived(`${(props.item.durationBeats ?? 0) * props.pixelsPerBeat}px`)
+	const width = $derived(`${(props.item.durationBeats ?? 0) * props.pixelsPerBeat + (props.index === 0 ? 0 : 0)}px`)
 
 	// Check if chord is modified from original (only applicable to chords)
 	const isModified = $derived.by(() => {
@@ -128,52 +128,52 @@
 <style>
 	.progressionItem {
 		align-items: center;
-		background-color: #efefef;
-		border-radius: 8px;
+		background-color: var(--n-01);
+		border-radius: 5px;
 		border: 1px solid var(--n-04);
 		color: var(--chord-fg);
 		cursor: default;
 		display: flex;
 		flex-shrink: 0;
 		font-family: var(--font-sans);
-		height: 64px;
+		height: -webkit-fill-available;
 		justify-content: center;
 		overflow: visible;
 		position: relative;
-		transition: all 0.025s ease-in-out;
 		user-select: none;
 		z-index: 10;
+		opacity: 0.8;
 	}
 
 	.progressionItem:hover {
-		background: #f5f5f5;
+		background: var(--colorWhite);
 	}
 
 	.progressionItem.isSelected {
-		background-color: #ffffff;
+		background-color: var(--a-01);
 		color: var(--chord-selected-fg);
-		border-color: var(--chord-selected-border);
+		border-color: var(--a);
 		z-index: 20;
 	}
 
 	/* Rest State Styles */
 	.progressionItem.isRest {
-		background-color: #e5e5e5;
+		background-color: var(--n-02);
 		color: var(--muted-foreground);
 		border-style: dashed;
-		border-width: 2px;
+		border-width: 1px;
 		border-color: var(--n-04);
-		opacity: 1;
+		opacity: 0.75;
 		box-shadow: none;
 	}
 
 	.progressionItem.isRest:hover {
-		background: #f5f5f5;
+		background: var(--n-01);
 	}
 
 	.progressionItem.isRest.isSelected {
 		color: var(--foreground);
-		background: #fff;
+		background: var(--a-01);
 	}
 
 	.itemContent {
@@ -303,7 +303,7 @@
 	/* Disable all hover effects during drag or resize on ANY card */
 	:global([data-is-dragging='true']) .progressionItem:hover,
 	:global([data-is-resizing='true']) .progressionItem:hover {
-		background-color: #efefef;
+		background-color: var(--n-01);
 	}
 
 	:global([data-is-dragging='true']) .progressionItem.isRest:hover,

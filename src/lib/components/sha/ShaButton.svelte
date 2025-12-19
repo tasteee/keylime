@@ -77,7 +77,7 @@
 		border: none;
 		transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 		user-select: none;
-		border-radius: 8px;
+		border-radius: 5px;
 		height: 36px;
 		max-height: 36px;
 	}

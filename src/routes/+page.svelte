@@ -230,7 +230,7 @@
 
 	.project-card {
 		background: #fff;
-		border-radius: 12px;
+		border-radius: 5px;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 		transition: all 0.2s ease;
 		cursor: pointer;
@@ -272,7 +272,7 @@
 		cursor: pointer;
 		color: #86868b;
 		padding: 4px;
-		border-radius: 4px;
+		border-radius: 5px;
 		transition:
 			color 0.2s,
 			background-color 0.2s;
@@ -311,7 +311,7 @@
 		align-items: center;
 		background-color: #f5f5f7;
 		padding: 4px 8px;
-		border-radius: 4px;
+		border-radius: 5px;
 		font-weight: 500;
 	}
 

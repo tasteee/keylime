@@ -19,12 +19,7 @@
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={output.midiChannel}>
-	<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[100px] border-none bg-transparent shadow-none focus:ring-0">
-		<span class="herMenuTriggerDisplay">
-			<span class="herMenuTriggerLabel">Channel</span>
-			<span class="herMenuTriggerValue">{output.midiChannel}</span>
-		</span>
-	</Select.Trigger>
+	<Select.Trigger size="small" label="Channel" value={output.midiChannel} />
 	<Select.Content>
 		{#each channels as channel}
 			<Select.Item value={channel}>{channel}</Select.Item>

@@ -68,7 +68,7 @@
 	}
 
 	.number-wrapper:focus-within {
-		border-color: var(--color-accent-primary);
+		border-color: var(--a);
 		background: white;
 		box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 	}
@@ -107,7 +107,7 @@
 		color: var(--color-text-tertiary);
 		font-weight: bold;
 		cursor: pointer;
-		border-radius: 4px;
+		border-radius: 5px;
 		user-select: none;
 	}
 

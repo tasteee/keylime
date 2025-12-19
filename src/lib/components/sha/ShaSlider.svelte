@@ -92,8 +92,8 @@
 		/* Background tricks: Linear Gradient from Primary to Primary (fill) + Grey (empty) */
 		background: linear-gradient(
 			90deg,
-			var(--color-accent-primary) 0%,
-			var(--color-accent-primary) var(--progress),
+			var(--a) 0%,
+			var(--a) var(--progress),
 			var(--color-surface-dim) var(--progress),
 			var(--color-surface-dim) 100%
 		);
@@ -107,8 +107,8 @@
 		box-shadow: var(--shadow-inner-md);
 		background: linear-gradient(
 			90deg,
-			var(--color-accent-primary) 0%,
-			var(--color-accent-primary) var(--progress),
+			var(--a) 0%,
+			var(--a) var(--progress),
 			var(--color-surface-dim) var(--progress),
 			var(--color-surface-dim) 100%
 		);
@@ -163,7 +163,7 @@
 		transform: scale(1.15);
 		background: var(--color-surface-base);
 		box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2); /* Focus ring */
-		border-color: var(--color-accent-primary);
+		border-color: var(--a);
 	}
 
 	/* Disabled State */

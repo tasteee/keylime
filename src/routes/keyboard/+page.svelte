@@ -53,7 +53,6 @@
 		align-items: center;
 		height: 100vh;
 		gap: 16px;
-		padding: 8px;
 	}
 
 	.controls {

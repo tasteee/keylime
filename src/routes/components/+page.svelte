@@ -118,7 +118,304 @@
 	]
 </script>
 
-<div class="p-12 space-y-10">
+<div class="p-12 space-y-10 pb-20">
+	<!-- Solid Neutral -->
+	<div class="gap-4 flex items-center">
+		<!-- <Button kind="solid" size="large">
+			<Plus size={16} weight="bold" />
+			<span>Solid Large</span>
+		</Button> -->
+
+		<Button kind="solid" size="medium">
+			<Plus size={16} weight="bold" />
+			<span>Solid Medium</span>
+		</Button>
+
+		<Button kind="solid" size="small">
+			<Plus size={16} weight="bold" />
+			<span>Solid Small</span>
+		</Button>
+	</div>
+
+	<!-- Solid Red -->
+	<div class="gap-4 flex items-center">
+		<!-- <Button kind="solid" color="red" size="large">
+			<Plus size={16} weight="bold" />
+			<span>Solid Red Large</span>
+		</Button> -->
+
+		<Button kind="solid" color="red" size="medium">
+			<Plus size={16} weight="bold" />
+			<span>Solid Red Medium</span>
+		</Button>
+
+		<Button kind="solid" color="red" size="small">
+			<Plus size={16} weight="bold" />
+			<span>Solid Red Small</span>
+		</Button>
+	</div>
+
+	<!-- Solid Brand -->
+	<div class="gap-4 flex items-center">
+		<!-- <Button kind="solid" color="brand" size="large">
+			<Plus size={16} weight="bold" />
+			<span>Solid Brand Large</span>
+		</Button> -->
+
+		<Button kind="solid" color="brand" size="medium">
+			<Plus size={16} weight="bold" />
+			<span>Solid Brand Medium</span>
+		</Button>
+
+		<Button kind="solid" color="brand" size="small">
+			<Plus size={16} weight="bold" />
+			<span>Solid Brand Small</span>
+		</Button>
+	</div>
+
+	<!-- Outline Neutral -->
+	<div class="gap-4 flex items-center">
+		<!-- <Button kind="outline" size="large">
+			<Plus size={16} weight="bold" />
+			<span>Outline Large</span>
+		</Button> -->
+
+		<Button kind="outline" size="medium">
+			<Plus size={16} weight="bold" />
+			<span>Outline Medium</span>
+		</Button>
+
+		<Button kind="outline" size="small">
+			<Plus size={16} weight="bold" />
+			<span>Outline Small</span>
+		</Button>
+	</div>
+
+	<!-- Outline Red -->
+	<div class="gap-4 flex items-center">
+		<!-- <Button kind="outline" color="red" size="large">
+			<Plus size={16} weight="bold" />
+			<span>Outline Red Large</span>
+		</Button> -->
+
+		<Button kind="outline" color="red" size="medium">
+			<Plus size={16} weight="bold" />
+			<span>Outline Red Medium</span>
+		</Button>
+
+		<Button kind="outline" color="red" size="small">
+			<Plus size={16} weight="bold" />
+			<span>Outline Red Small</span>
+		</Button>
+	</div>
+
+	<!-- Outline Brand -->
+	<div class="gap-4 flex items-center">
+		<!-- <Button kind="outline" color="brand" size="large">
+			<Plus size={16} weight="bold" />
+			<span>Outline Brand Large</span>
+		</Button> -->
+
+		<Button kind="outline" color="brand" size="medium">
+			<Plus size={16} weight="bold" />
+			<span>Outline Brand Medium</span>
+		</Button>
+
+		<Button kind="outline" color="brand" size="small">
+			<Plus size={16} weight="bold" />
+			<span>Outline Brand Small</span>
+		</Button>
+	</div>
+
+	<!-- Ghost Neutral -->
+	<div class="gap-4 flex items-center">
+		<!-- <Button kind="ghost" size="large">
+			<Plus size={16} weight="bold" />
+			<span>Ghost Large</span>
+		</Button> -->
+
+		<Button kind="ghost" size="medium">
+			<Plus size={16} weight="bold" />
+			<span>Ghost Medium</span>
+		</Button>
+
+		<Button kind="ghost" size="small">
+			<Plus size={16} weight="bold" />
+			<span>Ghost Small</span>
+		</Button>
+	</div>
+
+	<!-- Ghost Red -->
+	<div class="gap-4 flex items-center">
+		<!-- <Button kind="ghost" color="red" size="large">
+			<Plus size={16} weight="bold" />
+			<span>Ghost Red Large</span>
+		</Button> -->
+
+		<Button kind="ghost" color="red" size="medium">
+			<Plus size={16} weight="bold" />
+			<span>Ghost Red Medium</span>
+		</Button>
+
+		<Button kind="ghost" color="red" size="small">
+			<Plus size={16} weight="bold" />
+			<span>Ghost Red Small</span>
+		</Button>
+	</div>
+
+	<!-- Ghost Brand -->
+	<div class="gap-4 flex items-center">
+		<!-- <Button kind="ghost" color="brand" size="large">
+			<Plus size={16} weight="bold" />
+			<span>Ghost Brand Large</span>
+		</Button> -->
+
+		<Button kind="ghost" color="brand" size="medium">
+			<Plus size={16} weight="bold" />
+			<span>Ghost Brand Medium</span>
+		</Button>
+
+		<Button kind="ghost" color="brand" size="small">
+			<Plus size={16} weight="bold" />
+			<span>Ghost Brand Small</span>
+		</Button>
+	</div>
+
+	<!-- Icon Buttons Solid Neutral -->
+	<div class="gap-4 flex items-center">
+		<Button kind="solid" color="neutral" size="small" isIcon={true}>
+			<Plus size={16} weight="bold" />
+		</Button>
+
+		<Button kind="solid" color="neutral" size="medium" isIcon={true}>
+			<Plus size={16} weight="bold" />
+		</Button>
+
+		<Button kind="solid" color="neutral" size="large" isIcon={true}>
+			<Plus size={16} weight="bold" />
+		</Button>
+	</div>
+
+	<!-- Icon Buttons Solid Red -->
+	<div class="gap-4 flex items-center">
+		<Button kind="solid" color="red" size="small" isIcon={true}>
+			<Moon size={16} weight="fill" />
+		</Button>
+
+		<Button kind="solid" color="red" size="medium" isIcon={true}>
+			<Moon size={16} weight="fill" />
+		</Button>
+
+		<Button kind="solid" color="red" size="large" isIcon={true}>
+			<Moon size={16} weight="fill" />
+		</Button>
+	</div>
+
+	<!-- Icon Buttons Solid Brand -->
+	<div class="gap-4 flex items-center">
+		<Button kind="solid" color="brand" size="small" isIcon={true}>
+			<CircleHalf size={16} weight="fill" />
+		</Button>
+
+		<Button kind="solid" color="brand" size="medium" isIcon={true}>
+			<CircleHalf size={16} weight="fill" />
+		</Button>
+
+		<Button kind="solid" color="brand" size="large" isIcon={true}>
+			<CircleHalf size={16} weight="fill" />
+		</Button>
+	</div>
+
+	<!-- Icon Buttons Outline Neutral -->
+	<div class="gap-4 flex items-center">
+		<Button kind="outline" color="neutral" size="small" isIcon={true}>
+			<UsersFour size={18} weight="fill" />
+		</Button>
+
+		<Button kind="outline" color="neutral" size="medium" isIcon={true}>
+			<UsersFour size={18} weight="fill" />
+		</Button>
+
+		<Button kind="outline" color="neutral" size="large" isIcon={true}>
+			<UsersFour size={18} weight="fill" />
+		</Button>
+	</div>
+
+	<!-- Icon Buttons Outline Red -->
+	<div class="gap-4 flex items-center">
+		<Button kind="outline" color="red" size="small" isIcon={true}>
+			<ArrowCounterClockwise size={16} weight="fill" />
+		</Button>
+
+		<Button kind="outline" color="red" size="medium" isIcon={true}>
+			<ArrowCounterClockwise size={16} weight="fill" />
+		</Button>
+
+		<Button kind="outline" color="red" size="large" isIcon={true}>
+			<ArrowCounterClockwise size={16} weight="fill" />
+		</Button>
+	</div>
+
+	<!-- Icon Buttons Outline Brand -->
+	<div class="gap-4 flex items-center">
+		<Button kind="outline" color="brand" size="small" isIcon={true}>
+			<ArrowClockwise size={16} weight="fill" />
+		</Button>
+
+		<Button kind="outline" color="brand" size="medium" isIcon={true}>
+			<ArrowClockwise size={16} weight="fill" />
+		</Button>
+
+		<Button kind="outline" color="brand" size="large" isIcon={true}>
+			<ArrowClockwise size={16} weight="fill" />
+		</Button>
+	</div>
+
+	<!-- Icon Buttons Ghost Neutral -->
+	<div class="gap-4 flex items-center">
+		<Button kind="ghost" color="neutral" size="small" isIcon={true}>
+			<Plus size={16} weight="bold" />
+		</Button>
+
+		<Button kind="ghost" color="neutral" size="medium" isIcon={true}>
+			<Plus size={16} weight="bold" />
+		</Button>
+
+		<Button kind="ghost" color="neutral" size="large" isIcon={true}>
+			<Plus size={16} weight="bold" />
+		</Button>
+	</div>
+
+	<!-- Icon Buttons Ghost Red -->
+	<div class="gap-4 flex items-center">
+		<Button kind="ghost" color="red" size="small" isIcon={true}>
+			<Moon size={16} weight="fill" />
+		</Button>
+
+		<Button kind="ghost" color="red" size="medium" isIcon={true}>
+			<Moon size={16} weight="fill" />
+		</Button>
+
+		<Button kind="ghost" color="red" size="large" isIcon={true}>
+			<Moon size={16} weight="fill" />
+		</Button>
+	</div>
+
+	<!-- Icon Buttons Ghost Brand -->
+	<div class="gap-4 flex items-center">
+		<Button kind="ghost" color="brand" size="small" isIcon={true}>
+			<CircleHalf size={16} weight="fill" />
+		</Button>
+
+		<Button kind="ghost" color="brand" size="medium" isIcon={true}>
+			<CircleHalf size={16} weight="fill" />
+		</Button>
+
+		<Button kind="ghost" color="brand" size="large" isIcon={true}>
+			<CircleHalf size={16} weight="fill" />
+		</Button>
+	</div>
+
 	<!-- Toolbar Component -->
 	<div class="space-y-6">
 		<div class="space-y-2">

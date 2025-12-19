@@ -74,14 +74,7 @@
 	<ChordSymbolDisplay symbol={props.chord.symbol} />
 
 	<div class="actions">
-		<Button
-			variant="ghost"
-			size="icon"
-			class="h-7 w-7 cursor-pointer transition-colors"
-			style="border-radius: 6px;"
-			onclick={addChordToProgression}
-			title="Add to progression"
-		>
+		<Button kind="ghost" isIcon onclick={addChordToProgression} title="Add to progression">
 			<Icon icon="mingcute:add-line" class="size-4" />
 		</Button>
 	</div>
@@ -89,49 +82,41 @@
 
 <style>
 	.chordCard {
-		cursor: pointer;
 		display: flex;
 		flex-direction: column;
 		height: 80px;
 		justify-content: center;
 		overflow: visible;
-		padding: 12px 24px;
+		padding: 0 24px;
 		position: relative;
-		transition: all 0.1s ease-in-out;
+		/* transition: all 0.1s ease-in-out; */
 		user-select: none;
 		z-index: 10;
-		outline: 2px solid #747474;
-		outline-offset: -1px;
-	}
-
-	.chordCard:last-child {
-		border-bottom-right-radius: 8px;
+		outline: 1px solid var(--n-03);
+		outline-offset: 0px;
+		background: var(--n-01);
 	}
 
 	.chordCard:hover {
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-		background-color: #efefef;
-		/* border: 3px solid #747474; */
+		background-color: var(--colorWhite);
 	}
 
-	.chordCard.playing {
-		background-color: #ffffff;
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-	}
+	/* .chordCard.playing {
+		background-color: var(--n-03);
+	} */
 
 	.actions {
 		position: absolute;
 		top: 32px;
 		right: 16px;
 		opacity: 0;
-		transform: translateY(-4px);
+		transform: translateY(-8px);
 		transition: all 0.2s ease;
 		z-index: 10;
 	}
 
-	.chordCard:hover .actions,
-	.actions:hover {
+	.chordCard:hover .actions {
 		opacity: 1;
-		transform: translateY(0);
+		transform: translateY(-4px);
 	}
 </style>

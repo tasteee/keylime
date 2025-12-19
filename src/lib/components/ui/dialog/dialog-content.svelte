@@ -19,10 +19,7 @@
 	<DialogPrimitive.Content
 		bind:ref
 		data-slot="dialog-content"
-		class={cn(
-			'flows_basicsV2_modal_modal flows_basicsV2_modal_width_medium absolute top-[50%] left-[50%] z-50 translate-x-[-50%] translate-y-[-50%]',
-			className
-		)}
+		class={cn('flows_basicsV2_modal_modal flows_basicsV2_modal_width_medium', className)}
 		{...restProps}
 	>
 		{@render restProps.children?.()}
@@ -35,3 +32,22 @@
 		</DialogPrimitive.Close>
 	</DialogPrimitive.Content>
 </DialogPrimitive.Portal>
+
+<style>
+	:global([data-slot='dialog-content']) {
+		max-height: 85vh;
+		overflow-y: auto;
+		background-color: white;
+		border: 2px solid black;
+		border-radius: 8px;
+		padding: 24px;
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		z-index: 1500;
+		transform: translate(-50%, -50%);
+		box-shadow:
+			0 10px 15px -3px rgba(0, 0, 0, 0.1),
+			0 4px 6px -2px rgba(0, 0, 0, 0.05);
+	}
+</style>

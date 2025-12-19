@@ -8,15 +8,7 @@
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={mainStore.selectedScale}>
-	<Select.Trigger
-		class="h-8 hover:bg-muted/50 px-2 min-w-[140px] border-none bg-transparent shadow-none focus:ring-0"
-		style="max-height: 36px;"
-	>
-		<span class="herMenuTriggerDisplay">
-			<span class="herMenuTriggerLabel">Scale</span>
-			<span class="herMenuTriggerValue">{mainStore.selectedScale}</span>
-		</span>
-	</Select.Trigger>
+	<Select.Trigger size="small" label="Scale" value={mainStore.selectedScale} />
 	<Select.Content>
 		<Select.Item value="Major">Major</Select.Item>
 		<Select.Item value="Minor">Minor</Select.Item>

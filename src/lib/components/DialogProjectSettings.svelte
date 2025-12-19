@@ -109,7 +109,7 @@
 	.herInput {
 		padding: 8px 12px;
 		border: 2px solid #d4d4d4;
-		border-radius: 6px;
+		border-radius: 5px;
 		font-size: 14px;
 		font-weight: 500;
 		background: white;

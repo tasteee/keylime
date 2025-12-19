@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as Select from '$lib/components/ui/select'
-	import { Label } from '$lib/components/ui/label'
 
 	type VoicingItemT = { value: VoicingT; label: string }
 
@@ -26,16 +25,11 @@
 	const currentVoicingLabel = $derived(voicingOptions.find((option) => option.value === value)?.label || 'Closed')
 </script>
 
-<div class="VoicingSelect herSelect isLabeledRow">
-	<Label class="text-sm font-bold">Voicing</Label>
-	<Select.Root type="single" {onValueChange} {value}>
-		<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[140px] border-none bg-transparent shadow-none focus:ring-0">
-			<span class="text-sm">{currentVoicingLabel}</span>
-		</Select.Trigger>
-		<Select.Content>
-			{#each voicingOptions as option}
-				<Select.Item value={option.value}>{option.label}</Select.Item>
-			{/each}
-		</Select.Content>
-	</Select.Root>
-</div>
+<Select.Root type="single" {onValueChange} {value}>
+	<Select.Trigger isFullWidth size="small" label="Voicing" value={currentVoicingLabel} />
+	<Select.Content>
+		{#each voicingOptions as option}
+			<Select.Item value={option.value}>{option.label}</Select.Item>
+		{/each}
+	</Select.Content>
+</Select.Root>

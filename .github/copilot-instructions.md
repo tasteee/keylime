@@ -1,10 +1,10 @@
-Always prioritize **clarity, readability, and explicitness** over brevity or cleverness. Code should be written for junior devs and future readers, not for the author.
+Always prioritize **clarity, readability, and explicitness** over brevity or cleverness.
+Code should be written for junior devs and future readers, not for the author.
 Favor **modular, flat, and maintainable** logic over complex, nested flows.
+!! NEVER EVER DESTRUCTURE PROPS OR FUNCTION ARGUMENTS. !!
 
 Use **named arrow functions** only — no anonymous or inline functions.
-
 Use **named exports** only. Never use `default` exports.
-
 Use explicit types for all complex function arguments.
 
 i.e:

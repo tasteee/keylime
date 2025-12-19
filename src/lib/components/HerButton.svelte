@@ -68,7 +68,7 @@
 		/* border: 2px solid transparent; */
 		align-items: center;
 		background: var(--n-50);
-		border-radius: 4px;
+		border-radius: 5px;
 		color: var(--n-00);
 		cursor: pointer;
 		display: inline-flex;
@@ -77,11 +77,9 @@
 		gap: 6px;
 		height: 36px;
 		justify-content: center;
-		/* letter-spacing: 0.5px; */
 		outline-offset: -2px;
 		outline: 2px solid transparent;
 		padding: 0px 8px;
-		/* text-transform: uppercase; */
 		transition: all 0.15s ease;
 		user-select: none;
 		white-space: nowrap;

@@ -21,23 +21,13 @@
 		<div class="divider"></div>
 
 		<nav class="nav">
-			<Button
-				variant={activeView === 'chords' ? 'secondary' : 'ghost'}
-				size="sm"
-				class="nav-btn"
-				onclick={() => (activeView = 'chords')}
-			>
+			<Button kind={activeView === 'chords' ? 'solid' : 'outline'} size="small" onclick={() => (activeView = 'chords')}>
 				<Icon icon="mingcute:grid-line" class="mr-2 size-4" />
 				Chords
 			</Button>
-			<Button
-				variant={activeView === 'patterns' ? 'secondary' : 'ghost'}
-				size="sm"
-				class="nav-btn"
-				onclick={() => (activeView = 'patterns')}
-			>
+			<Button kind={activeView === 'pattern' ? 'solid' : 'outline'} size="small" onclick={() => (activeView = 'pattern')}>
 				<Icon icon="mingcute:music-2-line" class="mr-2 size-4" />
-				Patterns
+				Pattern
 			</Button>
 		</nav>
 	</div>
@@ -54,11 +44,11 @@
 		gap: 32px;
 
 		/* User Styles */
-		background-color: var(--neutral-backgroundLight);
+		background-color: var(--colorWhite);
 		border: 1px solid var(--neutral-separatorSubtle);
-		box-shadow: var(--shadow-s5);
+		/* box-shadow: var(--shadow-s5); */
 		height: 64px;
-		border-radius: 16px;
+		/* border-radius: 16px; */
 		transition: 120ms ease-in;
 		width: 100%;
 		margin-left: auto;
@@ -66,7 +56,6 @@
 		padding-left: 16px;
 		padding-right: 16px;
 		max-width: 1370px;
-		margin-bottom: 16px;
 	}
 
 	.left {
@@ -105,30 +94,5 @@
 		background-color: var(--n-01);
 		border-radius: var(--radius-md);
 		border: 1px solid var(--border-subtle);
-	}
-
-	.center {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-		flex: 1;
-		justify-content: center;
-	}
-
-	.controls-group {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 6px 8px;
-		background-color: var(--card);
-		border: 1px solid var(--border);
-		border-radius: var(--radius-md);
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-	}
-
-	.right {
-		display: flex;
-		align-items: center;
-		gap: 16px;
 	}
 </style>

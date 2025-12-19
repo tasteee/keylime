@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as Select from '$lib/components/ui/select'
-	import { Label } from '$lib/components/ui/label'
 
 	type SelectInversionPropsT = {
 		value: number
@@ -21,16 +20,11 @@
 	)
 </script>
 
-<div class="InversionSelect herSelect isLabeledRow">
-	<Label class="text-sm font-bold">Inversion</Label>
-	<Select.Root type="single" {onValueChange} value={value.toString()}>
-		<Select.Trigger class="h-8 hover:bg-muted/50 px-2 min-w-[140px] border-none bg-transparent shadow-none focus:ring-0">
-			<span class="text-sm">{currentInversionLabel}</span>
-		</Select.Trigger>
-		<Select.Content>
-			{#each inversionOptions as option}
-				<Select.Item value={option.value.toString()}>{option.label}</Select.Item>
-			{/each}
-		</Select.Content>
-	</Select.Root>
-</div>
+<Select.Root type="single" {onValueChange} value={value.toString()}>
+	<Select.Trigger isFullWidth size="small" label="Inversion" value={currentInversionLabel} />
+	<Select.Content>
+		{#each inversionOptions as option}
+			<Select.Item value={option.value.toString()}>{option.label}</Select.Item>
+		{/each}
+	</Select.Content>
+</Select.Root>

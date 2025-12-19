@@ -7,6 +7,7 @@
 	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
 	import SelectInversion from './SelectInversion.svelte'
 	import SelectVoicing from './SelectVoicing.svelte'
+	import Box from './Box.svelte'
 
 	const isOpen = $derived(chordModifierStore.state.isOpen)
 	const currentChord = $derived(chordModifierStore.currentChord)
@@ -65,27 +66,28 @@
 					</div>
 
 					<ButtonGroup.Root aria-label="Octave controls" class="h-fit">
-						<Button variant="outline" size="icon" onclick={decrementOctave}>
+						<Button kind="outline" isIcon onclick={decrementOctave}>
 							<Icon icon="mingcute:minimize-line" class="size-4" />
 						</Button>
-						<Button variant="outline" size="icon" onclick={incrementOctave}>
+						<Button kind="outline" isIcon onclick={incrementOctave}>
 							<Icon icon="mingcute:add-line" class="size-4" />
 						</Button>
 					</ButtonGroup.Root>
 				</div>
 			</div>
 
-			<SelectInversion value={inversion} onValueChange={handleInversionChange} />
-
-			<SelectVoicing value={voicing} onValueChange={handleVoicingChange} />
+			<Box gap="16px">
+				<SelectInversion value={inversion} onValueChange={handleInversionChange} />
+				<SelectVoicing value={voicing} onValueChange={handleVoicingChange} />
+			</Box>
 		</div>
 
 		<Dialog.Footer>
-			<Button variant="outline" onclick={handleReset} class="flex-1">
+			<Button isFullWidth kind="outline" onclick={handleReset}>
 				<Icon icon="mingcute:refresh-2-line" class="size-4" />
 				Reset
 			</Button>
-			<Button onclick={handleConfirm} class="flex-1">
+			<Button isFullWidth onclick={handleConfirm}>
 				<Icon icon="mingcute:check-line" class="size-4" />
 				Confirm
 			</Button>

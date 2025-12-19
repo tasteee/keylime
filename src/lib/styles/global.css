@@ -54,7 +54,7 @@
 
   body {
     @apply text-foreground font-mono;
-    background-image: linear-gradient(-15deg, #c3c3c3, #e5e5e5);
+    /* background-image: linear-gradient(-15deg, #c3c3c3, #e5e5e5); */
   }
 
   h1,
@@ -63,9 +63,7 @@
   h4,
   h5,
   h6 {
-    /* @apply font-display uppercase; */
     font-family: var(--font-display);
-    /* text-transform: uppercase; */
   }
 
   /* Custom Scrollbar to match the aesthetic */
@@ -80,7 +78,7 @@
 
   ::-webkit-scrollbar-thumb {
     background-color: #747474;
-    border-radius: 10px;
+    border-radius: 5px;
     border: 4px solid transparent;
     background-clip: content-box;
   }
@@ -97,7 +95,7 @@
 body {
   min-height: 100vh;
   height: 100vh;
-  background-color: #d6d6d6;
+  /* background-color: #d6d6d6; */
   /* overflow: hidden; */
   position: relative;
 }
