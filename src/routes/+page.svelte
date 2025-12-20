@@ -5,6 +5,18 @@
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
 	import { fade, fly } from 'svelte/transition'
+	import { browser } from '$app/environment'
+
+	// Load projects when user is authenticated
+	$effect(() => {
+		if (browser) {
+			if (authStore.user) {
+				projectsStore.loadProjects()
+			} else {
+				projectsStore.projects = []
+			}
+		}
+	})
 
 	// Fake Auth Check
 	$effect(() => {
@@ -14,12 +26,13 @@
 		}
 	})
 
-	const handleLogin = () => {
-		authStore.login()
+	const goToLogIn = () => {
+		// route to /auth/login
+		goto('/auth/login')
 	}
 
 	const handleLogout = () => {
-		authStore.logout()
+		authStore.signOut()
 	}
 
 	const handleCreateProject = () => {
@@ -55,7 +68,7 @@
 					<span class="logo-text">KEYLIME</span>
 				</div>
 				<p class="login-subtitle">Sign in to continue to your dashboard.</p>
-				<Button onclick={handleLogin} class="w-full">Sign In with Fake Auth</Button>
+				<Button onclick={goToLogIn} class="w-full">Sign In with Fake Auth</Button>
 			</div>
 		</div>
 	{:else}
@@ -66,7 +79,7 @@
 				</div>
 				<div class="user-menu">
 					<span class="user-name">{authStore.user?.name}</span>
-					<Button variant="ghost" size="sm" onclick={handleLogout}>Sign Out</Button>
+					<Button kind="ghost" size="small" onclick={handleLogout}>Sign Out</Button>
 				</div>
 			</header>
 

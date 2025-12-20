@@ -5,7 +5,7 @@
 	import SelectOctave from './SelectOctave.svelte'
 	import SelectScale from './SelectScale.svelte'
 	import Box from './Box.svelte'
-	import ShaDivider from './sha/ShaDivider.svelte'
+	import ShaDivider from './ShaDivider.svelte'
 	import Icon from '@iconify/svelte'
 	import main from '$lib/stores/main.svelte'
 

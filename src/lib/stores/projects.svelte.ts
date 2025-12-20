@@ -1,76 +1,163 @@
 import { browser } from '$app/environment'
+import { createSupabaseClient } from '$lib/supabase/client'
+import authStore from './auth.svelte'
 
 export type ProjectSummaryT = {
-	id: string
-	title: string
-	description: string
-	updatedAt: Date
-	bpm: number
-	key: string
-	scale: string
+  id: string
+  title: string
+  description: string
+  updatedAt: Date
+  bpm: number
+  key: string
+  scale: string
+  userId: string
+  isPublic: boolean
 }
 
-const MOCK_PROJECTS: ProjectSummaryT[] = [
-	{
-		id: 'proj_1',
-		title: 'Summer Vibes',
-		description: 'Upbeat pop track with catchy chords',
-		updatedAt: new Date('2023-06-15T10:30:00'),
-		bpm: 120,
-		key: 'C',
-		scale: 'Major'
-	},
-	{
-		id: 'proj_2',
-		title: 'Lo-Fi Study',
-		description: 'Chill beats for relaxing',
-		updatedAt: new Date('2023-06-14T15:45:00'),
-		bpm: 85,
-		key: 'Eb',
-		scale: 'Minor'
-	},
-	{
-		id: 'proj_3',
-		title: 'Cyberpunk Theme',
-		description: 'Dark synthwave progression',
-		updatedAt: new Date('2023-06-10T09:20:00'),
-		bpm: 140,
-		key: 'F#',
-		scale: 'Phrygian'
-	}
-]
-
 class ProjectsStore {
-	projects = $state<ProjectSummaryT[]>([])
+  projects = $state<ProjectSummaryT[]>([])
+  isLoading = $state(false)
+  error = $state<string | null>(null)
 
-	constructor() {
-		if (browser) {
-			// Load from local storage or use mock
-			this.projects = MOCK_PROJECTS
-		}
-	}
+  loadProjects = async () => {
+    if (!authStore.user) return
 
-	addProject = (project: ProjectSummaryT) => {
-		this.projects = [project, ...this.projects]
-	}
+    this.isLoading = true
+    this.error = null
 
-	deleteProject = (id: string) => {
-		this.projects = this.projects.filter((p) => p.id !== id)
-	}
+    const supabase = createSupabaseClient()
 
-	createProject = () => {
-		const newProject: ProjectSummaryT = {
-			id: crypto.randomUUID(),
-			title: 'New Project',
-			description: '',
-			updatedAt: new Date(),
-			bpm: 120,
-			key: 'C',
-			scale: 'Major'
-		}
-		this.addProject(newProject)
-		return newProject.id
-	}
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id, title, description, updated_at, bpm, key, scale, user_id, is_public')
+      .eq('user_id', authStore.user.id)
+      .order('updated_at', { ascending: false })
+
+    if (error) {
+      this.error = error.message
+      this.isLoading = false
+      return
+    }
+
+    this.projects = (data || []).map((p) => ({
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      updatedAt: new Date(p.updated_at),
+      bpm: p.bpm,
+      key: p.key,
+      scale: p.scale,
+      userId: p.user_id,
+      isPublic: p.is_public
+    }))
+
+    this.isLoading = false
+  }
+
+  addProject = (project: ProjectSummaryT) => {
+    this.projects = [project, ...this.projects]
+  }
+
+  deleteProject = async (id: string) => {
+    if (!authStore.user) {
+      throw new Error('User must be authenticated to delete project')
+    }
+
+    const supabase = createSupabaseClient()
+
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      throw new Error(`Failed to delete project: ${error.message}`)
+    }
+
+    this.projects = this.projects.filter((p) => p.id !== id)
+    return { success: true }
+  }
+
+  createProject = async () => {
+    if (!authStore.user) {
+      throw new Error('User must be authenticated to create project')
+    }
+
+    const supabase = createSupabaseClient()
+
+    const newProject = {
+      user_id: authStore.user.id,
+      title: 'New Project',
+      description: '',
+      bpm: 120,
+      key: 'C',
+      scale: 'Major',
+      octave: 3,
+      min_velocity: 60,
+      max_velocity: 100,
+      pattern_duration_bars: 1,
+      is_public: false
+    }
+
+    const { data, error } = await supabase
+      .from('projects')
+      .insert(newProject)
+      .select()
+      .single()
+
+    if (error || !data) {
+      throw new Error(`Failed to create project: ${error?.message || 'Unknown error'}`)
+    }
+
+    const projectSummary: ProjectSummaryT = {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      updatedAt: new Date(data.updated_at),
+      bpm: data.bpm,
+      key: data.key,
+      scale: data.scale,
+      userId: data.user_id,
+      isPublic: data.is_public
+    }
+
+    this.addProject(projectSummary)
+    return data.id
+  }
+
+  loadPublicProjects = async () => {
+    this.isLoading = true
+    this.error = null
+
+    const supabase = createSupabaseClient()
+
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id, title, description, updated_at, bpm, key, scale, user_id, is_public')
+      .eq('is_public', true)
+      .order('updated_at', { ascending: false })
+      .limit(20)
+
+    if (error) {
+      this.error = error.message
+      this.isLoading = false
+      return []
+    }
+
+    this.isLoading = false
+
+    return (data || []).map((p) => ({
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      updatedAt: new Date(p.updated_at),
+      bpm: p.bpm,
+      key: p.key,
+      scale: p.scale,
+      userId: p.user_id,
+      isPublic: p.is_public
+    }))
+  }
 }
 
 const projectsStore = new ProjectsStore()

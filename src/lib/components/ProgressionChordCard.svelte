@@ -261,12 +261,6 @@
 		background: linear-gradient(to left, rgba(0, 0, 0, 0.03), transparent);
 	}
 
-	.resizingIcon {
-		display: none;
-		position: absolute;
-		pointer-events: none;
-	}
-
 	[data-is-dragging='true'] {
 		cursor: none !important;
 		z-index: 999;
@@ -276,10 +270,6 @@
 
 	[data-is-dragging='true'] .dragHandle {
 		opacity: 1;
-	}
-
-	[data-is-dragging='true'] .resizingIcon {
-		display: block;
 	}
 
 	/* Active Resizing State */
@@ -294,10 +284,6 @@
 
 	[data-is-resizing='true'] .resizeHandleBar {
 		display: none;
-	}
-
-	[data-is-resizing='true'] .resizingIcon {
-		display: block;
 	}
 
 	/* Disable all hover effects during drag or resize on ANY card */

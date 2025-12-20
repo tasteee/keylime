@@ -3,7 +3,7 @@
 	import Icon from '@iconify/svelte'
 	import { Button } from '$lib/components/ui/button'
 	import { toFractionString } from '$lib/helpers/numbers'
-	import SheDivider from '$lib/components/sha/ShaDivider.svelte'
+	import SheDivider from '$lib/components/ShaDivider.svelte'
 
 	const BEATS_PER_BAR = 4
 	const MIN_DURATION_BEATS = 1

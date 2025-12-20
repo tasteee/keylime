@@ -58,6 +58,8 @@
 		"@fontsource/plus-jakarta-sans": "^5.2.8",
 		"@iconify/svelte": "^5.0.2",
 		"@node-rs/argon2": "^2.0.2",
+		"@supabase/ssr": "^0.8.0",
+		"@supabase/supabase-js": "^2.89.0",
 		"@tonaljs/voicing": "^5.1.2",
 		"@tonaljs/voicing-dictionary": "^5.1.2",
 		"array-range": "^1.0.1",

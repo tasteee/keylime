@@ -57,24 +57,4 @@
 		justify-content: space-between;
 		gap: 16px;
 	}
-
-	.controls-group {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 0px 8px;
-		height: 36px;
-		/* background-color: var(--card); */
-		/* border: var(--border-thick); */
-		border-radius: 0px;
-		/* box-shadow: var(--shadow-hard); */
-	}
-
-	.outputTitle {
-		font-weight: 700;
-		font-size: 16px;
-		color: var(--foreground);
-		letter-spacing: 0px;
-		font-family: var(--font-display);
-	}
 </style>

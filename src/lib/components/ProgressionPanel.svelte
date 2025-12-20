@@ -11,7 +11,7 @@
 	import { DownloadSimple, Plus } from 'phosphor-svelte'
 	import { Button } from './ui/button'
 	import BottomBar from './BottomBar.svelte'
-	import ShaDivider from './sha/ShaDivider.svelte'
+	import ShaDivider from './ShaDivider.svelte'
 	import Box from './Box.svelte'
 
 	let isDraggingItem = $state(false)

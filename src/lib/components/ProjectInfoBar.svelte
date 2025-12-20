@@ -1,11 +1,9 @@
 <script lang="ts">
 	import projectStore from '$lib/stores/project.svelte'
-	import HerButton from './HerButton.svelte'
 	import SelectBpm from './SelectBpm.svelte'
 	import DialogProjectSettings from './DialogProjectSettings.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import Box from './Box.svelte'
-	import ShaButton from './sha/ShaButton.svelte'
 
 	let isSettingsOpen = $state(false)
 

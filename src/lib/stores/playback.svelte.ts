@@ -194,10 +194,7 @@ class PlaybackStore {
     if (!this.isPlaying) return
 
     const hasNoPerformance = this.performance.length === 0
-    if (hasNoPerformance) {
-      this.stopPerformance()
-      return
-    }
+    if (hasNoPerformance) return this.stopPerformance()
 
     // Convert beats to milliseconds for actual playback
     const bpm = main.bpm
@@ -214,20 +211,13 @@ class PlaybackStore {
         const midiOutput = getMidiOutput()
         const velocity = performanceNote.velocity
         const noteId = performanceNote.id
-        console.log('Performance note:', { note: performanceNote.note, velocity, hasMidiOutput: !!midiOutput })
 
         // Track this note instance
-        if (!this.activeNoteInstances.has(performanceNote.note)) {
-          this.activeNoteInstances.set(performanceNote.note, new Set())
-        }
+        if (!this.activeNoteInstances.has(performanceNote.note)) this.activeNoteInstances.set(performanceNote.note, new Set())
         this.activeNoteInstances.get(performanceNote.note)!.add(noteId)
 
-        if (!midiOutput) {
-          this.piano.start({ note: performanceNote.note, velocity, stopId: noteId })
-        } else {
-          console.log('Sending MIDI performance note:', performanceNote.note, 'velocity:', velocity)
-          midiOutput.playNote(performanceNote.note, { attack: velocity / 127 })
-        }
+        if (!midiOutput) this.piano.start({ note: performanceNote.note, velocity, stopId: noteId })
+        else midiOutput.playNote(performanceNote.note, { attack: velocity / 127 })
         this.activeChords.add(performanceNote.note)
 
         const noteStopTimeoutId = setTimeout(() => {

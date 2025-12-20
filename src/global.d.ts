@@ -105,3 +105,176 @@ type MoveSignalToRowOptionsT = {
   toRowId: string
   signalId: string
 }
+
+type JsonT =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: JsonT | undefined }
+  | JsonT[]
+
+type DatabaseT = {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string
+          email: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      projects: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string
+          key: string
+          scale: string
+          octave: number
+          bpm: number
+          min_velocity: number
+          max_velocity: number
+          pattern_duration_bars: number
+          is_public: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title?: string
+          description?: string
+          key?: string
+          scale?: string
+          octave?: number
+          bpm?: number
+          min_velocity?: number
+          max_velocity?: number
+          pattern_duration_bars?: number
+          is_public?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string
+          key?: string
+          scale?: string
+          octave?: number
+          bpm?: number
+          min_velocity?: number
+          max_velocity?: number
+          pattern_duration_bars?: number
+          is_public?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      pattern_signals: {
+        Row: {
+          id: string
+          project_id: string
+          signal_id: string
+          row_id: string
+          start_time: number
+          duration: number
+          note: string
+          velocity: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          signal_id: string
+          row_id: string
+          start_time: number
+          duration: number
+          note: string
+          velocity: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          signal_id?: string
+          row_id?: string
+          start_time?: number
+          duration?: number
+          note?: string
+          velocity?: number
+          created_at?: string
+        }
+      }
+      progression_items: {
+        Row: {
+          id: string
+          project_id: string
+          item_type: 'chord' | 'rest'
+          chord_id: string
+          symbol: string
+          root_note: string
+          duration_beats: number
+          position: number
+          color: string | null
+          inversion: number | null
+          octave_offset: number | null
+          voicing: string | null
+          bass_note: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          item_type: 'chord' | 'rest'
+          chord_id: string
+          symbol: string
+          root_note: string
+          duration_beats?: number
+          position: number
+          color?: string | null
+          inversion?: number | null
+          octave_offset?: number | null
+          voicing?: string | null
+          bass_note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          item_type?: 'chord' | 'rest'
+          chord_id?: string
+          symbol?: string
+          root_note?: string
+          duration_beats?: number
+          position?: number
+          color?: string | null
+          inversion?: number | null
+          octave_offset?: number | null
+          voicing?: string | null
+          bass_note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+    }
+  }
+}

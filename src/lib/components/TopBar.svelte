@@ -55,7 +55,6 @@
 		margin-right: auto;
 		padding-left: 16px;
 		padding-right: 16px;
-		max-width: 1370px;
 	}
 
 	.left {
