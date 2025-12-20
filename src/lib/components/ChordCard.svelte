@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
-	import { progressionStore } from '$lib/stores/progression.svelte'
+	import projectStore from '$lib/stores/project.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
 	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
@@ -32,7 +32,7 @@
 			id: crypto.randomUUID()
 		}
 
-		progressionStore.addChord(chordToAdd)
+		projectStore.addProgressionChord(chordToAdd)
 	}
 
 	const onMouseDown = (event: MouseEvent) => {

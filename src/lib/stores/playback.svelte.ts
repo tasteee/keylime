@@ -1,13 +1,10 @@
 import { SplendidGrandPiano } from 'smplr'
 import output from './output.svelte.js'
-import main from './main.svelte.js'
-import CHORD_MODES_CONFIG from '$lib/constants/chordModes.json'
 import { WebMidi } from 'webmidi'
 import { Note } from 'tonal'
-import { progressionStore } from './progression.svelte.js'
-import { patternStore } from './pattern.svelte.js'
 import { generatePerformance } from '$lib/helpers/performance'
 import { chordToNotes } from '$lib/helpers/chordToNotes'
+import projectStore from './project.svelte.js'
 
 type PlayArgsT = { note: string }
 
@@ -16,10 +13,8 @@ const getRandomBetween = (args: { min: number; max: number }) => {
 }
 
 const getMidiOutput = () => {
-  if (output.type !== 'MIDI') {
-    // console.log('Output type is not MIDI, returning null')
-    return null
-  }
+  if (output.type !== 'MIDI') return null
+
   if (!output.midiChannel) {
     console.log('No MIDI channel set, returning null')
     return null
@@ -57,11 +52,11 @@ class PlaybackStore {
   // The result of applying the pattern to the progression.
   // All timing is in beats.
   performance = $derived.by(() => {
-    const chords = progressionStore.chords
-    const signals = patternStore.activeSignals
-    const signalRows = patternStore.signalRows
-    const patternLengthBeats = patternStore.activePatternLengthBeats
-    const progressionLengthBeats = progressionStore.getTotalDuration() // Sum of all chord durations
+    const chords = projectStore.progressionChords
+    const signals = projectStore.patternActiveSignals
+    const signalRows = projectStore.patternSignalRows
+    const patternLengthBeats = projectStore.patternActiveDurationBeats
+    const progressionLengthBeats = projectStore.getProgressionTotalDuration()
 
     const performance = generatePerformance({
       chords,
@@ -78,7 +73,7 @@ class PlaybackStore {
 
   // Performance duration in beats - uses actual progression duration for proper looping
   performanceDuration = $derived.by(() => {
-    const progressionLengthBeats = progressionStore.getTotalDuration()
+    const progressionLengthBeats = projectStore.getProgressionTotalDuration()
     console.log('Performance duration (beats):', progressionLengthBeats)
     return progressionLengthBeats
   })
@@ -118,7 +113,7 @@ class PlaybackStore {
     this.currentlyPlayingChordId = chord.id
 
     // Derive notes from chord at play time
-    const notes = chordToNotes({ chord, rootOctave: main.rootOctave })
+    const notes = chordToNotes({ chord, rootOctave: projectStore.octave })
 
     // Play notes with slight delay for arpeggio effect
     notes.forEach((note, index) => {
@@ -197,7 +192,7 @@ class PlaybackStore {
     if (hasNoPerformance) return this.stopPerformance()
 
     // Convert beats to milliseconds for actual playback
-    const bpm = main.bpm
+    const bpm = projectStore.bpm
     const msPerBeat = 60000 / bpm
     const loopStartTime = Date.now()
 

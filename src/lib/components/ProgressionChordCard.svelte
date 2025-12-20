@@ -1,6 +1,6 @@
 <script lang="ts">
 	import playbackStore from '$lib/stores/playback.svelte'
-	import { progressionStore } from '$lib/stores/progression.svelte'
+	import projectStore from '$lib/stores/project.svelte'
 	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
 	import Icon from '@iconify/svelte'
 	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
@@ -18,7 +18,7 @@
 
 	const props: ProgressionChordCardPropsT = $props()
 	const isRest = $derived(props.item.type === 'rest')
-	const isSelected = $derived(props.item.id === progressionStore.selectedItemId)
+	const isSelected = $derived(props.item.id === projectStore.selectedProgressionItemId)
 
 	const width = $derived(`${(props.item.durationBeats ?? 0) * props.pixelsPerBeat + (props.index === 0 ? 0 : 0)}px`)
 

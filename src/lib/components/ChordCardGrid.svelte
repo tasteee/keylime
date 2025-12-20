@@ -7,13 +7,13 @@
 	import Box from './Box.svelte'
 	import ShaDivider from './ShaDivider.svelte'
 	import Icon from '@iconify/svelte'
-	import main from '$lib/stores/main.svelte'
+	import projectStore from '$lib/stores/project.svelte'
 
 	const gridChords = $derived(gridChordsStore.gridChords)
 
 	const keyScaleText = $derived.by(() => {
-		const key = main.selectedKey || ''
-		const scale = main.selectedScale || ''
+		const key = projectStore.key || ''
+		const scale = projectStore.scale || ''
 		return `${key} ${scale}`
 	})
 </script>

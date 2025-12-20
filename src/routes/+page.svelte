@@ -35,8 +35,8 @@
 		authStore.signOut()
 	}
 
-	const handleCreateProject = () => {
-		const newId = projectsStore.createProject()
+	const handleCreateProject = async () => {
+		const newId = await projectsStore.createProject()
 		goto(`/project/${newId}`)
 	}
 
@@ -78,7 +78,7 @@
 					<span class="logo-text">KEYLIME</span>
 				</div>
 				<div class="user-menu">
-					<span class="user-name">{authStore.user?.name}</span>
+					<span class="user-name">{authStore.userProfile?.userName}</span>
 					<Button kind="ghost" size="small" onclick={handleLogout}>Sign Out</Button>
 				</div>
 			</header>

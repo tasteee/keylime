@@ -13,6 +13,21 @@
 	let { isOpen = $bindable(false), onOpenChange }: DialogProjectSettingsPropsT = $props()
 
 	let isSaving = $state(false)
+	let initialTitle = $state('')
+	let initialDescription = $state('')
+	let initialIsPublic = $state(false)
+
+	const captureInitialState = () => {
+		initialTitle = projectStore.title
+		initialDescription = projectStore.description
+		initialIsPublic = projectStore.isPublic
+	}
+
+	const revertChanges = () => {
+		projectStore.title = initialTitle
+		projectStore.description = initialDescription
+		projectStore.isPublic = initialIsPublic
+	}
 
 	const handleTitleChange = (event: Event) => {
 		const target = event.target as HTMLInputElement
@@ -33,17 +48,32 @@
 
 	const handleSave = async () => {
 		isSaving = true
-		await projectStore.save()
-		isSaving = false
-		onOpenChange(false)
+		try {
+			await projectStore.save()
+			onOpenChange(false)
+		} catch (error) {
+			console.error('Failed to save project:', error)
+		} finally {
+			isSaving = false
+		}
 	}
 
 	const handleClose = () => {
+		revertChanges()
 		onOpenChange(false)
+	}
+
+	const handleOpenChange = (open: boolean) => {
+		if (open) {
+			captureInitialState()
+		} else {
+			revertChanges()
+		}
+		onOpenChange(open)
 	}
 </script>
 
-<Dialog.Root open={isOpen} {onOpenChange}>
+<Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
 	<Dialog.Content>
 		<Dialog.Header>
 			<Dialog.Title class="text-3xl">Project Settings</Dialog.Title>

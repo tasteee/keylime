@@ -1,6 +1,6 @@
-import mainStore from './main.svelte'
 import chordsByScale from '$lib/constants/chordsByScale.json'
 import { generateChord } from '$lib/helpers/chords'
+import projectStore from './project.svelte'
 
 type GridChordModifiersT = {
   octaveOffset: number
@@ -16,7 +16,7 @@ class GridChordsStore {
   chordModifiers = $state({}) as GridChordMapT
 
   gridChords = $derived.by(() => {
-    const scale = mainStore.selectedKey + ' ' + mainStore.selectedScale
+    const scale = projectStore.key + ' ' + projectStore.scale
     const inScaleChordNames = chordsByScale[scale as keyof typeof chordsByScale]
 
     const chords: ChordT[] = inScaleChordNames.map((name) => {
@@ -25,7 +25,7 @@ class GridChordsStore {
 
       const baseChord = generateChord({
         name,
-        baseOctave: mainStore.rootOctave
+        baseOctave: String(projectStore.octave)
       })
 
       const chord: ChordT = {
@@ -43,7 +43,7 @@ class GridChordsStore {
   })
 
   getChordIdForName = (name: string): string => {
-    const scale = mainStore.selectedKey + ' ' + mainStore.selectedScale
+    const scale = projectStore.key + ' ' + projectStore.scale
     return `grid-${scale}-${name}`
   }
 

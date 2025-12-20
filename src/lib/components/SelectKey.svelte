@@ -1,14 +1,14 @@
 <script lang="ts">
 	import * as Select from '$lib/components/ui/select/index.js'
-	import mainStore from '../stores/main.svelte.js'
+	import projectStore from '$lib/stores/project.svelte'
 
 	const handleSelect = (value: string) => {
-		mainStore.selectedKey = value
+		projectStore.key = value
 	}
 </script>
 
-<Select.Root type="single" onValueChange={handleSelect} value={mainStore.selectedKey}>
-	<Select.Trigger size="small" label="Key" value={mainStore.selectedKey} />
+<Select.Root type="single" onValueChange={handleSelect} value={projectStore.key}>
+	<Select.Trigger size="small" label="Key" value={projectStore.key} />
 	<Select.Content>
 		<Select.Item value="A">A</Select.Item>
 		<Select.Item value="A#">A#</Select.Item>

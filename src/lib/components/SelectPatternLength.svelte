@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Select from '$lib/components/ui/select/index.js'
-	import { patternStore } from '$lib/stores/pattern.svelte'
+	import projectStore from '$lib/stores/project.svelte'
 
 	const patternLengthOptions = [1, 2, 4, 8, 16, 32]
 
@@ -8,19 +8,19 @@
 		const parsedValue = parseInt(value, 10)
 		const isValidNumber = !isNaN(parsedValue)
 		if (!isValidNumber) return
-		patternStore.patternDurationBars = parsedValue
+		projectStore.patternDurationBars = parsedValue
 	}
 </script>
 
-<Select.Root type="single" onValueChange={handleSelect} value={patternStore.patternDurationBars.toString()}>
+<Select.Root type="single" onValueChange={handleSelect} value={projectStore.patternDurationBars.toString()}>
 	<Select.Trigger
 		class="h-8 text-xs font-medium hover:bg-background/80 min-w-[140px] border-transparent bg-transparent focus:ring-0 focus:ring-offset-0"
 	>
 		<span class="herMenuTriggerDisplay">
 			<span class="herMenuTriggerLabel">Duration</span>
 			<span class="herMenuTriggerValue">
-				{patternStore.patternDurationBars}
-				{patternStore.patternDurationBars === 1 ? 'Bar' : 'Bars'}
+				{projectStore.patternDurationBars}
+				{projectStore.patternDurationBars === 1 ? 'Bar' : 'Bars'}
 			</span>
 		</span>
 	</Select.Trigger>

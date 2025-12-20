@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { progressionStore } from '$lib/stores/progression.svelte'
+	import projectStore from '$lib/stores/project.svelte'
 	import Icon from '@iconify/svelte'
 	import { Button } from '$lib/components/ui/button'
 	import { toFractionString } from '$lib/helpers/numbers'
@@ -9,8 +9,8 @@
 	const MIN_DURATION_BEATS = 1
 
 	const selectedItem = $derived.by(() => {
-		if (!progressionStore.selectedItemId) return null
-		return progressionStore.getItem(progressionStore.selectedItemId)
+		if (!projectStore.selectedProgressionItemId) return null
+		return projectStore.getProgressionItem(projectStore.selectedProgressionItemId)
 	})
 
 	const selectedTypeText = $derived.by(() => {
@@ -23,7 +23,7 @@
 	const adjustDuration = (delta: number) => {
 		if (!selectedItem) return
 		const newDuration = Math.max(MIN_DURATION_BEATS, selectedItem.durationBeats + delta * 0.5)
-		progressionStore.updateItem({
+		projectStore.updateProgressionItem({
 			id: selectedItem.id,
 			durationBeats: newDuration
 		})
@@ -31,24 +31,24 @@
 
 	const moveItem = (direction: number) => {
 		if (!selectedItem) return
-		const currentIndex = progressionStore.items.findIndex((i) => i.id === selectedItem.id)
+		const currentIndex = projectStore.progressionItems.findIndex((i) => i.id === selectedItem.id)
 		if (currentIndex === -1) return
 
 		const newIndex = currentIndex + direction
-		if (newIndex < 0 || newIndex >= progressionStore.items.length) return
+		if (newIndex < 0 || newIndex >= projectStore.progressionItems.length) return
 
-		progressionStore.reorderItem({
+		projectStore.reorderProgressionItem({
 			itemId: selectedItem.id,
 			newIndex
 		})
 	}
 
 	const handleDelete = () => {
-		progressionStore.deleteSelectedItem()
+		projectStore.deleteSelectedProgressionItem()
 	}
 
 	const handleDuplicate = () => {
-		progressionStore.duplicateSelectedItem()
+		projectStore.duplicateSelectedProgressionItem()
 	}
 </script>
 

@@ -8,24 +8,39 @@
 	import InfoBar from '$lib/components/InfoBar.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { browser } from '$app/environment'
-	import { onMount } from 'svelte'
+	import { onMount, onDestroy } from 'svelte'
 	import { page } from '$app/stores'
 	import projectStore from '$lib/stores/project.svelte'
 	import projectsStore from '$lib/stores/projects.svelte'
 
+	let currentProjectId = $state<string | null>(null)
+
+	$effect(() => {
+		if (!browser) return
+
+		const projectId = $page.params.id
+
+		if (projectId && projectId !== currentProjectId) {
+			currentProjectId = projectId
+			loadProject(projectId)
+		}
+	})
+
+	const loadProject = async (projectId: string) => {
+		try {
+			await projectStore.load(projectId)
+		} catch (error) {
+			console.error('Failed to load project:', error)
+		}
+	}
+
 	onMount(() => {
 		if (browser) playbackStore.load()
+	})
 
-		// Mock loading project data
-		const projectId = $page.params.id
-		const project = projectsStore.projects.find((p) => p.id === projectId)
-		if (project) {
-			projectStore.id = project.id
-			projectStore.title = project.title
-			projectStore.bpm = project.bpm
-			projectStore.key = project.key
-			projectStore.scale = project.scale
-			// In a real app, we'd load the full project state here
+	onDestroy(() => {
+		if (browser) {
+			projectStore.reset()
 		}
 	})
 

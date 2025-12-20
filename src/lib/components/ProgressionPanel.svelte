@@ -2,9 +2,8 @@
 	import ProgressionChordCard from './ProgressionChordCard.svelte'
 	import ProgressionSelectionControls from './ProgressionSelectionControls.svelte'
 	import ProgressionTimingMarkers from './ProgressionTimingMarkers.svelte'
-	import { progressionStore } from '$lib/stores/progression.svelte'
+	import projectStore from '$lib/stores/project.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
-	import main from '$lib/stores/main.svelte'
 	import Icon from '@iconify/svelte'
 	import { exportPerformanceAsMidi } from '$lib/helpers/midiExport'
 	import { toFractionString } from '$lib/helpers/numbers'
@@ -46,12 +45,12 @@
 
 	// Derived: total duration is sum of all item durations
 	const totalBeats = $derived.by(() => {
-		return progressionStore.getTotalDuration()
+		return projectStore.getProgressionTotalDuration()
 	})
 
 	// Derived: item area width in pixels (including gaps)
 	const itemAreaWidth = $derived.by(() => {
-		const numItems = progressionStore.items.length
+		const numItems = projectStore.progressionItems.length
 		const totalGaps = numItems > 0 ? (numItems - 1) * GAP_BETWEEN_ITEMS : 0
 		return totalBeats * PIXELS_PER_BEAT + totalGaps
 	})
@@ -59,25 +58,25 @@
 	// Derived: ghost item data when dragging
 	const ghostItem = $derived.by(() => {
 		if (!isDraggingItem || !draggedItemId) return null
-		const item = progressionStore.items.find((i) => i.id === draggedItemId)
+		const item = projectStore.progressionItems.find((i) => i.id === draggedItemId)
 		if (!item) return null
 		return item
 	})
 
 	// Derived: total duration in bars
 	const totalBars = $derived.by(() => {
-		const beats = progressionStore.getTotalDuration()
+		const beats = projectStore.getProgressionTotalDuration()
 		return Math.round((beats / BEATS_PER_BAR) * 1000) / 1000
 	})
 
 	const handleKeyDown = (event: KeyboardEvent) => {
 		const isDeleteKey = event.key === 'Delete' || event.key === 'Backspace'
-		if (isDeleteKey) return progressionStore.deleteSelectedItem()
+		if (isDeleteKey) return projectStore.deleteSelectedProgressionItem()
 		const isDuplicateKey = (event.ctrlKey || event.metaKey) && event.key === 'd'
 
 		if (isDuplicateKey) {
 			event.preventDefault()
-			progressionStore.duplicateSelectedItem()
+			projectStore.duplicateSelectedProgressionItem()
 		}
 	}
 
@@ -86,7 +85,7 @@
 		const itemElement = target.closest('.progressionItem') as HTMLElement
 		const itemId = itemElement?.dataset.itemId
 		event.stopPropagation()
-		progressionStore.selectItem(itemId || null)
+		projectStore.selectProgressionItem(itemId || null)
 	}
 
 	const handleItemMouseDown = (event: MouseEvent) => {
@@ -99,7 +98,7 @@
 		const itemId = itemElement.dataset.itemId
 		if (!itemId) return console.log('No itemId found on item element')
 
-		const itemIndex = progressionStore.items.findIndex((i) => i.id === itemId)
+		const itemIndex = projectStore.progressionItems.findIndex((i) => i.id === itemId)
 		if (itemIndex === -1) return
 
 		console.log('Drag started for item:', itemId, 'at index:', itemIndex)
@@ -108,7 +107,7 @@
 		draggedItemId = itemId
 		dragStartX = event.clientX
 		dragStartIndex = itemIndex
-		progressionStore.selectItem(itemId)
+		projectStore.selectProgressionItem(itemId)
 
 		event.stopPropagation()
 		event.preventDefault()
@@ -120,14 +119,14 @@
 		const itemId = itemElement?.dataset.itemId
 		if (!itemId) return
 
-		const item = progressionStore.getItem(itemId)
+		const item = projectStore.getProgressionItem(itemId)
 		if (!item) return
 
 		isResizingItem = true
 		resizingItemId = itemId
 		resizeStartX = event.clientX
 		resizeStartDuration = item.durationBeats ?? 0
-		progressionStore.selectItem(itemId)
+		projectStore.selectProgressionItem(itemId)
 
 		event.stopPropagation()
 		event.preventDefault()
@@ -137,14 +136,14 @@
 		if (!itemAreaElement) return
 
 		if (isResizingItem && resizingItemId) {
-			const item = progressionStore.getItem(resizingItemId)
+			const item = projectStore.getProgressionItem(resizingItemId)
 			if (!item) return
 
 			const deltaX = event.clientX - resizeStartX
 			const deltaBeats = Math.round(deltaX / PIXELS_PER_BEAT / RESIZE_INCREMENT_BEATS) * RESIZE_INCREMENT_BEATS
 			const newDuration = Math.max(MIN_DURATION_BEATS, resizeStartDuration + deltaBeats)
 
-			progressionStore.updateItem({
+			projectStore.updateProgressionItem({
 				id: resizingItemId,
 				durationBeats: newDuration
 			})
@@ -171,7 +170,7 @@
 		console.log('Dragging item:', draggedItemId)
 
 		// Calculate which item position we're hovering over
-		const items = progressionStore.items
+		const items = projectStore.progressionItems
 		const rect = itemAreaElement.getBoundingClientRect()
 		const mouseX = event.clientX - rect.left
 		const mousePositionBeats = mouseX / PIXELS_PER_BEAT
@@ -196,7 +195,7 @@
 		// Reorder the item if needed
 		if (newIndex !== dragStartIndex) {
 			console.log('Reordering item from', dragStartIndex, 'to', newIndex)
-			progressionStore.reorderItem({ itemId: draggedItemId, newIndex })
+			projectStore.reorderProgressionItem({ itemId: draggedItemId, newIndex })
 			dragStartIndex = newIndex
 		}
 	}
@@ -213,7 +212,7 @@
 	}
 
 	const handleAddRest = () => {
-		progressionStore.addRest()
+		projectStore.addProgressionRest()
 	}
 
 	const handleMiddleClick = (event: MouseEvent) => {
@@ -233,9 +232,9 @@
 	const handleDownloadMidi = () => {
 		exportPerformanceAsMidi({
 			performance: playbackStore.performance,
-			bpm: main.bpm,
-			key: main.selectedKey,
-			scale: main.selectedScale
+			bpm: projectStore.bpm,
+			key: projectStore.key,
+			scale: projectStore.scale
 		})
 	}
 </script>
@@ -292,7 +291,7 @@
 					beatsPerBar={BEATS_PER_BAR}
 					maxMarkerBars={MAX_MARKER_BARS}
 				/>
-				{#each progressionStore.items as item, index (item.id)}
+				{#each projectStore.progressionItems as item, index (item.id)}
 					<ProgressionChordCard
 						{item}
 						{index}

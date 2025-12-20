@@ -10,10 +10,8 @@
 	import { resolveSignalConflicts, getNoteFromSignalRow } from '$lib/helpers/signalRows'
 	import { chordToNotes } from '$lib/helpers/chordToNotes'
 	import { chordNotesToSignalRowNotes } from '$lib/helpers/chordNotesToSignalRowNotes'
-	import { patternStore } from '$lib/stores/pattern.svelte'
-	import { progressionStore } from '$lib/stores/progression.svelte'
+	import projectStore from '$lib/stores/project.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
-	import mainStore from '$lib/stores/main.svelte'
 	import outputStore from '$lib/stores/output.svelte'
 
 	let signalGridBox: HTMLDivElement
@@ -44,17 +42,17 @@
 	const CELLS_PER_BEAT = 4
 	const BEATS_PER_CELL = 1 / CELLS_PER_BEAT // 0.25 beats per cell
 
-	const selectedSignal = $derived(selectedSignalId ? patternStore.getSignalById(selectedSignalId) : null)
+	const selectedSignal = $derived(selectedSignalId ? projectStore.getPatternSignalById(selectedSignalId) : null)
 	const selectedChord = $derived(
-		progressionStore.selectedItemId
-			? (progressionStore.chords.find((chord) => chord.id === progressionStore.selectedItemId) ?? null)
+		projectStore.selectedProgressionItemId
+			? (projectStore.progressionChords.find((chord) => chord.id === projectStore.selectedProgressionItemId) ?? null)
 			: null
 	)
 
 	// Calculate note mappings for each signal row based on selected chord
 	const signalRowNotes = $derived.by(() => {
 		if (!selectedChord) return new Map<string, string>()
-		const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: mainStore.rootOctave })
+		const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: String(projectStore.octave) })
 		const notes = chordNotesToSignalRowNotes({ chordNotes })
 		const noteMap = new Map<string, string>()
 		SIGNAL_IDS.forEach((signalId, index) => {
@@ -65,7 +63,7 @@
 
 	// Calculate where the inactive area starts (in pixels)
 	const activePatternWidthPx = $derived.by(() => {
-		const activePatternCells = patternStore.activePatternLengthBeats * CELLS_PER_BEAT
+		const activePatternCells = projectStore.patternActiveDurationBeats * CELLS_PER_BEAT
 		const widthInPixels = activePatternCells * CELL_WIDTH
 		return widthInPixels
 	})
@@ -114,7 +112,7 @@
 		const x = event.clientX - rect.left
 		const timePositionInCells = Math.floor(x / CELL_WIDTH)
 		const timePositionInBeats = timePositionInCells * BEATS_PER_CELL
-		const signalRow = patternStore.signalRows[label as keyof typeof SIGNAL_ROWS]
+		const signalRow = projectStore.patternSignalRows[label as keyof typeof SIGNAL_ROWS]
 
 		const signal = createSignal({
 			startTime: timePositionInBeats,
@@ -123,14 +121,14 @@
 		})
 
 		signalRow.signalIds.push(signal.id)
-		patternStore.signals.push(signal)
+		projectStore.patternSignals.push(signal)
 		console.log('>>>', signal.startTime)
 		selectedSignalId = signal.id
 
 		// Derive notes from selected chord if available
 		let noteToPlay: string | null = null
 		if (selectedChord) {
-			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: mainStore.rootOctave })
+			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: String(projectStore.octave) })
 			noteToPlay = getNoteFromSignalRow({ signalRowId: label as string, chord: null, chordNotes })
 		}
 
@@ -158,7 +156,7 @@
 		const toneId = parent.dataset.toneId
 		if (!signalId || !toneId) return
 
-		const signal = patternStore.getSignalById(signalId)
+		const signal = projectStore.getPatternSignalById(signalId)
 		if (!signal) return
 
 		isDraggingSignal = true
@@ -172,7 +170,7 @@
 		// Derive notes from selected chord if available
 		let noteToPlay: string | null = null
 		if (selectedChord) {
-			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: mainStore.rootOctave })
+			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: String(projectStore.octave) })
 			noteToPlay = getNoteFromSignalRow({ signalRowId: toneId, chord: null, chordNotes })
 		}
 
@@ -191,7 +189,7 @@
 		const signalId = signalElement.dataset.signalId
 		if (!signalId) return
 
-		const signal = patternStore.getSignalById(signalId)
+		const signal = projectStore.getPatternSignalById(signalId)
 		if (!signal) return
 
 		// Find the row to get the signal row ID for note playback
@@ -208,7 +206,7 @@
 
 		// Play note when resizing starts
 		if (selectedChord && toneId) {
-			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: mainStore.rootOctave })
+			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: String(projectStore.octave) })
 			const noteToPlay = getNoteFromSignalRow({ signalRowId: toneId, chord: null, chordNotes })
 			if (noteToPlay) {
 				playbackStore.playNote({ note: noteToPlay })
@@ -225,7 +223,7 @@
 	const handleMouseMove = (event: MouseEvent) => {
 		const isCurrentlyResizing = isResizingSignal && resizingSignalId
 		if (isCurrentlyResizing) {
-			const signal = patternStore.getSignalById(resizingSignalId as string)
+			const signal = projectStore.getPatternSignalById(resizingSignalId as string)
 			if (!signal) return
 
 			const deltaX = event.clientX - resizeStartX
@@ -238,7 +236,7 @@
 				const endTime = resizeStartTime + resizeStartDuration
 
 				// Ensure we don't extend past the active pattern length
-				const maxEndTime = patternStore.activePatternLengthBeats
+				const maxEndTime = projectStore.patternActiveDurationBeats
 				const effectiveEndTime = Math.min(endTime, maxEndTime)
 
 				const newDuration = effectiveEndTime - newStartTime
@@ -267,7 +265,7 @@
 				const clampedNewDuration = Math.max(BEATS_PER_CELL, newDuration)
 
 				// Clamp to active pattern length
-				const maxDuration = Math.max(BEATS_PER_CELL, patternStore.activePatternLengthBeats - signal.startTime)
+				const maxDuration = Math.max(BEATS_PER_CELL, projectStore.patternActiveDurationBeats - signal.startTime)
 				const clampedDuration = Math.min(clampedNewDuration, maxDuration)
 
 				signal.duration = clampedDuration
@@ -290,7 +288,7 @@
 			dragThresholdMet = true
 		}
 
-		const signal = patternStore.getSignalById(draggedSignalId as string)
+		const signal = projectStore.getPatternSignalById(draggedSignalId as string)
 		if (!signal) return
 
 		const target = event.target as HTMLElement
@@ -299,7 +297,7 @@
 		const shouldMoveToNewRow = currentRowId && draggingToneId && currentRowId !== draggingToneId
 
 		if (shouldMoveToNewRow) {
-			patternStore.moveSignalToRow({
+			projectStore.movePatternSignalToRow({
 				fromRowId: draggingToneId as string,
 				toRowId: currentRowId,
 				signalId: draggedSignalId as string
@@ -315,7 +313,7 @@
 
 			// Play the new note for the new row
 			if (selectedChord) {
-				const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: mainStore.rootOctave })
+				const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: String(projectStore.octave) })
 				const noteToPlay = getNoteFromSignalRow({ signalRowId: currentRowId, chord: null, chordNotes })
 				if (noteToPlay) {
 					currentlyPlayingNote = noteToPlay
@@ -338,16 +336,16 @@
 		const wasDragging = isDraggingSignal && draggedSignalId
 
 		if (wasResizing) {
-			const toneId = Object.keys(patternStore.signalRows).find((key) => {
+			const toneId = Object.keys(projectStore.patternSignalRows).find((key) => {
 				const signalId = resizingSignalId as string
-				const signalRow = patternStore.signalRows[key as SignalRowKeyT]
+				const signalRow = projectStore.patternSignalRows[key as SignalRowKeyT]
 				return signalRow.signalIds.includes(signalId)
 			})
 
 			if (toneId) {
-				const signalRow = patternStore.signalRows[toneId as SignalRowKeyT]
-				const newSignals = resolveSignalConflicts(signalRow, patternStore.signals)
-				patternStore.signals = [...patternStore.signals, ...newSignals]
+				const signalRow = projectStore.patternSignalRows[toneId as SignalRowKeyT]
+				const newSignals = resolveSignalConflicts(signalRow, projectStore.patternSignals)
+				projectStore.patternSignals = [...projectStore.patternSignals, ...newSignals]
 				signalRow.signalIds = [...signalRow.signalIds, ...newSignals.map((signal) => signal.id)]
 			}
 
@@ -357,15 +355,15 @@
 		}
 
 		if (wasDragging) {
-			const signal = patternStore.getSignalById(draggedSignalId as string)
+			const signal = projectStore.getPatternSignalById(draggedSignalId as string)
 
 			// If the signal starts after the active pattern length, revert the move
-			if (signal && signal.startTime >= patternStore.activePatternLengthBeats) {
+			if (signal && signal.startTime >= projectStore.patternActiveDurationBeats) {
 				signal.startTime = dragStartTime
 				signal.modifiedTime = Date.now()
 
 				if (draggingToneId !== dragStartToneId && dragStartToneId) {
-					patternStore.moveSignalToRow({
+					projectStore.movePatternSignalToRow({
 						fromRowId: draggingToneId as string,
 						toRowId: dragStartToneId,
 						signalId: draggedSignalId as string
@@ -382,17 +380,17 @@
 			// Clamp duration if signal extends beyond active pattern length
 			if (signal) {
 				const signalEndTime = signal.startTime + signal.duration
-				const extendsBeyondActivePattern = signalEndTime > patternStore.activePatternLengthBeats
+				const extendsBeyondActivePattern = signalEndTime > projectStore.patternActiveDurationBeats
 				if (extendsBeyondActivePattern) {
-					const maxDuration = patternStore.activePatternLengthBeats - signal.startTime
+					const maxDuration = projectStore.patternActiveDurationBeats - signal.startTime
 					signal.duration = Math.max(BEATS_PER_CELL, maxDuration)
 					signal.modifiedTime = Date.now()
 				}
 			}
 
-			const signalRow = patternStore.signalRows[draggingToneId as SignalRowKeyT]
-			const newSignals = resolveSignalConflicts(signalRow, patternStore.signals)
-			patternStore.signals = [...patternStore.signals, ...newSignals]
+			const signalRow = projectStore.patternSignalRows[draggingToneId as SignalRowKeyT]
+			const newSignals = resolveSignalConflicts(signalRow, projectStore.patternSignals)
+			projectStore.patternSignals = [...projectStore.patternSignals, ...newSignals]
 			signalRow.signalIds = [...signalRow.signalIds, ...newSignals.map((signal) => signal.id)]
 
 			isDraggingSignal = false
@@ -422,11 +420,11 @@
 			if (!signalId) return
 
 			// Remove signal from signals array
-			patternStore.signals = patternStore.signals.filter((signal) => signal.id !== signalId)
+			projectStore.patternSignals = projectStore.patternSignals.filter((signal) => signal.id !== signalId)
 
 			// Remove signal ID from its row
-			for (const rowKey in patternStore.signalRows) {
-				const row = patternStore.signalRows[rowKey as SignalRowKeyT]
+			for (const rowKey in projectStore.patternSignalRows) {
+				const row = projectStore.patternSignalRows[rowKey as SignalRowKeyT]
 				row.signalIds = row.signalIds.filter((id) => id !== signalId)
 			}
 
@@ -444,11 +442,11 @@
 		if (!signalId) return
 
 		// Remove signal from signals array
-		patternStore.signals = patternStore.signals.filter((signal) => signal.id !== signalId)
+		projectStore.patternSignals = projectStore.patternSignals.filter((signal) => signal.id !== signalId)
 
 		// Remove signal ID from its row
-		for (const rowKey in patternStore.signalRows) {
-			const row = patternStore.signalRows[rowKey as SignalRowKeyT]
+		for (const rowKey in projectStore.patternSignalRows) {
+			const row = projectStore.patternSignalRows[rowKey as SignalRowKeyT]
 			row.signalIds = row.signalIds.filter((id) => id !== signalId)
 		}
 
@@ -570,9 +568,9 @@
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<div class="signalGridRow" ondblclick={handleSignalGridRowDoubleClick} data-tone-id={label}>
-					{#each patternStore.signalRows[label as SignalRowKeyT].signalIds as signalId}
-						{@const signal = patternStore.getSignalById(signalId)}
-						{@const isSignalInactive = signal.startTime >= patternStore.activePatternLengthBeats}
+					{#each projectStore.patternSignalRows[label as SignalRowKeyT]?.signalIds || [] as signalId}
+						{@const signal = projectStore.getPatternSignalById(signalId)}
+						{@const isSignalInactive = signal.startTime >= projectStore.patternActiveDurationBeats}
 
 						<PatternEditorSignal
 							{signal}

@@ -6,6 +6,7 @@
 	import Box from './Box.svelte'
 
 	let isSettingsOpen = $state(false)
+	let isSaving = $state(false)
 
 	const openSettings = () => {
 		isSettingsOpen = true
@@ -13,6 +14,17 @@
 
 	const handleSettingsOpenChange = (open: boolean) => {
 		isSettingsOpen = open
+	}
+
+	const handleSave = async () => {
+		isSaving = true
+		try {
+			await projectStore.save()
+		} catch (error) {
+			console.error('Failed to save project:', error)
+		} finally {
+			isSaving = false
+		}
 	}
 
 	const dirtyIndicatorText = $derived(projectStore.isDirty ? '●' : '')
@@ -33,7 +45,9 @@
 
 		<Box gap="8px">
 			<Button>Options</Button>
-			<Button>Save</Button>
+			<Button onclick={handleSave} disabled={isSaving}>
+				{isSaving ? 'Saving...' : 'Save'}
+			</Button>
 		</Box>
 	</Box>
 </Box>

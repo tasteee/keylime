@@ -28,10 +28,10 @@ class ProjectsStore {
     const supabase = createSupabaseClient()
 
     const { data, error } = await supabase
-      .from('projects')
-      .select('id, title, description, updated_at, bpm, key, scale, user_id, is_public')
-      .eq('user_id', authStore.user.id)
-      .order('updated_at', { ascending: false })
+      .from('all_projects')
+      .select('id, title, description, "updatedAt", bpm, key, scale, "userId", "isPublic"')
+      .eq('userId', authStore.user.id)
+      .order('updatedAt', { ascending: false })
 
     if (error) {
       this.error = error.message
@@ -43,12 +43,12 @@ class ProjectsStore {
       id: p.id,
       title: p.title,
       description: p.description,
-      updatedAt: new Date(p.updated_at),
+      updatedAt: new Date(p.updatedAt),
       bpm: p.bpm,
       key: p.key,
       scale: p.scale,
-      userId: p.user_id,
-      isPublic: p.is_public
+      userId: p.userId,
+      isPublic: p.isPublic
     }))
 
     this.isLoading = false
@@ -66,7 +66,7 @@ class ProjectsStore {
     const supabase = createSupabaseClient()
 
     const { error } = await supabase
-      .from('projects')
+      .from('all_projects')
       .delete()
       .eq('id', id)
 
@@ -86,21 +86,25 @@ class ProjectsStore {
     const supabase = createSupabaseClient()
 
     const newProject = {
-      user_id: authStore.user.id,
+      userId: authStore.user.id,
       title: 'New Project',
       description: '',
       bpm: 120,
       key: 'C',
       scale: 'Major',
       octave: 3,
-      min_velocity: 60,
-      max_velocity: 100,
-      pattern_duration_bars: 1,
-      is_public: false
+      minVelocity: 60,
+      maxVelocity: 100,
+      patternDurationBars: 1,
+      isPublic: false,
+      progressionChords: [],
+      chordSymbols: [],
+      patternSignals: [],
+      patternSignalRows: {}
     }
 
     const { data, error } = await supabase
-      .from('projects')
+      .from('all_projects')
       .insert(newProject)
       .select()
       .single()
@@ -113,12 +117,12 @@ class ProjectsStore {
       id: data.id,
       title: data.title,
       description: data.description,
-      updatedAt: new Date(data.updated_at),
+      updatedAt: new Date(data.updatedAt),
       bpm: data.bpm,
       key: data.key,
       scale: data.scale,
-      userId: data.user_id,
-      isPublic: data.is_public
+      userId: data.userId,
+      isPublic: data.isPublic
     }
 
     this.addProject(projectSummary)
@@ -132,10 +136,10 @@ class ProjectsStore {
     const supabase = createSupabaseClient()
 
     const { data, error } = await supabase
-      .from('projects')
-      .select('id, title, description, updated_at, bpm, key, scale, user_id, is_public')
-      .eq('is_public', true)
-      .order('updated_at', { ascending: false })
+      .from('all_projects')
+      .select('id, title, description, "updatedAt", bpm, key, scale, "userId", "isPublic"')
+      .eq('isPublic', true)
+      .order('updatedAt', { ascending: false })
       .limit(20)
 
     if (error) {
@@ -150,12 +154,12 @@ class ProjectsStore {
       id: p.id,
       title: p.title,
       description: p.description,
-      updatedAt: new Date(p.updated_at),
+      updatedAt: new Date(p.updatedAt),
       bpm: p.bpm,
       key: p.key,
       scale: p.scale,
-      userId: p.user_id,
-      isPublic: p.is_public
+      userId: p.userId,
+      isPublic: p.isPublic
     }))
   }
 }
