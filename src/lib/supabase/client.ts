@@ -4,7 +4,7 @@ import memoize from 'just-memoize';
 
 export const createSupabaseClient = memoize(() => {
   if (!isBrowser()) throw new Error('createSupabaseClient should only be called in the browser')
-  const client = createBrowserClient<any>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)
+  const client = createBrowserClient<DatabaseT>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)
   console.log('Creating Supabase Browser Client', client)
   return client
 })
@@ -17,7 +17,7 @@ export const createSupabaseServerClient = (args: {
     remove: (key: string, options: any) => void
   }
 }) => {
-  return createServerClient<any>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+  return createServerClient<DatabaseT>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
     cookies: {
       get: (key) => args.cookies.get(key),
       set: (key, value, options) => args.cookies.set(key, value, options),

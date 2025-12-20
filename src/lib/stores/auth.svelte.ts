@@ -1,198 +1,241 @@
 import { browser } from '$app/environment'
+import { goto } from '$app/navigation'
+import { getUserById } from '$lib/modules/database'
+import { warnWhen } from '$lib/modules/warnWhen'
 import { createSupabaseClient } from '$lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
-type UserProfileT = {
-  id: string
+type SignUpArgsT = {
+  email: string
+  password: string
+}
+
+type SignInArgsT = {
+  email: string
+  password: string
+}
+
+type CreateUserProfileArgsT = {
+  userId: string
   userName: string
-  avatarUrl: string | null
   bio: string
-  createdAt: Date
-  updatedAt: Date
+}
+
+type ResetPasswordArgsT = {
+  email: string
+}
+
+type UpdatePasswordArgsT = {
+  newPassword: string
+}
+
+type AuthResultT = {
+  success: boolean
+  error?: string
+  user?: User
 }
 
 class AuthStore {
-  user = $state<User | null>(null)
-  userProfile = $state<UserProfileT | null>(null)
+  authUser = $state<User | null>(null)
+  userProfile = $state<UserT | null>(null)
   isLoading = $state(true)
   error = $state<string | null>(null)
 
-  isAuthenticated = $derived.by(() => {
-    return this.user !== null
-  })
+  isAuthenticated = $derived(!!this.authUser)
 
   constructor() {
-    if (browser) {
-      this.initialize()
-    }
+    if (browser) this.initialize()
   }
 
   loadUserProfile = async () => {
-    const hasUser = this.user !== null
-    if (!hasUser) {
+    // If there is no auth user,
+    // clear the profile and return.
+    if (!this.authUser) {
       this.userProfile = null
       return
-    }
+    } const userId = this.authUser!.id
+    const result = await getUserById(userId)
 
-    const supabase = createSupabaseClient()
-    const { data, error } = await supabase
-      .from('all_users')
-      .select('*')
-      .eq('id', this.user!.id)
-      .single()
-
-    if (error) {
-      console.error('Error loading user profile:', error)
+    if (result.error) {
+      warnWhen(result.error, `Error loading user profile: ${result.error?.message}`)
       return
     }
 
-    this.userProfile = data
+    if (!result.user) return
+
+    this.userProfile = {
+      id: result.user.id,
+      userName: result.user.userName,
+      avatarUrl: result.user.avatarUrl,
+      bio: result.user.bio,
+      createdAt: result.user.createdAt,
+      updatedAt: result.user.updatedAt || result.user.createdAt
+    }
+
+    console.log('Loaded user profile:', this.userProfile)
   }
 
   initialize = async () => {
     const supabase = createSupabaseClient()
+    const userResponse = await supabase.auth.getUser()
+    const initialUser = userResponse.data.user
 
-    // Get initial session
-    const {
-      data: { user }
-    } = await supabase.auth.getUser()
-    this.user = user
+    this.authUser = initialUser
 
-    // Load user profile if authenticated
-    if (user) {
-      await this.loadUserProfile()
-    }
+    const hasInitialUser = !!initialUser
+    if (hasInitialUser) await this.loadUserProfile()
 
     this.isLoading = false
 
-    // Listen for auth changes
-    supabase.auth.onAuthStateChange(async (_event, session) => {
-      this.user = session?.user ?? null
-      if (session?.user) {
-        await this.loadUserProfile()
-      } else {
-        this.userProfile = null
-      }
-    })
+    const handleAuthStateChange = async (event: string, session: any) => {
+      const sessionUser = session?.user ?? null
+      this.authUser = sessionUser
+      const hasSessionUser = !!session?.user
+      if (hasSessionUser) return await this.loadUserProfile()
+      this.userProfile = null
+    }
+
+    supabase.auth.onAuthStateChange(handleAuthStateChange)
   }
 
-  signUp = async (args: { email: string; password: string }) => {
+  signUp = async (args: SignUpArgsT): Promise<AuthResultT> => {
     this.error = null
     const supabase = createSupabaseClient()
 
-    const { data, error } = await supabase.auth.signUp({
+    const signUpResponse = await supabase.auth.signUp({
       email: args.email,
       password: args.password
     })
 
-    if (error) {
-      this.error = error.message
-      return { success: false, error: error.message }
+    const hasSignUpError = !!signUpResponse.error
+    if (hasSignUpError) {
+      const errorMessage = signUpResponse.error.message
+      this.error = errorMessage
+      return { success: false, error: errorMessage }
     }
 
-    if (!data.user) {
-      this.error = 'No user returned from signup'
-      return { success: false, error: 'No user returned from signup' }
+    const signedUpUser = signUpResponse.data.user
+    const hasNoUser = !signedUpUser
+    if (hasNoUser) {
+      const errorMessage = 'No user returned from signup'
+      this.error = errorMessage
+      return { success: false, error: errorMessage }
     }
 
-    // Create all_users profile entry
     const createProfileResult = await this.createUserProfile({
-      userId: data.user.id,
+      userId: signedUpUser.id,
       userName: args.email,
       bio: ''
     })
 
-    if (!createProfileResult.success) {
-      this.error = createProfileResult.error || 'Failed to create user profile'
-      return { success: false, error: createProfileResult.error || 'Failed to create user profile' }
+    const hasProfileError = !createProfileResult.success
+    if (hasProfileError) {
+      const errorMessage = createProfileResult.error || 'Failed to create user profile'
+      this.error = errorMessage
+      return { success: false, error: errorMessage }
     }
 
-    return { success: true, user: data.user }
+    this.authUser = signedUpUser
+    await this.loadUserProfile()
+    return { success: true, user: signedUpUser }
   }
 
-  createUserProfile = async (args: { userId: string; userName: string; bio: string }) => {
+  createUserProfile = async (args: CreateUserProfileArgsT): Promise<AuthResultT> => {
     const supabase = createSupabaseClient()
 
-    const { error } = await supabase.from('all_users').insert({
+    const insertResponse = await supabase.from('all_users').insert({
       id: args.userId,
       userName: args.userName,
       bio: args.bio
     })
 
-    if (error) {
-      return { success: false, error: error.message }
+    const hasInsertError = !!insertResponse.error
+    if (hasInsertError) {
+      const errorMessage = insertResponse.error.message
+      return { success: false, error: errorMessage }
     }
 
     return { success: true }
   }
 
-  signIn = async (args: { email: string; password: string }) => {
+  signIn = async (args: SignInArgsT): Promise<AuthResultT> => {
     this.error = null
     const supabase = createSupabaseClient()
     console.log('Supabase', supabase)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const signInResponse = await supabase.auth.signInWithPassword({
       email: args.email,
       password: args.password
     })
 
-    if (error) {
-      this.error = error.message
-      return { success: false, error: error.message }
+    const hasSignInError = !!signInResponse.error
+    if (hasSignInError) {
+      const errorMessage = signInResponse.error.message
+      this.error = errorMessage
+      return { success: false, error: errorMessage }
     }
 
-    this.user = data.user
-    return { success: true, user: data.user }
+    const signedInUser = signInResponse.data.user
+    this.authUser = signedInUser
+    const hasSignedInUser = !!signedInUser
+    if (hasSignedInUser) await this.loadUserProfile()
+    return { success: true, user: signedInUser }
   }
 
-  signOut = async () => {
+  signOut = async (): Promise<AuthResultT> => {
     this.error = null
     const supabase = createSupabaseClient()
 
-    const { error } = await supabase.auth.signOut()
+    const signOutResponse = await supabase.auth.signOut()
 
-    if (error) {
-      this.error = error.message
-      return { success: false, error: error.message }
+    const hasSignOutError = !!signOutResponse.error
+    if (hasSignOutError) {
+      const errorMessage = signOutResponse.error.message
+      this.error = errorMessage
+      return { success: false, error: errorMessage }
     }
 
-    this.user = null
+    this.authUser = null
     this.userProfile = null
     return { success: true }
   }
 
-  resetPassword = async (args: { email: string }) => {
+  resetPassword = async (args: ResetPasswordArgsT): Promise<AuthResultT> => {
     this.error = null
     const supabase = createSupabaseClient()
+    const resetUrl = `${window.location.origin}/auth/reset-password`
 
-    const { error } = await supabase.auth.resetPasswordForEmail(args.email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`
+    const resetResponse = await supabase.auth.resetPasswordForEmail(args.email, {
+      redirectTo: resetUrl
     })
 
-    if (error) {
-      this.error = error.message
-      return { success: false, error: error.message }
+    const hasResetError = !!resetResponse.error
+    if (hasResetError) {
+      const errorMessage = resetResponse.error.message
+      this.error = errorMessage
+      return { success: false, error: errorMessage }
     }
 
     return { success: true }
   }
 
-  updatePassword = async (args: { newPassword: string }) => {
+  updatePassword = async (args: UpdatePasswordArgsT): Promise<AuthResultT> => {
     this.error = null
     const supabase = createSupabaseClient()
 
-    const { error } = await supabase.auth.updateUser({
+    const updateResponse = await supabase.auth.updateUser({
       password: args.newPassword
     })
 
-    if (error) {
-      this.error = error.message
-      return { success: false, error: error.message }
+    const hasUpdateError = !!updateResponse.error
+    if (hasUpdateError) {
+      const errorMessage = updateResponse.error.message
+      this.error = errorMessage
+      return { success: false, error: errorMessage }
     }
 
     return { success: true }
   }
 }
 
-const authStore = new AuthStore()
-export default authStore
+export const authStore = new AuthStore()

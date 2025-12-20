@@ -1,22 +1,15 @@
 import { SIGNAL_ROWS } from "$lib/constants/signalRows"
+import { numbers } from "$lib/helpers/numbers"
+import { getUserById } from "$lib/modules/database"
 import { createSupabaseClient } from '$lib/supabase/client'
-import authStore from './auth.svelte'
+import { authStore } from './auth.svelte'
 
 const TOTAL_UNITS = 64
+const PATTERN_MIN_ZOOM = 16
+const PATTERN_MAX_ZOOM = 48
+const PATTERN_ZOOM_STEP = 4
 
-const getUserById = async (id: string) => {
-  const supabase = createSupabaseClient()
 
-  const result = await supabase
-    .from('all_users')
-    .select('id')
-    .eq('id', id)
-    .single()
-
-  const user = result.data
-  const error = result.error
-  return { user, error }
-}
 
 class ProjectStore {
   id = $state(crypto.randomUUID())
@@ -29,6 +22,8 @@ class ProjectStore {
   bpm = $state(124)
   minVelocity = $state(70)
   maxVelocity = $state(80)
+
+
   patternSignals: SignalT[] = $state([])
   patternSignalRows = $state(SIGNAL_ROWS)
   patternDurationBars = $state(1)
@@ -37,6 +32,31 @@ class ProjectStore {
 
   createdAt = $state<Date | null>(new Date())
   updatedAt = $state<Date | null>(new Date())
+
+  // PATTERN ZOOM LEVEL
+  // Determines the width and height of pattern cells in pixels.
+  // --------------------
+  // --------------------
+  // --------------------
+
+  patternZoomLevel = $state(24) // cells are 24x24px
+
+  zoomInPattern = () => {
+    this.adjustPatternZoomLevel(1)
+  }
+
+  zoomOutPattern = () => {
+    this.adjustPatternZoomLevel(-1)
+  }
+
+  // adjustPatternZoomLevel(1) -> zooms in by 4px
+  // adjustPatternZoomLevel(-1) -> zooms out by 4px
+  adjustPatternZoomLevel = (delta: number = 0) => {
+    const addition = delta * PATTERN_ZOOM_STEP
+    const newZoomLevel = this.patternZoomLevel + addition
+    const clampedZoomLevel = numbers.clamp(PATTERN_MIN_ZOOM, newZoomLevel, PATTERN_MAX_ZOOM)
+    this.patternZoomLevel = clampedZoomLevel
+  }
 
   // Regenerate all progression items with startTime calculated
   progressionItems = $derived.by(() => {
@@ -248,9 +268,9 @@ class ProjectStore {
   }
 
   save = async () => {
-    if (!authStore.user) throw new Error('User must be authenticated to save project')
+    if (!authStore.authUser) throw new Error('User must be authenticated to save project')
     const supabase = createSupabaseClient()
-    const userId = authStore.user.id
+    const userId = authStore.authUser.id
     const { user } = await getUserById(userId)
     if (!user) throw new Error('User not found, cannot save project.')
 
@@ -330,7 +350,7 @@ class ProjectStore {
   }
 
   delete = async () => {
-    if (!authStore.user) {
+    if (!authStore.authUser) {
       throw new Error('User must be authenticated to delete project')
     }
 

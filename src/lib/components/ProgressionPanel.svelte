@@ -27,6 +27,37 @@
 	let ghostItemMouseX = $state(0)
 	let ghostItemMouseY = $state(0)
 
+	let cursorElement: HTMLElement | null = $state(null)
+	let animationFrameId: number
+
+	const updateCursor = () => {
+		if (!playbackStore.isPlaying || !cursorElement) return
+
+		const now = performance.now()
+		const elapsedMs = now - playbackStore.loopStartTime
+		const bpm = projectStore.bpm
+		const msPerBeat = 60000 / bpm
+		const currentBeat = elapsedMs / msPerBeat
+
+		const totalDurationBeats = projectStore.getProgressionTotalDuration()
+		if (totalDurationBeats === 0) return
+
+		const loopedBeat = currentBeat % totalDurationBeats
+		const x = loopedBeat * PIXELS_PER_BEAT
+		cursorElement.style.transform = `translateX(${x}px)`
+
+		animationFrameId = requestAnimationFrame(updateCursor)
+	}
+
+	$effect(() => {
+		if (playbackStore.isPlaying) {
+			animationFrameId = requestAnimationFrame(updateCursor)
+		} else {
+			cancelAnimationFrame(animationFrameId)
+		}
+		return () => cancelAnimationFrame(animationFrameId)
+	})
+
 	$effect(() => {
 		console.log('isDraggingItem:', isDraggingItem, 'draggedItemId:', draggedItemId)
 		if (isResizingItem) document.body.style.cursor = 'none !important'
@@ -291,6 +322,9 @@
 					beatsPerBar={BEATS_PER_BAR}
 					maxMarkerBars={MAX_MARKER_BARS}
 				/>
+				{#if playbackStore.isPlaying}
+					<div class="playbackCursor" bind:this={cursorElement}></div>
+				{/if}
 				{#each projectStore.progressionItems as item, index (item.id)}
 					<ProgressionChordCard
 						{item}
@@ -409,11 +443,24 @@
 		font-size: 14px;
 		font-weight: 600;
 		opacity: 0.95;
-		font-family: var(--font-display);
 	}
 
 	.ghostItemText {
 		white-space: nowrap;
+	}
+
+	.playbackCursor {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 1px;
+		background-color: var(--n-09);
+		z-index: 100;
+		pointer-events: none;
+		will-change: transform;
+	}
+
+	.progressionBarCount {
 	}
 
 	.progressionBarCount {

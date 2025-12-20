@@ -219,3 +219,14 @@ export const ChordBlock = observer((props: ChordBlockPropsT) => {
 | Flatten logic                  | Use nested blocks or branches      |
 | Extract named helpers          | Inline complex logic               |
 | Write for human readability    | Optimize for brevity or cleverness |
+
+```js
+// GOOD: ALWAYS ALWAYS OMIT BLOCKS IF ONLY ONE STATEMENT NECESSARY
+if (foo) return bar
+if (!!abc) return doThis()
+
+// BAD: USING BLOCKS FOR ONE STATEMENT CONDITIONS
+if (foo) {
+  return bar
+}
+```

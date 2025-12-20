@@ -3,8 +3,15 @@
 
 	const BAR_COUNT = 16
 	const BEATS_PER_BAR = 4
-	const BEAT_WIDTH = 128 // 32px * 4 cells
-	const BAR_WIDTH = BEAT_WIDTH * BEATS_PER_BAR
+
+	type Props = {
+		cellWidth?: number
+	}
+
+	let { cellWidth = 32 }: Props = $props()
+
+	const beatWidth = $derived(cellWidth * 4) // 4 cells per beat
+	const barWidth = $derived(beatWidth * BEATS_PER_BAR)
 
 	let hoveredBarIndex: number | null = $state(null)
 
@@ -20,7 +27,7 @@
 		<div
 			class="barMarker"
 			class:inactive={i >= projectStore.patternDurationBars}
-			style="width: {BAR_WIDTH}px"
+			style="width: {barWidth}px"
 			onmouseenter={() => (hoveredBarIndex = i)}
 			onmouseleave={() => (hoveredBarIndex = null)}
 			onclick={() => handleBarClick(i)}

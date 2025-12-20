@@ -1,6 +1,6 @@
 import { browser } from '$app/environment'
 import { createSupabaseClient } from '$lib/supabase/client'
-import authStore from './auth.svelte'
+import { authStore } from './auth.svelte'
 
 export type ProjectSummaryT = {
   id: string
@@ -20,7 +20,7 @@ class ProjectsStore {
   error = $state<string | null>(null)
 
   loadProjects = async () => {
-    if (!authStore.user) return
+    if (!authStore.authUser) return
 
     this.isLoading = true
     this.error = null
@@ -30,7 +30,7 @@ class ProjectsStore {
     const { data, error } = await supabase
       .from('all_projects')
       .select('id, title, description, "updatedAt", bpm, key, scale, "userId", "isPublic"')
-      .eq('userId', authStore.user.id)
+      .eq('userId', authStore.authUser.id)
       .order('updatedAt', { ascending: false })
 
     if (error) {
@@ -59,7 +59,7 @@ class ProjectsStore {
   }
 
   deleteProject = async (id: string) => {
-    if (!authStore.user) {
+    if (!authStore.authUser) {
       throw new Error('User must be authenticated to delete project')
     }
 
@@ -79,14 +79,14 @@ class ProjectsStore {
   }
 
   createProject = async () => {
-    if (!authStore.user) {
+    if (!authStore.authUser) {
       throw new Error('User must be authenticated to create project')
     }
 
     const supabase = createSupabaseClient()
 
     const newProject = {
-      userId: authStore.user.id,
+      userId: authStore.authUser.id,
       title: 'New Project',
       description: '',
       bpm: 120,

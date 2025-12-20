@@ -1,7 +1,28 @@
-import { createClient } from "@supabase/supabase-js";
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY } from "$env/static/public"
+import { createSupabaseClient } from "$lib/supabase/client"
+import { warnWhen } from "$lib/modules/warnWhen"
 
-const supabaseUrl = PUBLIC_SUPABASE_URL;
-const supabaseKey = PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+type GetUserReturnT = {
+  user: UserT | null
+  error: Error | null
+}
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const getUserById = async (id: string): Promise<GetUserReturnT> => {
+  const supabase = createSupabaseClient()
+
+  const result = await supabase
+    .from('all_users')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  const user = result.data
+  const error = result.error
+  const hasError = !!error
+
+  if (hasError) {
+    const errorMessage = `Error fetching user by ID: ${error.message}`
+    warnWhen(error, errorMessage)
+  }
+
+  return { user, error }
+}

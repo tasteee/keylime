@@ -1,26 +1,25 @@
 import type { Handle } from '@sveltejs/kit';
-import * as auth from '$lib/server/auth';
+import { createServerClient } from '@supabase/ssr';
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 
-const handleAuth: Handle = async ({ event, resolve }) => {
-	const sessionToken = event.cookies.get(auth.sessionCookieName);
+export const handle: Handle = async ({ event, resolve }) => {
+  event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll: () => event.cookies.getAll(),
+      setAll: (cookiesToSet) => {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          event.cookies.set(name, value, { ...options, path: '/' });
+        });
+      }
+    }
+  });
 
-	if (!sessionToken) {
-		event.locals.user = null;
-		event.locals.session = null;
-		return resolve(event);
-	}
+  const {
+    data: { session }
+  } = await event.locals.supabase.auth.getSession();
 
-	const { session, user } = await auth.validateSessionToken(sessionToken);
+  event.locals.session = session;
+  event.locals.user = session?.user ?? null;
 
-	if (session) {
-		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-	} else {
-		auth.deleteSessionTokenCookie(event);
-	}
-
-	event.locals.user = user;
-	event.locals.session = session;
-	return resolve(event);
+  return resolve(event);
 };
-
-export const handle: Handle = handleAuth;

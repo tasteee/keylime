@@ -5,6 +5,7 @@
 		isDragging: boolean
 		beatsPerCell: number
 		cellWidth: number
+		cellHeight: number
 		opacity?: number
 		onSignalClick: (event: MouseEvent) => void
 		onSignalMouseDown: (event: MouseEvent) => void
@@ -48,7 +49,7 @@
     left: {leftPosition}px;
     width: {width}px;
     top: 1px;
-	height: 30px;
+	height: {props.cellHeight - 2}px;
     opacity: {signalOpacity};
   "
 >

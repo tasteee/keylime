@@ -148,7 +148,7 @@ await projectsStore.deleteProject('project-id-here')
 ### "User must be authenticated" errors
 Make sure the user is signed in before attempting to save/load projects:
 ```typescript
-import authStore from '$lib/stores/auth.svelte'
+import { authStore } from '$lib/stores/auth.svelte'
 
 if (authStore.isAuthenticated) {
   await projectStore.save()

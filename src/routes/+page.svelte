@@ -1,340 +1,235 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import authStore from '$lib/stores/auth.svelte'
-	import projectsStore from '$lib/stores/projects.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
-	import { fade, fly } from 'svelte/transition'
-	import { browser } from '$app/environment'
+	import { fade } from 'svelte/transition'
 
-	// Load projects when user is authenticated
-	$effect(() => {
-		if (browser) {
-			if (authStore.user) {
-				projectsStore.loadProjects()
-			} else {
-				projectsStore.projects = []
-			}
-		}
-	})
-
-	// Fake Auth Check
-	$effect(() => {
-		if (!authStore.isAuthenticated) {
-			// For demo purposes, we can auto-login or show a login screen.
-			// Let's show a simple login screen if not authed.
-		}
-	})
-
-	const goToLogIn = () => {
-		// route to /auth/login
+	const handleGoToLogin = () => {
 		goto('/auth/login')
 	}
 
-	const handleLogout = () => {
-		authStore.signOut()
-	}
-
-	const handleCreateProject = async () => {
-		const newId = await projectsStore.createProject()
-		goto(`/project/${newId}`)
-	}
-
-	const handleDeleteProject = (e: Event, id: string) => {
-		e.stopPropagation()
-		if (confirm('Are you sure you want to delete this project?')) {
-			projectsStore.deleteProject(id)
-		}
-	}
-
-	const handleOpenProject = (id: string) => {
-		goto(`/project/${id}`)
-	}
-
-	const formatDate = (date: Date) => {
-		return new Intl.DateTimeFormat('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		}).format(date)
+	const handleGoToSignup = () => {
+		goto('/auth/signup')
 	}
 </script>
 
-<div class="dashboard-container">
-	{#if !authStore.isAuthenticated}
-		<div class="login-screen" in:fade>
-			<div class="login-card">
-				<div class="logo">
-					<span class="logo-text">KEYLIME</span>
-				</div>
-				<p class="login-subtitle">Sign in to continue to your dashboard.</p>
-				<Button onclick={goToLogIn} class="w-full">Sign In with Fake Auth</Button>
+<div class="splash-container" in:fade>
+	<header class="splash-header">
+		<div class="logo">
+			<span class="logo-text">KEYLIME</span>
+		</div>
+		<div class="header-actions">
+			<Button kind="ghost" onclick={handleGoToLogin}>Log In</Button>
+			<Button onclick={handleGoToSignup}>Sign Up</Button>
+		</div>
+	</header>
+
+	<main class="splash-main">
+		<section class="hero">
+			<h1 class="hero-title">
+				Create music with<br />
+				<span class="gradient-text">chord progressions</span>
+			</h1>
+			<p class="hero-subtitle">
+				A powerful, intuitive tool for musicians to compose, collaborate, and share chord progressions. Build your next hit
+				with Keylime.
+			</p>
+			<div class="hero-actions">
+				<Button size="large" onclick={handleGoToSignup}>
+					Get Started Free
+					<Icon icon="mingcute:arrow-right-line" class="ml-2 size-5" />
+				</Button>
+				<Button kind="outline" size="large" onclick={handleGoToLogin}>Learn More</Button>
 			</div>
-		</div>
-	{:else}
-		<div class="dashboard" in:fade>
-			<header class="header">
-				<div class="logo">
-					<span class="logo-text">KEYLIME</span>
-				</div>
-				<div class="user-menu">
-					<span class="user-name">{authStore.userProfile?.userName}</span>
-					<Button kind="ghost" size="small" onclick={handleLogout}>Sign Out</Button>
-				</div>
-			</header>
+		</section>
 
-			<main class="main-content">
-				<div class="projects-header">
-					<h1 class="page-title">Projects</h1>
-					<Button onclick={handleCreateProject}>
-						<Icon icon="mingcute:add-line" class="mr-2 size-4" />
-						New Project
-					</Button>
-				</div>
-
-				<div class="projects-grid">
-					{#each projectsStore.projects as project (project.id)}
-						<div
-							class="project-card"
-							onclick={() => handleOpenProject(project.id)}
-							role="button"
-							tabindex="0"
-							onkeydown={(e) => e.key === 'Enter' && handleOpenProject(project.id)}
-							in:fly={{ y: 20, duration: 300 }}
-						>
-							<div class="card-content">
-								<div class="card-header">
-									<h3 class="project-title">{project.title}</h3>
-									<button
-										class="delete-btn"
-										onclick={(e) => handleDeleteProject(e, project.id)}
-										aria-label="Delete project"
-									>
-										<Icon icon="mingcute:delete-2-line" class="size-4" />
-									</button>
-								</div>
-								<p class="project-desc">{project.description || 'No description'}</p>
-								<div class="card-footer">
-									<div class="meta-tag">
-										<Icon icon="mingcute:music-line" class="size-3 mr-1" />
-										{project.key}
-										{project.scale}
-									</div>
-									<div class="meta-tag">
-										<Icon icon="mingcute:time-line" class="size-3 mr-1" />
-										{project.bpm} BPM
-									</div>
-									<span class="date">{formatDate(project.updatedAt)}</span>
-								</div>
-							</div>
-						</div>
-					{/each}
-				</div>
-
-				{#if projectsStore.projects.length === 0}
-					<div class="empty-state">
-						<p>No projects yet. Create one to get started!</p>
+		<section class="features">
+			<div class="feature-grid">
+				<div class="feature-card">
+					<div class="feature-icon">
+						<Icon icon="mingcute:music-2-line" class="size-12" />
 					</div>
-				{/if}
-			</main>
-		</div>
-	{/if}
+					<h3 class="feature-title">Intuitive Composition</h3>
+					<p class="feature-desc">
+						Build chord progressions with an easy-to-use pattern editor. Preview your work instantly.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">
+						<Icon icon="mingcute:group-line" class="size-12" />
+					</div>
+					<h3 class="feature-title">Share & Collaborate</h3>
+					<p class="feature-desc">
+						Publish your projects and discover creations from musicians worldwide. Follow your favorites.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">
+						<Icon icon="mingcute:plugin-2-line" class="size-12" />
+					</div>
+					<h3 class="feature-title">MIDI Export</h3>
+					<p class="feature-desc">
+						Export to MIDI or connect directly to your DAW. Seamless integration with your workflow.
+					</p>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<footer class="splash-footer">
+		<p>&copy; 2025 Keylime. All rights reserved.</p>
+	</footer>
 </div>
 
 <style>
-	:global(body) {
-		margin: 0;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-		background-color: #f5f5f7; /* Apple-like light gray background */
-		color: #1d1d1f;
-	}
-
-	.dashboard-container {
+	.splash-container {
 		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
 	}
 
-	.login-screen {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: 100vh;
-		background-color: #fff;
-	}
-
-	.login-card {
-		width: 100%;
-		max-width: 360px;
-		padding: 40px;
-		text-align: center;
-	}
-
-	.login-subtitle {
-		margin-bottom: 24px;
-		color: #86868b;
-	}
-
-	.dashboard {
-		display: flex;
-		flex-direction: column;
-		min-height: 100vh;
-	}
-
-	.header {
+	.splash-header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0 40px;
-		height: 64px;
-		background-color: rgba(255, 255, 255, 0.8);
-		backdrop-filter: blur(20px);
-		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-		position: sticky;
-		top: 0;
-		z-index: 10;
+		padding: 24px 48px;
+		background-color: rgba(255, 255, 255, 0.1);
+		backdrop-filter: blur(10px);
 	}
 
 	.logo-text {
 		font-weight: 700;
-		font-size: 18px;
+		font-size: 24px;
 		letter-spacing: -0.5px;
 	}
 
-	.user-menu {
+	.header-actions {
 		display: flex;
 		align-items: center;
 		gap: 16px;
 	}
 
-	.user-name {
-		font-size: 14px;
-		font-weight: 500;
-	}
-
-	.main-content {
+	.splash-main {
 		flex: 1;
-		padding: 40px;
-		max-width: 1200px;
-		margin: 0 auto;
-		width: 100%;
-		box-sizing: border-box;
-	}
-
-	.projects-header {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		justify-content: space-between;
-		margin-bottom: 32px;
+		justify-content: center;
+		padding: 80px 24px;
 	}
 
-	.page-title {
-		font-size: 32px;
-		font-weight: 700;
-		margin: 0;
+	.hero {
+		text-align: center;
+		max-width: 800px;
+		margin-bottom: 120px;
+	}
+
+	.hero-title {
+		font-size: 64px;
+		font-weight: 800;
+		line-height: 1.1;
+		margin: 0 0 24px 0;
 		letter-spacing: -0.02em;
 	}
 
-	.projects-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		gap: 24px;
+	.gradient-text {
+		background: linear-gradient(90deg, #fff 0%, #f0f0f0 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
 	}
 
-	.project-card {
-		background: #fff;
-		border-radius: 5px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-		transition: all 0.2s ease;
-		cursor: pointer;
-		border: 1px solid rgba(0, 0, 0, 0.05);
-		overflow: hidden;
-		position: relative;
-	}
-
-	.project-card:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-	}
-
-	.card-content {
-		padding: 20px;
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		box-sizing: border-box;
-	}
-
-	.card-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		margin-bottom: 8px;
-	}
-
-	.project-title {
-		font-size: 18px;
-		font-weight: 600;
-		margin: 0;
-		color: #1d1d1f;
-	}
-
-	.delete-btn {
-		background: none;
-		border: none;
-		cursor: pointer;
-		color: #86868b;
-		padding: 4px;
-		border-radius: 5px;
-		transition:
-			color 0.2s,
-			background-color 0.2s;
-		opacity: 0;
-	}
-
-	.project-card:hover .delete-btn {
-		opacity: 1;
-	}
-
-	.delete-btn:hover {
-		color: #ff3b30;
-		background-color: rgba(255, 59, 48, 0.1);
-	}
-
-	.project-desc {
-		font-size: 14px;
-		color: #86868b;
-		margin: 0 0 20px 0;
-		flex: 1;
-		line-height: 1.4;
-	}
-
-	.card-footer {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		font-size: 12px;
-		color: #86868b;
-		border-top: 1px solid rgba(0, 0, 0, 0.05);
-		padding-top: 16px;
-	}
-
-	.meta-tag {
-		display: flex;
-		align-items: center;
-		background-color: #f5f5f7;
-		padding: 4px 8px;
-		border-radius: 5px;
-		font-weight: 500;
-	}
-
-	.date {
+	.hero-subtitle {
+		font-size: 20px;
+		line-height: 1.6;
+		margin: 0 0 40px 0;
+		color: rgba(255, 255, 255, 0.9);
+		max-width: 600px;
 		margin-left: auto;
+		margin-right: auto;
 	}
 
-	.empty-state {
+	.hero-actions {
+		display: flex;
+		gap: 16px;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.features {
+		width: 100%;
+		max-width: 1200px;
+	}
+
+	.feature-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 32px;
+	}
+
+	.feature-card {
+		background: rgba(255, 255, 255, 0.1);
+		backdrop-filter: blur(10px);
+		border-radius: 16px;
+		padding: 32px;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		transition: transform 0.2s ease;
+	}
+
+	.feature-card:hover {
+		transform: translateY(-4px);
+		background: rgba(255, 255, 255, 0.15);
+	}
+
+	.feature-icon {
+		margin-bottom: 16px;
+		opacity: 0.9;
+	}
+
+	.feature-title {
+		font-size: 24px;
+		font-weight: 700;
+		margin: 0 0 12px 0;
+	}
+
+	.feature-desc {
+		font-size: 16px;
+		line-height: 1.6;
+		margin: 0;
+		color: rgba(255, 255, 255, 0.85);
+	}
+
+	.splash-footer {
+		padding: 32px;
 		text-align: center;
-		padding: 60px;
-		color: #86868b;
+		background-color: rgba(0, 0, 0, 0.2);
+		color: rgba(255, 255, 255, 0.7);
+		font-size: 14px;
+	}
+
+	.splash-footer p {
+		margin: 0;
+	}
+
+	@media (max-width: 768px) {
+		.hero-title {
+			font-size: 48px;
+		}
+
+		.hero-subtitle {
+			font-size: 18px;
+		}
+
+		.feature-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.splash-header {
+			padding: 16px 24px;
+		}
 	}
 </style>

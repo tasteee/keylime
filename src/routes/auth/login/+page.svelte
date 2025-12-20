@@ -4,8 +4,9 @@
 	import { Label } from '$lib/components/ui/label'
 	import Box from '$lib/components/Box.svelte'
 	import ShaDivider from '$lib/components/ShaDivider.svelte'
-	import authStore from '$lib/stores/auth.svelte'
-	import { goto } from '$app/navigation'
+	import { authStore } from '$lib/stores/auth.svelte'
+	import { navigateTo } from '$lib/modules/navigate'
+	import { goto, replaceState } from '$app/navigation'
 
 	let email = $state('')
 	let password = $state('')
@@ -16,16 +17,18 @@
 		event.preventDefault()
 		errorMessage = null
 		isSubmitting = true
-
 		const result = await authStore.signIn({ email, password })
+		console.log('SIGN IN RESULT:', result)
+		const hasError = !result.success
 
-		if (result.success) {
-			await goto('/')
-		} else {
+		if (hasError) {
 			errorMessage = result.error || 'Failed to sign in'
+			isSubmitting = false
+			return
 		}
 
 		isSubmitting = false
+		goto('/dashboard')
 	}
 </script>
 
@@ -49,7 +52,10 @@
 						<Input type="email" id="email" name="email" placeholder="name@example.com" required bind:value={email} />
 					</div>
 					<div class="field">
-						<Label for="password">Password</Label>
+						<div class="field-header">
+							<Label for="password">Password</Label>
+							<a href="/auth/forgot-password" class="forgot-link">Forgot password?</a>
+						</div>
 						<Input type="password" id="password" name="password" required bind:value={password} />
 					</div>
 				</Box>
@@ -119,6 +125,22 @@
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
+	}
+
+	.field-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.forgot-link {
+		font-size: 12px;
+		color: var(--a);
+		text-decoration: none;
+	}
+
+	.forgot-link:hover {
+		text-decoration: underline;
 	}
 
 	.error {

@@ -1,5 +1,23 @@
 # keylime
 
+## ROUTING
+
+```
+# Public routes
+/ -> splash (if not authed), redirect to /dashboard (if authed)
+/auth/login -> login form, redirect to /dashboard (if already authed)
+/auth/signup -> signup form, redirect to /dashboard (if already authed)
+/auth/forgot-password -> email form, redirect to /dashboard (if authed without token)
+/auth/reset-password -> password form (requires token), redirect to /dashboard (if authed without valid token)
+
+# Protected routes (require auth)
+/dashboard -> user's project list + activity feed
+/projects -> public project browser
+/users -> user directory
+/users/:userName -> user profile page
+/project/:projectId -> project editor (fork if not owner)
+```
+
 ```json
 {
   "id": 123456789,
@@ -83,3 +101,5 @@
   }
 }
 ```
+
+

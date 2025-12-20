@@ -4,7 +4,7 @@
 	import { Label } from '$lib/components/ui/label'
 	import Box from '$lib/components/Box.svelte'
 	import ShaDivider from '$lib/components/ShaDivider.svelte'
-	import authStore from '$lib/stores/auth.svelte'
+	import { authStore } from '$lib/stores/auth.svelte'
 	import { goto } from '$app/navigation'
 
 	let email = $state('')
@@ -16,34 +16,27 @@
 	const handleSubmit = async (event: SubmitEvent) => {
 		event.preventDefault()
 		errorMessage = null
+		const doPasswordsMatch = password === confirmPassword
+		const passwordLongEnough = password.length >= 6
 
-		if (password !== confirmPassword) {
+		if (!doPasswordsMatch) {
 			errorMessage = 'Passwords do not match'
 			return
 		}
 
-		if (password.length < 6) {
+		if (!passwordLongEnough) {
 			errorMessage = 'Password must be at least 6 characters'
 			return
 		}
 
 		isSubmitting = true
-
 		const signUpResult = await authStore.signUp({ email, password })
+		const hasSignUpError = !signUpResult.success
 
-		if (signUpResult.success) {
-			const signInResult = await authStore.signIn({ email, password })
-
-			if (signInResult.success) {
-				await goto('/')
-			} else {
-				errorMessage = signInResult.error || 'Account created but failed to sign in'
-			}
-		} else {
+		if (hasSignUpError) {
 			errorMessage = signUpResult.error || 'Failed to create account'
+			isSubmitting = false
 		}
-
-		isSubmitting = false
 	}
 </script>
 

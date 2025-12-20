@@ -42,10 +42,12 @@ class PlaybackStore {
   piano = $state(null) as unknown as SplendidGrandPiano
   activeChords = $state(new Set()) as Set<string>
   currentlyPlayingChordId = $state(null) as string | null
+  currentlyPlayingChordNotes = $state(new Set()) as Set<string> // Track chord preview notes separately
   isLoading = $state(false)
   isLoaded = $state(false)
   isPlaying = $state(false)
   currentBeat = $state(0)
+  loopStartTime = $state(0)
   scheduledNotes = $state(new Map()) as Map<string, ReturnType<typeof setTimeout>>
   activeNoteInstances = $state(new Map()) as Map<string, Set<string>> // note -> Set of performance note IDs
 
@@ -67,14 +69,12 @@ class PlaybackStore {
     })
 
     const data = JSON.parse(JSON.stringify({ performance, patternLengthBeats, progressionLengthBeats, chords, signals }))
-    console.log('Generated performance notes:', data)
     return performance
   })
 
   // Performance duration in beats - uses actual progression duration for proper looping
   performanceDuration = $derived.by(() => {
     const progressionLengthBeats = projectStore.getProgressionTotalDuration()
-    console.log('Performance duration (beats):', progressionLengthBeats)
     return progressionLengthBeats
   })
 
@@ -96,18 +96,19 @@ class PlaybackStore {
     this.activeChords.add(args.note)
     const midiOutput = getMidiOutput()
     const velocity = getRandomBetween({ min: output.minVelocity, max: output.maxVelocity })
-    console.log('playNote:', { note: args.note, velocity, hasMidiOutput: !!midiOutput })
     if (!midiOutput) {
       this.piano.start({ note: args.note, velocity })
     } else {
-      console.log('Sending MIDI note:', args.note, 'velocity:', velocity)
       midiOutput.playNote(args.note, { attack: velocity / 127 })
     }
   }
 
   playChord = async (chord: ChordT, durationMs: number = 500) => {
-    // Stop any currently playing chord
-    this.stopAllScheduledNotes()
+    // Stop only the previously playing chord notes, not the performance playback
+    this.currentlyPlayingChordNotes.forEach((note) => {
+      this.stopNote({ note })
+    })
+    this.currentlyPlayingChordNotes.clear()
 
     // Track currently playing chord
     this.currentlyPlayingChordId = chord.id
@@ -119,6 +120,7 @@ class PlaybackStore {
     notes.forEach((note, index) => {
       setTimeout(() => {
         this.playNote({ note })
+        this.currentlyPlayingChordNotes.add(note)
       }, index * 11)
     })
 
@@ -126,6 +128,7 @@ class PlaybackStore {
     setTimeout(() => {
       notes.forEach((note) => {
         this.stopNote({ note })
+        this.currentlyPlayingChordNotes.delete(note)
       })
       this.currentlyPlayingChordId = null
     }, durationMs)
@@ -187,14 +190,12 @@ class PlaybackStore {
 
   runPlaybackLoop = () => {
     if (!this.isPlaying) return
-
     const hasNoPerformance = this.performance.length === 0
     if (hasNoPerformance) return this.stopPerformance()
-
     // Convert beats to milliseconds for actual playback
     const bpm = projectStore.bpm
     const msPerBeat = 60000 / bpm
-    const loopStartTime = Date.now()
+    this.loopStartTime = performance.now()
 
     this.performance.forEach((performanceNote) => {
       // Convert beat-based timing to milliseconds

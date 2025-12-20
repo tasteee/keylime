@@ -114,3 +114,110 @@ type JsonT =
   | null
   | { [key: string]: JsonT | undefined }
   | JsonT[]
+
+
+type UserT = {
+  id: string
+  userName: string
+  avatarUrl: string | null
+  bio: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+type AuthUserT = {
+  id: string
+  email: string | null
+  bannedUntil: string | null
+  createdAt: string
+  confirmedAt: string | null
+  confirmationSentAt: string | null
+  isAnonymous: boolean
+  isSsoUser: boolean
+  invitedAt: string | null
+  lastSignInAt: string | null
+  phone: string | null
+  rawAppMetaData: {
+    provider: string
+    providers: string[]
+  }
+  rawUserMetaData: {
+    email_verified: boolean
+    [key: string]: JsonT
+  }
+  updatedAt: string
+  providers: string[]
+}
+
+// Supabase Database Types
+type DatabaseAllUsersTableRowT = {
+  id: string
+  userName: string
+  avatarUrl: string | null
+  bio: string
+  createdAt: string
+  updatedAt: string
+}
+
+type DatabaseAllProjectsTableRowT = {
+  id: string
+  title: string
+  description: string
+  userId: string
+  isPublic: boolean
+  key: string
+  scale: string
+  octave: number
+  bpm: number
+  minVelocity: number
+  maxVelocity: number
+  progressionChords: JsonT
+  chordSymbols: string[]
+  patternSignals: JsonT
+  patternSignalRows: JsonT
+  patternDurationBars: number
+  createdAt: string
+  updatedAt: string
+}
+
+type DatabaseProjectFavoritesTableRowT = {
+  id: string
+  userId: string
+  projectId: string
+  createdAt: string
+}
+
+type DatabaseT = {
+  public: {
+    Tables: {
+      all_users: {
+        Row: DatabaseAllUsersTableRowT
+        Insert: Omit<DatabaseAllUsersTableRowT, 'createdAt' | 'updatedAt'> & {
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: Partial<DatabaseAllUsersTableRowT>
+      }
+      all_projects: {
+        Row: DatabaseAllProjectsTableRowT
+        Insert: Omit<DatabaseAllProjectsTableRowT, 'id' | 'createdAt' | 'updatedAt'> & {
+          id?: string
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: Partial<DatabaseAllProjectsTableRowT>
+      }
+      project_favorites: {
+        Row: DatabaseProjectFavoritesTableRowT
+        Insert: Omit<DatabaseProjectFavoritesTableRowT, 'id' | 'createdAt'> & {
+          id?: string
+          createdAt?: string
+        }
+        Update: Partial<DatabaseProjectFavoritesTableRowT>
+      }
+    }
+    Views: {}
+    Functions: {}
+    Enums: {}
+  }
+}
