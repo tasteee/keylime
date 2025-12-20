@@ -2,10 +2,9 @@
 	import { Button } from '$lib/components/ui/button'
 	import { Input } from '$lib/components/ui/input'
 	import { Label } from '$lib/components/ui/label'
-	import Box from '$lib/components/Box.svelte'
-	import ShaDivider from '$lib/components/ShaDivider.svelte'
+	import Box from '$lib/components/ui/box.svelte'
+	import Divider from '$lib/components/ui/divider.svelte'
 	import { authStore } from '$lib/stores/auth.svelte'
-	import { goto } from '$app/navigation'
 
 	let email = $state('')
 	let password = $state('')
@@ -76,7 +75,7 @@
 				</div>
 			</form>
 
-			<ShaDivider isHorizontal={true} margin="0px" />
+			<Divider isHorizontal={true} margin="0px" />
 
 			<div class="footer">
 				<p class="text-sm text-muted-foreground">
@@ -103,25 +102,27 @@
 		max-width: 400px;
 		background-color: var(--colorWhite);
 		border: 1px solid var(--n-03);
-		border-radius: 8px;
-		padding: 32px;
-		box-shadow: 0 4px 12px var(--n-alpha-1);
+		border-radius: 12px;
+		padding: 40px;
+		box-shadow: 0 4px 24px var(--n-alpha-2);
 	}
 
 	.header {
 		text-align: center;
+		margin-bottom: 8px;
 	}
 
 	.title {
+		font-family: var(--font-display);
 		font-size: 24px;
-		font-weight: 600;
-		color: var(--n-09);
+		font-weight: 700;
+		color: var(--n-10);
 		margin-bottom: 8px;
 	}
 
 	.subtitle {
-		font-size: 14px;
 		color: var(--n-06);
+		font-size: 14px;
 	}
 
 	.form {
@@ -137,12 +138,12 @@
 	}
 
 	.error {
+		background-color: var(--d-00);
+		color: var(--d-07);
 		padding: 12px;
-		background-color: var(--red-alpha-1);
-		border: 1px solid var(--red-alpha-3);
 		border-radius: 6px;
-		color: var(--red);
 		font-size: 14px;
+		border: 1px solid var(--d-02);
 	}
 
 	.actions {
@@ -154,9 +155,9 @@
 	}
 
 	.link {
-		color: var(--a);
-		font-weight: 500;
+		color: var(--primary-text);
 		text-decoration: none;
+		font-weight: 600;
 	}
 
 	.link:hover {

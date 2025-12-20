@@ -230,3 +230,22 @@ if (foo) {
   return bar
 }
 ```
+
+## USE CAMEL CASE FOR ALL CSS CLASS NAMES.
+
+```css
+/* GOOD */
+.myAwesomeClass {}
+/* BAD */
+.my_awesome-class {}
+.my-awesome-class {}
+.myawesomeclass {}
+```
+
+## 🛑 ABSOLUTELY NEVER USE DESTRUCTURING FOR PROPS OR FUNCTION ARGUMENTS. 🛑
+
+Always access props and function arguments using dot notation.
+
+## NEVER USE TAILWIND CSS UTILITIES. INSTEAD WRITE PURE CSS.
+
+## ALWAYS WRITE FLAT, READABLE, AND EXPLICIT CODE. PRIORITIZE MAINTAINABILITY OVER BREVITY.

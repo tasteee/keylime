@@ -97,8 +97,8 @@ type ProjectT = {
   patternSignals: SignalT[] // json... right? or array in supabase??
   patternSignalRows: SignalRowsT // json...
   patternDurationBars: number
-  createdAt: Date | null
-  updatedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
 }
 
 type MoveSignalToRowOptionsT = {

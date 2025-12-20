@@ -138,20 +138,20 @@
 		--redColorTextColor-disabled: rgb(254, 226, 226);
 
 		/* Brand */
-		--brandColorBgColor: rgb(37, 99, 235);
-		--brandColorBgColor-hover: rgb(29, 78, 216);
-		--brandColorBgColor-active: rgb(30, 64, 175);
-		--brandColorBgColor-disabled: rgb(219, 234, 254);
+		--brandColorBgColor: var(--a);
+		--brandColorBgColor-hover: var(--a-05);
+		--brandColorBgColor-active: var(--a-06);
+		--brandColorBgColor-disabled: var(--a-01);
 
-		--brandColorBorderColor: rgb(37, 99, 235);
-		--brandColorBorderColor-hover: rgb(29, 78, 216);
-		--brandColorBorderColor-active: rgb(30, 64, 175);
-		--brandColorBorderColor-disabled: rgb(219, 234, 254);
+		--brandColorBorderColor: var(--a);
+		--brandColorBorderColor-hover: var(--a-05);
+		--brandColorBorderColor-active: var(--a-06);
+		--brandColorBorderColor-disabled: var(--a-02);
 
-		--brandColorTextColor: rgb(37, 99, 235);
-		--brandColorTextColor-hover: rgb(29, 78, 216);
-		--brandColorTextColor-active: rgb(30, 64, 175);
-		--brandColorTextColor-disabled: rgb(219, 234, 254);
+		--brandColorTextColor: var(--a);
+		--brandColorTextColor-hover: var(--a-05);
+		--brandColorTextColor-active: var(--a-06);
+		--brandColorTextColor-disabled: var(--a-03);
 	}
 
 	.keyActionButton {
@@ -181,7 +181,7 @@
 		cursor: default;
 	}
 
-	.keyActionButton svg {
+	:global .keyActionButton svg {
 		width: 1rem;
 		height: 1rem;
 		pointer-events: none;
@@ -240,6 +240,8 @@
 
 	/* Solid */
 	.keyActionButton.isSolidKind {
+		border-width: 1px;
+		border-color: transparent !important;
 		box-shadow:
 			rgba(28, 26, 39, 0.12) 0px 1px 2px 0px,
 			rgb(28 26 39 / 49%) 0px 0px 1px 0px;
@@ -254,7 +256,6 @@
 		background-color: var(--neutralColorBgColor);
 		border-color: var(--neutralColorBorderColor); /* Or transparent if no border wanted */
 		color: var(--neutralColorTextColor);
-		border-width: 0px;
 	}
 
 	.keyActionButton.isSolidKind.isNeutralColor:hover:not(:disabled) {
@@ -308,6 +309,7 @@
 		border-style: solid;
 		border-width: 1px;
 	}
+
 	.keyActionButton.isOutlineKind:active:not(:disabled) {
 		transform: translateY(1px);
 	}
@@ -354,11 +356,11 @@
 		color: var(--brandColorTextColor);
 	}
 	.keyActionButton.isOutlineKind.isBrandColor:hover:not(:disabled) {
-		background-color: rgb(239, 246, 255); /* Hardcoded in user's CSS */
+		background-color: var(--a-01);
 		border-color: var(--brandColorBorderColor-hover);
 	}
 	.keyActionButton.isOutlineKind.isBrandColor:active:not(:disabled) {
-		background-color: rgb(219, 234, 254);
+		background-color: var(--a-02);
 		border-color: var(--brandColorBorderColor-active);
 	}
 	.keyActionButton.isOutlineKind.isBrandColor:disabled {
@@ -407,10 +409,10 @@
 		color: var(--brandColorTextColor);
 	}
 	.keyActionButton.isGhostKind.isBrandColor:hover:not(:disabled) {
-		background-color: rgb(239, 246, 255);
+		background-color: var(--a-01);
 	}
 	.keyActionButton.isGhostKind.isBrandColor:active:not(:disabled) {
-		background-color: rgb(219, 234, 254);
+		background-color: var(--a-02);
 	}
 	.keyActionButton.isGhostKind.isBrandColor:disabled {
 		color: var(--brandColorTextColor-disabled);

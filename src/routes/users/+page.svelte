@@ -82,29 +82,30 @@
 <style>
 	.page-container {
 		min-height: 100vh;
-		background-color: #f5f5f7;
+		background-color: var(--n-00);
 	}
 
-	.header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0 40px;
-		height: 64px;
-		background-color: rgba(255, 255, 255, 0.8);
-		backdrop-filter: blur(20px);
-		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-		position: sticky;
-		top: 0;
-	.main-content {x;
+	.main-content {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 40px;
+	}
+
+	.content-header {
+		margin-bottom: 32px;
+	}
+
+	.page-title {
+		font-family: var(--font-display);
+		font-size: 32px;
 		font-weight: 700;
 		margin: 0 0 8px 0;
-		color: #1d1d1f;
+		color: var(--n-10);
 	}
 
 	.page-subtitle {
 		font-size: 16px;
-		color: #86868b;
+		color: var(--n-06);
 		margin: 0;
 	}
 
@@ -118,13 +119,16 @@
 		left: 12px;
 		top: 50%;
 		transform: translateY(-50%);
-		color: #86868b;
+		color: var(--n-05);
 		font-size: 20px;
 		pointer-events: none;
+		z-index: 1;
 	}
 
 	:global(.search-input) {
 		padding-left: 40px !important;
+		background-color: var(--colorWhite);
+		border-color: var(--n-03);
 	}
 
 	.users-grid {
@@ -134,18 +138,20 @@
 	}
 
 	.user-card {
-		background: white;
+		background: var(--colorWhite);
 		border-radius: 12px;
 		padding: 24px;
 		text-align: center;
 		cursor: pointer;
-		border: 1px solid rgba(0, 0, 0, 0.05);
+		border: 1px solid var(--n-03);
 		transition: all 0.2s ease;
+		box-shadow: 0 2px 8px var(--n-alpha-1);
 	}
 
 	.user-card:hover {
 		transform: translateY(-4px);
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+		box-shadow: 0 8px 16px var(--n-alpha-2);
+		border-color: var(--n-04);
 	}
 
 	.user-avatar {
@@ -153,12 +159,12 @@
 		height: 80px;
 		border-radius: 50%;
 		margin: 0 auto 16px;
-		background-color: #f5f5f7;
+		background-color: var(--n-01);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		overflow: hidden;
-		color: #86868b;
+		color: var(--n-05);
 	}
 
 	.user-avatar img {
@@ -171,12 +177,12 @@
 		font-size: 18px;
 		font-weight: 600;
 		margin: 0 0 8px 0;
-		color: #1d1d1f;
+		color: var(--n-09);
 	}
 
 	.user-bio {
 		font-size: 14px;
-		color: #86868b;
+		color: var(--n-06);
 		margin: 0;
 		line-height: 1.4;
 	}
@@ -185,7 +191,7 @@
 	.empty-state {
 		text-align: center;
 		padding: 60px;
-		color: #86868b;
+		color: var(--n-05);
 	}
 
 	.empty-state {

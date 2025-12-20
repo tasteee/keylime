@@ -1,5 +1,5 @@
 import playbackStore from './playback.svelte'
-import { progressionStore } from './progression.svelte'
+import projectStore from './project.svelte'
 import gridChordsStore from './gridChords.svelte'
 import { generateChord, applyVoicingAndInversion } from '$lib/helpers/chords'
 import { Note } from 'tonal'
@@ -41,7 +41,7 @@ class ChordModifierStore {
 
     const isProgressionChord = this.state.source === 'progression'
     if (isProgressionChord) {
-      const progressionChord = progressionStore.getChord(this.state.chordId!)
+      const progressionChord = projectStore.getProgressionChord(this.state.chordId!)
       if (!progressionChord) return null
 
       // Return the progression chord with current modifier values applied
@@ -80,7 +80,7 @@ class ChordModifierStore {
   }
 
   openForProgressionChord = (args: { chordId: string }) => {
-    const progressionChord = progressionStore.getChord(args.chordId)
+    const progressionChord = projectStore.getProgressionChord(args.chordId)
     if (!progressionChord) return
 
     this.state.isOpen = true
@@ -156,7 +156,7 @@ class ChordModifierStore {
       const chordId = this.state.chordId
       if (!chordId) return
 
-      progressionStore.updateChord({
+      projectStore.updateProgressionItem({
         id: chordId,
         octaveOffset: this.state.octaveOffset,
         inversion: this.state.inversion,

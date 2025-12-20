@@ -196,13 +196,6 @@
 		gap: 16px;
 	}
 
-	.logo-text {
-		font-weight: 700;
-		font-size: 18px;
-		letter-spacing: -0.5px;
-		color: #1d1d1f;
-	}
-
 	.user-menu {
 		display: flex;
 		align-items: center;

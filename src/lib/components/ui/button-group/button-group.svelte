@@ -1,46 +1,71 @@
-<script lang="ts" module>
-	import { tv, type VariantProps } from "tailwind-variants";
-
-	export const buttonGroupVariants = tv({
-		base: "flex w-fit items-stretch has-[>[data-slot=button-group]]:gap-2 [&>*]:focus-visible:relative [&>*]:focus-visible:z-10 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-md [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
-		variants: {
-			orientation: {
-				horizontal:
-					"[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none",
-				vertical:
-					"flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none",
-			},
-		},
-		defaultVariants: {
-			orientation: "horizontal",
-		},
-	});
-
-	export type ButtonGroupOrientation = VariantProps<typeof buttonGroupVariants>["orientation"];
-</script>
-
 <script lang="ts">
-	import { cn, type WithElementRef } from "$lib/utils.js";
-	import type { HTMLAttributes } from "svelte/elements";
+	import { cn, type WithElementRef } from '$lib/utils.js'
+	import type { HTMLAttributes } from 'svelte/elements'
 
 	let {
 		ref = $bindable(null),
 		class: className,
 		children,
-		orientation = "horizontal",
+		isVertical = false,
 		...restProps
 	}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
-		orientation?: ButtonGroupOrientation;
-	} = $props();
+		isVertical?: boolean
+	} = $props()
 </script>
 
 <div
 	bind:this={ref}
 	role="group"
 	data-slot="button-group"
-	data-orientation={orientation}
-	class={cn(buttonGroupVariants({ orientation }), className)}
+	data-orientation={isVertical ? 'vertical' : 'horizontal'}
+	class={cn('limeButtonGroup', isVertical && 'isVertical', className)}
 	{...restProps}
 >
 	{@render children?.()}
 </div>
+
+<style>
+	.limeButtonGroup {
+		display: inline-flex;
+		width: fit-content;
+		align-items: stretch;
+	}
+
+	/* Focus management: bring focused element to front */
+	.limeButtonGroup > :global(*:focus-visible) {
+		position: relative;
+		z-index: 10;
+	}
+
+	/* Horizontal (Default) */
+	.limeButtonGroup:not(.isVertical) {
+		flex-direction: row;
+	}
+
+	.limeButtonGroup:not(.isVertical) > :global(*:not(:first-child)) {
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+		border-left-width: 0;
+	}
+
+	.limeButtonGroup:not(.isVertical) > :global(*:not(:last-child)) {
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	/* Vertical */
+	.limeButtonGroup.isVertical {
+		flex-direction: column;
+	}
+
+	.limeButtonGroup.isVertical > :global(*:not(:first-child)) {
+		border-top-left-radius: 0;
+		border-top-right-radius: 0;
+		border-top-width: 0;
+	}
+
+	.limeButtonGroup.isVertical > :global(*:not(:last-child)) {
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+</style>

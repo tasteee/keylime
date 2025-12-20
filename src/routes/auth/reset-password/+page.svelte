@@ -65,7 +65,7 @@
 <div class="auth-container" in:fade>
 	<div class="auth-card">
 		<div class="logo">
-			<span class="logo-text">KEYLIME</span>
+			<span class="logo">KEYLIME</span>
 		</div>
 
 		{#if !hasValidToken}
@@ -141,18 +141,6 @@
 		border-radius: 12px;
 		padding: 48px;
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-	}
-
-	.logo {
-		text-align: center;
-		margin-bottom: 32px;
-	}
-
-	.logo-text {
-		font-weight: 700;
-		font-size: 28px;
-		letter-spacing: -0.5px;
-		color: #1d1d1f;
 	}
 
 	.auth-title {

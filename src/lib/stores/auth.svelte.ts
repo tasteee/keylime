@@ -88,10 +88,11 @@ class AuthStore {
     this.isLoading = false
 
     const handleAuthStateChange = async (event: string, session: any) => {
-      const sessionUser = session?.user ?? null
-      this.authUser = sessionUser
-      const hasSessionUser = !!session?.user
-      if (hasSessionUser) return await this.loadUserProfile()
+      const userResponse = await supabase.auth.getUser()
+      const authenticatedUser = userResponse.data.user
+      this.authUser = authenticatedUser
+      const hasAuthenticatedUser = !!authenticatedUser
+      if (hasAuthenticatedUser) return await this.loadUserProfile()
       this.userProfile = null
     }
 
@@ -183,21 +184,27 @@ class AuthStore {
   }
 
   signOut = async (): Promise<AuthResultT> => {
+    console.log('signOut method called')
     this.error = null
-    const supabase = createSupabaseClient()
 
-    const signOutResponse = await supabase.auth.signOut()
+    try {
+      const supabase = createSupabaseClient()
+      console.log('Calling supabase.auth.signOut()')
 
-    const hasSignOutError = !!signOutResponse.error
-    if (hasSignOutError) {
-      const errorMessage = signOutResponse.error.message
-      this.error = errorMessage
-      return { success: false, error: errorMessage }
+      // Don't await - just fire and forget
+      supabase.auth.signOut().then((response) => {
+        console.log('Sign out response received:', response)
+      })
+
+      console.log('Clearing auth state immediately')
+      this.authUser = null
+      this.userProfile = null
+      console.log('Auth state cleared, returning success')
+      return { success: true }
+    } catch (error) {
+      console.error('Exception during signOut:', error)
+      return { success: false, error: String(error) }
     }
-
-    this.authUser = null
-    this.userProfile = null
-    return { success: true }
   }
 
   resetPassword = async (args: ResetPasswordArgsT): Promise<AuthResultT> => {

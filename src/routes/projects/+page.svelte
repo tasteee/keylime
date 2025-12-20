@@ -140,46 +140,7 @@
 <style>
 	.page-container {
 		min-height: 100vh;
-		background-color: #f5f5f7;
-	}
-
-	.header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0 40px;
-		height: 64px;
-		background-color: rgba(255, 255, 255, 0.8);
-		backdrop-filter: blur(20px);
-		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-		position: sticky;
-		top: 0;
-		z-index: 10;
-	}
-
-	.header-left {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.logo-text {
-		font-weight: 700;
-		font-size: 18px;
-		letter-spacing: -0.5px;
-		color: #1d1d1f;
-	}
-
-	.user-menu {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.user-name {
-		font-size: 14px;
-		font-weight: 500;
-		color: #1d1d1f;
+		background-color: var(--n-00);
 	}
 
 	.main-content {
@@ -193,15 +154,16 @@
 	}
 
 	.page-title {
+		font-family: var(--font-display);
 		font-size: 32px;
 		font-weight: 700;
 		margin: 0 0 8px 0;
-		color: #1d1d1f;
+		color: var(--n-10);
 	}
 
 	.page-subtitle {
 		font-size: 16px;
-		color: #86868b;
+		color: var(--n-06);
 		margin: 0;
 	}
 
@@ -215,13 +177,16 @@
 		left: 12px;
 		top: 50%;
 		transform: translateY(-50%);
-		color: #86868b;
+		color: var(--n-05);
 		font-size: 20px;
 		pointer-events: none;
+		z-index: 1;
 	}
 
 	:global(.search-input) {
 		padding-left: 40px !important;
+		background-color: var(--colorWhite);
+		border-color: var(--n-03);
 	}
 
 	.projects-grid {
@@ -231,18 +196,19 @@
 	}
 
 	.project-card {
-		background: white;
+		background: var(--colorWhite);
 		border-radius: 8px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+		box-shadow: 0 2px 8px var(--n-alpha-1);
 		transition: all 0.2s ease;
 		cursor: pointer;
-		border: 1px solid rgba(0, 0, 0, 0.05);
+		border: 1px solid var(--n-03);
 		overflow: hidden;
 	}
 
 	.project-card:hover {
 		transform: translateY(-2px);
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+		box-shadow: 0 8px 16px var(--n-alpha-2);
+		border-color: var(--n-04);
 	}
 
 	.card-content {
@@ -253,12 +219,12 @@
 		font-size: 18px;
 		font-weight: 600;
 		margin: 0 0 8px 0;
-		color: #1d1d1f;
+		color: var(--n-09);
 	}
 
 	.project-desc {
 		font-size: 14px;
-		color: #86868b;
+		color: var(--n-06);
 		margin: 0 0 20px 0;
 		line-height: 1.4;
 	}
@@ -268,8 +234,8 @@
 		align-items: center;
 		gap: 8px;
 		font-size: 12px;
-		color: #86868b;
-		border-top: 1px solid rgba(0, 0, 0, 0.05);
+		color: var(--n-05);
+		border-top: 1px solid var(--n-02);
 		padding-top: 16px;
 		flex-wrap: wrap;
 	}
@@ -280,26 +246,26 @@
 		gap: 6px;
 		padding: 4px 8px;
 		border-radius: 5px;
-		background-color: #f5f5f7;
+		background-color: var(--n-01);
 		border: none;
 		cursor: pointer;
 		transition: background-color 0.2s;
 	}
 
 	.user-badge:hover {
-		background-color: #e5e5e7;
+		background-color: var(--n-02);
 	}
 
 	.user-avatar-small {
 		width: 20px;
 		height: 20px;
 		border-radius: 50%;
-		background-color: #fff;
+		background-color: var(--colorWhite);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		overflow: hidden;
-		color: #86868b;
+		color: var(--n-05);
 	}
 
 	.user-avatar-small img {
@@ -311,17 +277,17 @@
 	.user-name-small {
 		font-size: 12px;
 		font-weight: 500;
-		color: #1d1d1f;
+		color: var(--n-08);
 	}
 
 	.meta-tag {
 		display: flex;
 		align-items: center;
-		background-color: #f5f5f7;
+		background-color: var(--n-01);
 		padding: 4px 8px;
 		border-radius: 5px;
 		font-weight: 500;
-		color: #1d1d1f;
+		color: var(--n-08);
 	}
 
 	.date {
@@ -332,7 +298,7 @@
 	.empty-state {
 		text-align: center;
 		padding: 60px;
-		color: #86868b;
+		color: var(--n-05);
 	}
 
 	.empty-state {

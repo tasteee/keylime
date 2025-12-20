@@ -62,7 +62,6 @@
   --primary-text: #573CFA;
   --primary-icon: #6C5EFA;
   --primary-action: #6b6bb6;
-  /* User requested accent */
   --primary-actionHover: #6350FF;
   --primary-actionActive: #573CFA;
   --primary-background: #6C5EFA;
@@ -196,9 +195,9 @@
   --muted-foreground: var(--neutral-textMuted);
 
   /* Accent */
-  --accent: var(--primary-action);
+  /* --accent: var(--primary-action);
   --accent-foreground: var(--neutral-textOnPrimary);
-  --accent-border: var(--neutral-separatorSubtle);
+  --accent-border: var(--neutral-separatorSubtle); */
 
   /* Destructive */
   --destructive: var(--danger-action);

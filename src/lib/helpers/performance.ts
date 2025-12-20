@@ -2,8 +2,8 @@ import { Note } from 'tonal'
 import { getNoteFromSignalRow } from './signalRows'
 import { chordToNotes } from './chordToNotes'
 import { chordNotesToSignalRowNotes } from './chordNotesToSignalRowNotes'
-import mainStore from '$lib/stores/main.svelte'
 import outputStore from '$lib/stores/output.svelte'
+import projectStore from '$lib/stores/project.svelte'
 
 type GeneratePerformanceArgsT = {
   chords: ProgressionChordT[]
@@ -113,7 +113,7 @@ export const generatePerformance = (args: GeneratePerformanceArgsT): Performance
       }
 
       // Derive notes from chord at performance generation time
-      const chordNotes = chordToNotes({ chord: activeChord, rootOctave: mainStore.rootOctave })
+      const chordNotes = chordToNotes({ chord: activeChord, rootOctave: projectStore.octave })
 
       // Calculate the end of this chord
       const chordStart = activeChord.startTime ?? 0

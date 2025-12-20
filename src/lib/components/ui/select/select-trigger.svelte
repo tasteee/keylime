@@ -177,7 +177,7 @@
 		border: none;
 	}
 	:global(.keyActionSelectTrigger.isSolidKind:hover:not(:disabled)) {
-		background-color: var(--neutralColorBgColor-hover);
+		background-color: var(--n-00);
 	}
 	:global(.keyActionSelectTrigger.isSolidKind:active:not(:disabled)) {
 		background-color: var(--neutralColorBgColor-active);

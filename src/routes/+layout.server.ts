@@ -2,9 +2,8 @@ import { redirect } from '@sveltejs/kit'
 import type { LayoutServerLoad } from './$types'
 
 export const load: LayoutServerLoad = async (event) => {
-  const session = event.locals.session
   const user = event.locals.user
-  const isAuthenticated = !!session && !!user
+  const isAuthenticated = !!user
   const currentPath = event.url.pathname
 
   const isAuthRoute = currentPath.startsWith('/auth')
@@ -20,7 +19,7 @@ export const load: LayoutServerLoad = async (event) => {
 
     if (isResetPassword && hasResetToken) {
       // Allow password reset with valid token even if authenticated
-      return { session, isAuthenticated, user }
+      return { isAuthenticated, user }
     }
 
     redirect(303, '/dashboard')
@@ -36,5 +35,5 @@ export const load: LayoutServerLoad = async (event) => {
     redirect(303, '/auth/login')
   }
 
-  return { session, isAuthenticated, user }
+  return { isAuthenticated, user }
 }

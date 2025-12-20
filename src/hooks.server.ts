@@ -15,11 +15,10 @@ export const handle: Handle = async ({ event, resolve }) => {
   });
 
   const {
-    data: { session }
-  } = await event.locals.supabase.auth.getSession();
+    data: { user }
+  } = await event.locals.supabase.auth.getUser();
 
-  event.locals.session = session;
-  event.locals.user = session?.user ?? null;
+  event.locals.user = user;
 
   return resolve(event);
 };

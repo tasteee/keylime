@@ -4,14 +4,23 @@
 @import '@fontsource/plus-jakarta-sans/600.css';
 @import '@fontsource/plus-jakarta-sans/700.css';
 
-:root {
-  /* =========================================
-     1. PRIMITIVES (The Raw Palette)
-     A 12-step scale allows for subtle surface interactions.
-     Tint: Cool Slate (premium, industrial feel)
-     ========================================= */
 
-  /* White & Black constants */
+.logoFont {
+  font-family: var(--logoFont);
+  font-weight: 900;
+  font-style: normal;
+}
+
+.logo {
+  font-family: var(--logoFont);
+  font-weight: 900;
+  font-style: normal;
+}
+
+:root {
+
+  --logoFont: 'Saira Variable', sans-serif;
+
   --colorWhite: #ffffff;
   --colorBlack: #1c1b1f;
 
@@ -68,14 +77,13 @@
   --d-08: #881337;
   /* Text Dark */
 
-  /* Accent/Brand (Optional - tuned to green */
-  /* --a-01: #E6F6F0;
-  --a-02: #BFF0DA;
-  --a-03: #80E6BA;
-  --a-04: #34D399;
-  --a-05: #06885f;
-  --a-07: #06885f;
-  --a-08: #054E3C; */
+  --colorGreen1: #E6F6F0;
+  --colorGreen2: #BFF0DA;
+  --colorGreen3: #80E6BA;
+  --colorGreen4: #34D399;
+  --colorGreen5: #06885f;
+  --colorGreen7: #06885f;
+  --colorGreen8: #054E3C;
 
   --a: #ef4aac;
   --a-01: #fde8f4;
@@ -86,6 +94,10 @@
   --a-06: #a40f67;
   --a-07: #750a4a;
   --a-08: #46062c;
+
+  --accent: var(--a-05);
+  --accent-foreground: var(--colorWhite);
+  --accent-border: var(--a-03);
 
   -vc-01: 2px solid #b8457f;
 
@@ -268,15 +280,6 @@ body {
   line-height: 1.75rem;
 }
 
-/* Border Styles - The "High Quality" Look */
-.border-ui {
-  border: 1px solid var(--border-default);
-}
-
-.border-glass {
-  border: 1px solid var(--n-alpha-2);
-}
-
 /* 
   The "Chiseled" Look: 
   A technique used by top designers to give depth to flat elements 
@@ -445,10 +448,9 @@ body {
 
 body {
   color: var(--neutral-textMuted);
-  font-size: 20px;
+  /* font-size: 20px; */
   line-height: 28px;
   font-weight: 400;
-  margin: 0px;
   font-family: var(--font-sans);
 }
 

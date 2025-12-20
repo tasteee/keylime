@@ -117,40 +117,7 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 100vh;
-		background-color: #f5f5f7;
-	}
-
-	.header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0 40px;
-		height: 64px;
-		background-color: rgba(255, 255, 255, 0.8);
-		backdrop-filter: blur(20px);
-		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-		position: sticky;
-		top: 0;
-		z-index: 10;
-	}
-
-	.logo-text {
-		font-weight: 700;
-		font-size: 18px;
-		letter-spacing: -0.5px;
-		color: #1d1d1f;
-	}
-
-	.user-menu {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.user-name {
-		font-size: 14px;
-		font-weight: 500;
-		color: #1d1d1f;
+		background-color: var(--n-00);
 	}
 
 	.main-content {
@@ -170,11 +137,12 @@
 	}
 
 	.page-title {
+		font-family: var(--font-display);
 		font-size: 32px;
 		font-weight: 700;
 		margin: 0;
 		letter-spacing: -0.02em;
-		color: #1d1d1f;
+		color: var(--n-10);
 	}
 
 	.projects-grid {
@@ -184,19 +152,20 @@
 	}
 
 	.project-card {
-		background: #fff;
-		border-radius: 5px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+		background: var(--colorWhite);
+		border-radius: 8px;
+		box-shadow: 0 2px 8px var(--n-alpha-1);
 		transition: all 0.2s ease;
 		cursor: pointer;
-		border: 1px solid rgba(0, 0, 0, 0.05);
+		border: 1px solid var(--n-03);
 		overflow: hidden;
 		position: relative;
 	}
 
 	.project-card:hover {
 		transform: translateY(-2px);
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+		box-shadow: 0 8px 16px var(--n-alpha-2);
+		border-color: var(--n-04);
 	}
 
 	.card-content {
@@ -218,14 +187,14 @@
 		font-size: 18px;
 		font-weight: 600;
 		margin: 0;
-		color: #1d1d1f;
+		color: var(--n-09);
 	}
 
 	.delete-btn {
 		background: none;
 		border: none;
 		cursor: pointer;
-		color: #86868b;
+		color: var(--n-05);
 		padding: 4px;
 		border-radius: 5px;
 		transition:
@@ -239,13 +208,13 @@
 	}
 
 	.delete-btn:hover {
-		color: #ff3b30;
-		background-color: rgba(255, 59, 48, 0.1);
+		color: var(--d-06);
+		background-color: var(--d-01);
 	}
 
 	.project-desc {
 		font-size: 14px;
-		color: #86868b;
+		color: var(--n-06);
 		margin: 0 0 20px 0;
 		flex: 1;
 		line-height: 1.4;
@@ -256,19 +225,19 @@
 		align-items: center;
 		gap: 12px;
 		font-size: 12px;
-		color: #86868b;
-		border-top: 1px solid rgba(0, 0, 0, 0.05);
+		color: var(--n-05);
+		border-top: 1px solid var(--n-02);
 		padding-top: 16px;
 	}
 
 	.meta-tag {
 		display: flex;
 		align-items: center;
-		background-color: #f5f5f7;
+		background-color: var(--n-01);
 		padding: 4px 8px;
 		border-radius: 5px;
 		font-weight: 500;
-		color: #1d1d1f;
+		color: var(--n-08);
 	}
 
 	.date {
@@ -278,6 +247,6 @@
 	.empty-state {
 		text-align: center;
 		padding: 60px;
-		color: #86868b;
+		color: var(--n-05);
 	}
 </style>

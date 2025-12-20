@@ -16,7 +16,7 @@
 <div class="splash-container" in:fade>
 	<header class="splash-header">
 		<div class="logo">
-			<span class="logo-text">KEYLIME</span>
+			<span class="logo">KEYLIME</span>
 		</div>
 		<div class="header-actions">
 			<Button kind="ghost" onclick={handleGoToLogin}>Log In</Button>
@@ -99,12 +99,6 @@
 		padding: 24px 48px;
 		background-color: rgba(255, 255, 255, 0.1);
 		backdrop-filter: blur(10px);
-	}
-
-	.logo-text {
-		font-weight: 700;
-		font-size: 24px;
-		letter-spacing: -0.5px;
 	}
 
 	.header-actions {

@@ -1,15 +1,15 @@
 <script>
-	import QwertyKeyboard from '$lib/components/QwertyKeyboard.svelte'
+	import QwertyKeyboard from '$lib/components/Keyboard/QwertyKeyboard.svelte'
 	import output from '$lib/stores/output.svelte'
-	import SelectKey from '$lib/components/SelectKey.svelte'
-	import SelectKeymap from '$lib/components/SelectKeymap.svelte'
-	import SelectOctave from '$lib/components/SelectOctave.svelte'
-	import SelectScale from '$lib/components/SelectScale.svelte'
-	import SelectOutputType from '$lib/components/SelectOutputType.svelte'
-	import SelectInstrument from '$lib/components/SelectInstrument.svelte'
-	import SelectMidiDevice from '$lib/components/SelectMidiDevice.svelte'
-	import SelectMidiChannel from '$lib/components/SelectMidiChannel.svelte'
-	import SelectVelocity from '$lib/components/SelectVelocity.svelte'
+	import SelectKey from '$lib/components/Project/SelectKey.svelte'
+	import SelectKeymap from '$lib/components/Keyboard/SelectKeymap.svelte'
+	import SelectOctave from '$lib/components/Project/SelectOctave.svelte'
+	import SelectScale from '$lib/components/Project/SelectScale.svelte'
+	import SelectOutputType from '$lib/components/Project/SelectOutputType.svelte'
+	import SelectInstrument from '$lib/components/Project/SelectInstrument.svelte'
+	import SelectMidiDevice from '$lib/components/Project/SelectMidiDevice.svelte'
+	import SelectMidiChannel from '$lib/components/Project/SelectMidiChannel.svelte'
+	import SelectVelocity from '$lib/components/Project/SelectVelocity.svelte'
 
 	const isInstrument = $derived(output.type === 'Instrument')
 	const isMidi = $derived(output.type === 'MIDI')

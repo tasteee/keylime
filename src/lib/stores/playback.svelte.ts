@@ -146,7 +146,6 @@ class PlaybackStore {
   playPerformance = async () => {
     const isNotLoaded = !this.isLoaded
     if (isNotLoaded) await this.load()
-
     this.isPlaying = true
     this.currentBeat = 0
     this.runPlaybackLoop()

@@ -26,3 +26,18 @@ export const getUserById = async (id: string): Promise<GetUserReturnT> => {
 
   return { user, error }
 }
+
+export const getProjectById = async (projectId: string) => {
+  const supabase = createSupabaseClient()
+
+  const result = await supabase
+    .from('all_projects')
+    .select('*')
+    .eq('id', projectId)
+    .single()
+
+  const data = result.data as ProjectT | null
+  const error = result.error as Error | null
+  if (!!error) warnWhen(error, `Error fetching project by ID: ${error.message}`)
+  return { data, error }
+}
