@@ -170,8 +170,8 @@
 		const hasSearch = searchText.trim().length > 0
 		const hasKey = selectedKey !== 'All'
 		const hasScale = selectedScale !== 'All'
-		const hasBpmMin = bpmMinValue.trim().length > 0
-		const hasBpmMax = bpmMaxValue.trim().length > 0
+		const hasBpmMin = bpmMinValue.length > 0
+		const hasBpmMax = bpmMaxValue.length > 0
 		const hasChordSymbols = selectedChordSymbols.length > 0
 		return hasSearch || hasKey || hasScale || hasBpmMin || hasBpmMax || hasChordSymbols
 	})

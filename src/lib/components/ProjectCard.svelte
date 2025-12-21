@@ -4,6 +4,7 @@
 	import { authStore } from '$lib/stores/auth.svelte'
 	import Badge from '$lib/components/ui/badge/badge.svelte'
 	import Box from '$lib/components/ui/box.svelte'
+	import { goto } from '$app/navigation'
 
 	type ProjectCardPropsT = {
 		project: {
@@ -31,6 +32,11 @@
 		if (!isEnterKey) return
 		props.onOpenProject(props.project.id)
 	}
+
+	const handleUserClick = (event: Event, userName: string) => {
+		event.stopPropagation()
+		goto(`/users/${userName}`)
+	}
 </script>
 
 <Box class="userProjectCard" role="button" tabIndex={0} onclick={handleClick} onkeydown={handleKeyDown}>
@@ -40,7 +46,7 @@
 		</Box>
 
 		<Box align="center" gap="12px">
-			<Avatar.Root class="userProjectCardAvatar size-8">
+			<Avatar.Root class="userProjectCardAvatar size-8" onclick={handleUserClick}>
 				<Avatar.Fallback class="logoFont">
 					{authStore.userProfile?.userName?.slice(0, 2).toUpperCase() || 'U'}
 				</Avatar.Fallback>

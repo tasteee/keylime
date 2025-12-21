@@ -182,13 +182,10 @@ class ChordModifierStore {
   private playCurrentChord = () => {
     const chord = this.currentChord
     if (!chord) return
-
-    // Play the chord for 500ms
     playbackStore.playChord(chord, 500)
   }
 
   private applyModifiersToChord = (baseChord: ChordT): ChordT => {
-    // Return chord with current modifier values
     return {
       ...baseChord,
       octaveOffset: this.state.octaveOffset,

@@ -18,33 +18,38 @@
 
 	dayjs.extend(relativeTime)
 
-	type ProjectUserT = {
+	type ProjectResultT = ProjectT & {
 		userName: string
 		avatarUrl: string | null
-	}
-
-	type ProjectResultT = ProjectT & {
-		user: ProjectUserT
-		userName: string
-		userAvatarUrl: string | null
 	}
 
 	dayjs.extend(relativeTime)
 
 	let projects = $state<ProjectResultT[]>([])
-	let activeFilters = $state({
-		searchText: '',
-		key: null as string | null,
-		scale: null as string | null,
-		bpmMin: null as number | null,
-		bpmMax: null as number | null,
-		chordSymbols: [] as string[]
-	})
 	let isLoading = $state(false)
 
-	const loadPublicProjects = async () => {
+	type FilterOptionsT = {
+		searchText: string
+		key: string | null
+		scale: string | null
+		bpmMin: number | null
+		bpmMax: number | null
+		chordSymbols: string[]
+	}
+
+	const loadPublicProjects = async (filterOptions?: FilterOptionsT) => {
 		isLoading = true
-		const { data, error } = await getPublicProjects({})
+
+		const queryOptions = {
+			searchQuery: filterOptions?.searchText || undefined,
+			key: filterOptions?.key || undefined,
+			scale: filterOptions?.scale || undefined,
+			minBpm: filterOptions?.bpmMin || undefined,
+			maxBpm: filterOptions?.bpmMax || undefined,
+			chordSymbols: filterOptions?.chordSymbols?.length ? filterOptions.chordSymbols : undefined
+		}
+
+		const { data, error } = await getPublicProjects(queryOptions)
 		const projectResults = (data || []) as ProjectResultT[]
 
 		if (error) {
@@ -57,8 +62,8 @@
 		projects = projectResults.map((project) => {
 			return {
 				...project,
-				userName: project.user.userName,
-				userAvatarUrl: project.user.avatarUrl,
+				userName: project.userName,
+				avatarUrl: project.avatarUrl,
 				updatedAt: new Date(project.updatedAt),
 				createdAt: new Date(project.createdAt)
 			}
@@ -67,76 +72,23 @@
 		isLoading = false
 	}
 
-	const filteredProjects = $derived.by(() => {
-		let results = projects
-
-		// Filter by search text
-		const hasSearchText = activeFilters.searchText.trim().length > 0
-		if (hasSearchText) {
-			const query = activeFilters.searchText.toLowerCase()
-			results = results.filter((project) => {
-				const matchesTitle = project.title.toLowerCase().includes(query)
-				const matchesDescription = project.description.toLowerCase().includes(query)
-				const matchesUserName = project.userName.toLowerCase().includes(query)
-				return matchesTitle || matchesDescription || matchesUserName
-			})
-		}
-
-		// Filter by key
-		const hasKeyFilter = activeFilters.key !== null
-		if (hasKeyFilter) {
-			results = results.filter((project) => project.key === activeFilters.key)
-		}
-
-		// Filter by scale
-		const hasScaleFilter = activeFilters.scale !== null
-		if (hasScaleFilter) {
-			results = results.filter((project) => project.scale === activeFilters.scale)
-		}
-
-		// Filter by BPM range
-		const hasBpmMin = activeFilters.bpmMin !== null
-		const hasBpmMax = activeFilters.bpmMax !== null
-		if (hasBpmMin || hasBpmMax) {
-			results = results.filter((project) => {
-				const bpmMin = activeFilters.bpmMin ?? 0
-				const bpmMax = activeFilters.bpmMax ?? 999
-				const meetsMin = project.bpm >= bpmMin
-				const meetsMax = project.bpm <= bpmMax
-				return meetsMin && meetsMax
-			})
-		}
-
-		// Filter by chord symbols (must include ALL specified chords)
-		const hasChordSymbolsFilter = activeFilters.chordSymbols.length > 0
-		if (hasChordSymbolsFilter) {
-			results = results.filter((project) => {
-				const projectChords = project.chordSymbols || []
-				const hasAllChords = activeFilters.chordSymbols.every((filterChord) => {
-					return projectChords.includes(filterChord)
-				})
-				return hasAllChords
-			})
-		}
-
-		return results
-	})
-
 	const handleOpenProject = (projectId: string) => {
 		goto(`/project/${projectId}`)
-	}
-
-	const handleUserClick = (event: Event, userName: string) => {
-		event.stopPropagation()
-		goto(`/users/${userName}`)
 	}
 
 	const daysAgo = (date: Date) => {
 		return dayjs(date).fromNow()
 	}
 
-	const handleFilterSubmit = (options: typeof activeFilters) => {
-		activeFilters = options
+	const handleFilterSubmit = (options: {
+		searchText: string
+		key: string | null
+		scale: string | null
+		bpmMin: number | null
+		bpmMax: number | null
+		chordSymbols: string[]
+	}) => {
+		loadPublicProjects(options)
 	}
 
 	$effect(() => {
@@ -159,14 +111,14 @@
 			<div class="loading-state">
 				<p>Loading projects...</p>
 			</div>
-		{:else if filteredProjects.length === 0}
+		{:else if projects.length === 0}
 			<div class="empty-state">
 				<Icon icon="mingcute:music-2-line" class="size-16 mb-4 opacity-30" />
 				<p>No projects found</p>
 			</div>
 		{:else}
 			<div class="projects-grid">
-				{#each filteredProjects as project (project.id)}
+				{#each projects as project (project.id)}
 					<ProjectCard {project} daysAgo={daysAgo(project.updatedAt)} onOpenProject={handleOpenProject} />
 				{/each}
 			</div>

@@ -112,6 +112,8 @@ export const getPublicProjects = async (options: GetPublicProjectsOptionsT) => {
     .select(`*, user:all_users!userId ( userName, avatarUrl )`)
     .eq('isPublic', true)
 
+  console.log('finalOptions', finalOptions)
+
   if (!!finalOptions.key) {
     query = query.eq('key', finalOptions.key)
   }
