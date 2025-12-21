@@ -18,7 +18,7 @@
 		</aside>
 	{/if}
 
-	<main class="main-content">
+	<main class="pageMainContent">
 		{#if topbar}
 			<header class="topbar">
 				{@render topbar()}
@@ -56,7 +56,7 @@
 		flex-direction: column;
 	}
 
-	.main-content {
+	.pageMainContent {
 		flex: 1;
 		display: flex;
 		flex-direction: column;

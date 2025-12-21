@@ -83,10 +83,10 @@
 	})
 </script>
 
-<div class="page-container" in:fade>
+<div class="pageContainer" in:fade>
 	<TopBar />
 
-	<main class="main-content">
+	<main class="pageMainContent">
 		{#if isLoading}
 			<div class="loading-state">
 				<p>Loading profile...</p>
@@ -171,44 +171,7 @@
 </div>
 
 <style>
-	.page-container {
-		min-height: 100vh;
-		background-color: #f5f5f7;
-	}
-
-	.header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0 40px;
-		height: 64px;
-		background-color: rgba(255, 255, 255, 0.8);
-		backdrop-filter: blur(20px);
-		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-		position: sticky;
-		top: 0;
-		z-index: 10;
-	}
-
-	.header-left {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.user-menu {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.user-name {
-		font-size: 14px;
-		font-weight: 500;
-		color: #1d1d1f;
-	}
-
-	.main-content {
+	.pageMainContent {
 		max-width: 1200px;
 		margin: 0 auto;
 		padding: 40px;

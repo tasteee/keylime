@@ -36,6 +36,14 @@
 		class?: string
 		tag?: string
 		style?: string // For one-off overrides
+
+		// Accessibility
+		role?: string
+		tabIndex?: number
+
+		// Events
+		onclick?: (event: MouseEvent) => void
+		onkeydown?: (event: KeyboardEvent) => void
 	}
 
 	let {
@@ -55,6 +63,10 @@
 		class: className = '',
 		tag = 'div',
 		style = '',
+		role,
+		tabIndex,
+		onclick,
+		onkeydown,
 		...props
 	}: PropsT = $props()
 
@@ -106,6 +118,6 @@
 	)
 </script>
 
-<svelte:element this={tag} class={className} style={cssStyles}>
+<svelte:element this={tag} class={className} style={cssStyles} {role} tabindex={tabIndex} {onclick} {onkeydown}>
 	{@render children?.()}
 </svelte:element>

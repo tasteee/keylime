@@ -14,7 +14,8 @@
 			color: {
 				red: 'isRedColor',
 				neutral: 'isNeutralColor',
-				brand: 'isBrandColor'
+				brand: 'isBrandColor',
+				dark: 'isDarkColor'
 			},
 			size: {
 				small: 'isSmallSize',
@@ -152,6 +153,22 @@
 		--brandColorTextColor-hover: var(--a-05);
 		--brandColorTextColor-active: var(--a-06);
 		--brandColorTextColor-disabled: var(--a-03);
+
+		/* Dark */
+		--darkColorBgColor: var(--n-09);
+		--darkColorBgColor-hover: var(--n-08);
+		--darkColorBgColor-active: var(--n-10);
+		--darkColorBgColor-disabled: var(--n-03);
+
+		--darkColorBorderColor: var(--n-09);
+		--darkColorBorderColor-hover: var(--n-08);
+		--darkColorBorderColor-active: var(--n-10);
+		--darkColorBorderColor-disabled: var(--n-03);
+
+		--darkColorTextColor: var(--colorWhite);
+		--darkColorTextColor-hover: var(--colorWhite);
+		--darkColorTextColor-active: var(--colorWhite);
+		--darkColorTextColor-disabled: var(--n-05);
 	}
 
 	.keyActionButton {
@@ -303,6 +320,23 @@
 		color: white;
 	}
 
+	/* Solid Dark */
+	.keyActionButton.isSolidKind.isDarkColor {
+		background-color: var(--darkColorBgColor);
+		color: var(--darkColorTextColor);
+		border-width: 0px;
+	}
+	.keyActionButton.isSolidKind.isDarkColor:hover:not(:disabled) {
+		background-color: var(--darkColorBgColor-hover);
+	}
+	.keyActionButton.isSolidKind.isDarkColor:active:not(:disabled) {
+		background-color: var(--darkColorBgColor-active);
+	}
+	.keyActionButton.isSolidKind.isDarkColor:disabled {
+		background-color: var(--darkColorBgColor-disabled);
+		color: var(--darkColorTextColor-disabled);
+	}
+
 	/* Outline */
 	.keyActionButton.isOutlineKind {
 		background-color: transparent;
@@ -368,6 +402,24 @@
 		color: var(--brandColorTextColor-disabled);
 	}
 
+	/* Outline Dark */
+	.keyActionButton.isOutlineKind.isDarkColor {
+		border-color: var(--darkColorBorderColor);
+		color: var(--darkColorBgColor); /* Use bg color for text in outline */
+	}
+	.keyActionButton.isOutlineKind.isDarkColor:hover:not(:disabled) {
+		background-color: var(--n-02);
+		border-color: var(--darkColorBorderColor-hover);
+	}
+	.keyActionButton.isOutlineKind.isDarkColor:active:not(:disabled) {
+		background-color: var(--n-03);
+		border-color: var(--darkColorBorderColor-active);
+	}
+	.keyActionButton.isOutlineKind.isDarkColor:disabled {
+		border-color: var(--darkColorBorderColor-disabled);
+		color: var(--darkColorTextColor-disabled);
+	}
+
 	/* Ghost */
 	.keyActionButton.isGhostKind {
 		background-color: transparent;
@@ -416,5 +468,19 @@
 	}
 	.keyActionButton.isGhostKind.isBrandColor:disabled {
 		color: var(--brandColorTextColor-disabled);
+	}
+
+	/* Ghost Dark */
+	.keyActionButton.isGhostKind.isDarkColor {
+		color: var(--darkColorBgColor);
+	}
+	.keyActionButton.isGhostKind.isDarkColor:hover:not(:disabled) {
+		background-color: var(--n-02);
+	}
+	.keyActionButton.isGhostKind.isDarkColor:active:not(:disabled) {
+		background-color: var(--n-03);
+	}
+	.keyActionButton.isGhostKind.isDarkColor:disabled {
+		color: var(--darkColorTextColor-disabled);
 	}
 </style>

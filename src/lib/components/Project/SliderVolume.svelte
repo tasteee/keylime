@@ -17,6 +17,6 @@
 
 <style>
 	.SliderVolume {
-		/* border: 2px solid black; */
+		/* border: 1px solid var(--n-03); */
 	}
 </style>

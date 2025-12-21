@@ -38,7 +38,7 @@
 		max-height: 85vh;
 		overflow-y: auto;
 		background-color: white;
-		border: 2px solid black;
+		border: 1px solid var(--n-03);
 		border-radius: 8px;
 		padding: 24px;
 		position: fixed;

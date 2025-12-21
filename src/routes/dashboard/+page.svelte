@@ -1,110 +1,154 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { authStore } from '$lib/stores/auth.svelte'
-	import projectsStore from '$lib/stores/projects.svelte'
+	import dashboardStore from '$lib/stores/dashboard.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
+	import { Trash } from 'phosphor-svelte'
 	import { fade, fly } from 'svelte/transition'
 	import { browser } from '$app/environment'
 	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
+	import ConfirmDeleteDialog from '$lib/components/Dashboard/ConfirmDeleteDialog.svelte'
+	import { Badge } from '$lib/components/ui/badge'
+	import Box from '$lib/components/ui/box.svelte'
+	import ProjectCard from '$lib/components/ProjectCard.svelte'
+	import dayjs from 'dayjs'
+	import relativeTime from 'dayjs/plugin/relativeTime'
+	import ProjectsBrowserBar from '$lib/components/ProjectsBrowserBar.svelte'
 
-	type DashboardPropsT = {
-		data: {
-			isAuthenticated: boolean
-			user: any
-		}
-	}
+	dayjs.extend(relativeTime)
 
-	const props: DashboardPropsT = $props()
+	let isDeleteDialogOpen = $state(false)
+	let projectToDelete = $state<{ id: string; title: string } | null>(null)
+	let activeFilters = $state({
+		searchText: '',
+		key: null as string | null,
+		scale: null as string | null,
+		bpmMin: null as number | null,
+		bpmMax: null as number | null,
+		chordSymbols: [] as string[]
+	})
 
-	// Load projects when component mounts
+	// Load projects when dashboard mounts.
 	$effect(() => {
 		if (browser && authStore.authUser) {
-			projectsStore.loadProjects()
+			dashboardStore.loadUserProjects()
 		}
 	})
 
-	const handleLogout = () => {
-		authStore.signOut()
-		goto('/')
-	}
-
 	const handleCreateProject = async () => {
-		const newId = await projectsStore.createProject()
-		goto(`/project/${newId}`)
+		const project = await dashboardStore.createUserProject()
+		if (project) goto(`/project/${project.id}`)
 	}
 
-	const handleDeleteProject = (event: Event, id: string) => {
+	const handleDeleteProject = (event: Event, id: string, title: string) => {
 		event.stopPropagation()
-		// TODO: Replace with confirmation modal.
-		const shouldDelete = confirm('Are you sure you want to delete this project?')
+		projectToDelete = { id, title }
+		isDeleteDialogOpen = true
+	}
 
-		if (shouldDelete) {
-			projectsStore.deleteProject(id)
+	const handleConfirmDelete = () => {
+		if (projectToDelete) {
+			dashboardStore.deleteUserProject(projectToDelete.id)
+			projectToDelete = null
 		}
 	}
+
+	const handleFilterSubmit = (options: typeof activeFilters) => {
+		activeFilters = options
+	}
+
+	const filteredProjects = $derived.by(() => {
+		let results = dashboardStore.userProjects
+
+		// Filter by search text
+		const hasSearchText = activeFilters.searchText.trim().length > 0
+		if (hasSearchText) {
+			const query = activeFilters.searchText.toLowerCase()
+			results = results.filter((project) => {
+				const matchesTitle = project.title.toLowerCase().includes(query)
+				const matchesDescription = project.description.toLowerCase().includes(query)
+				return matchesTitle || matchesDescription
+			})
+		}
+
+		// Filter by key
+		const hasKeyFilter = activeFilters.key !== null
+		if (hasKeyFilter) {
+			results = results.filter((project) => project.key === activeFilters.key)
+		}
+
+		// Filter by scale
+		const hasScaleFilter = activeFilters.scale !== null
+		if (hasScaleFilter) {
+			results = results.filter((project) => project.scale === activeFilters.scale)
+		}
+
+		// Filter by BPM range
+		const hasBpmMin = activeFilters.bpmMin !== null
+		const hasBpmMax = activeFilters.bpmMax !== null
+		if (hasBpmMin || hasBpmMax) {
+			results = results.filter((project) => {
+				const bpmMin = activeFilters.bpmMin ?? 0
+				const bpmMax = activeFilters.bpmMax ?? 999
+				const meetsMin = project.bpm >= bpmMin
+				const meetsMax = project.bpm <= bpmMax
+				return meetsMin && meetsMax
+			})
+		}
+
+		// Filter by chord symbols (must include ALL specified chords)
+		const hasChordSymbolsFilter = activeFilters.chordSymbols.length > 0
+		if (hasChordSymbolsFilter) {
+			results = results.filter((project) => {
+				const projectChords = project.chordSymbols || []
+				const hasAllChords = activeFilters.chordSymbols.every((filterChord) => {
+					return projectChords.includes(filterChord)
+				})
+				return hasAllChords
+			})
+		}
+
+		return results
+	})
 
 	const handleOpenProject = (id: string) => {
 		goto(`/project/${id}`)
 	}
 
-	const formatDate = (date: Date) => {
-		return new Intl.DateTimeFormat('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		}).format(date)
+	const daysAgo = (date: Date) => {
+		return dayjs(date).fromNow()
 	}
 </script>
 
 <div class="dashboard" in:fade>
 	<TopBar />
 
-	<main class="main-content">
-		<div class="projects-header">
-			<h1 class="page-title">My Projects</h1>
-			<Button onclick={handleCreateProject}>
-				<Icon icon="mingcute:add-line" class="mr-2 size-4" />
-				New Project
-			</Button>
-		</div>
+	<main class="pageMainContent">
+		<Box class="pageHeader" isColumn>
+			<Box isFullWidth justify="between" align="center" class="pageHeaderRow">
+				<h1 class="pageTitle">My Projects</h1>
+				<Button onclick={handleCreateProject}>
+					<Icon icon="mingcute:add-line" class="mr-2 size-4" />
+					New Project
+				</Button>
+			</Box>
+			<p class="pageSubtitle">Explore chord progressions from the community</p>
+		</Box>
+
+		<ProjectsBrowserBar onsubmit={handleFilterSubmit} />
 
 		<div class="projects-grid">
-			{#each projectsStore.projects as project (project.id)}
-				<div
-					class="project-card"
-					onclick={() => handleOpenProject(project.id)}
-					role="button"
-					tabindex="0"
-					onkeydown={(e) => e.key === 'Enter' && handleOpenProject(project.id)}
-					in:fly={{ y: 20, duration: 300 }}
-				>
-					<div class="card-content">
-						<div class="card-header">
-							<h3 class="project-title">{project.title}</h3>
-							<button class="delete-btn" onclick={(e) => handleDeleteProject(e, project.id)} aria-label="Delete project">
-								<Icon icon="mingcute:delete-2-line" class="size-4" />
-							</button>
-						</div>
-						<p class="project-desc">{project.description || 'No description'}</p>
-						<div class="card-footer">
-							<div class="meta-tag">
-								<Icon icon="mingcute:music-line" class="size-3 mr-1" />
-								{project.key}
-								{project.scale}
-							</div>
-							<div class="meta-tag">
-								<Icon icon="mingcute:time-line" class="size-3 mr-1" />
-								{project.bpm} BPM
-							</div>
-							<span class="date">{formatDate(project.updatedAt)}</span>
-						</div>
-					</div>
-				</div>
+			{#each filteredProjects as project (project.id)}
+				<ProjectCard {project} daysAgo={daysAgo(project.updatedAt)} onOpenProject={handleOpenProject} />
 			{/each}
 		</div>
 
-		{#if projectsStore.projects.length === 0}
+		{#if filteredProjects.length === 0 && dashboardStore.userProjects.length > 0}
+			<div class="empty-state">
+				<p>No projects match your filters.</p>
+			</div>
+		{:else if dashboardStore.userProjects.length === 0}
 			<div class="empty-state">
 				<p>No projects yet. Create one to get started!</p>
 			</div>
@@ -112,15 +156,27 @@
 	</main>
 </div>
 
+<ConfirmDeleteDialog
+	isOpen={isDeleteDialogOpen}
+	projectTitle={projectToDelete?.title ?? ''}
+	onConfirm={handleConfirmDelete}
+	onOpenChange={(open) => {
+		isDeleteDialogOpen = open
+		if (!open) {
+			projectToDelete = null
+		}
+	}}
+/>
+
 <style>
 	.dashboard {
 		display: flex;
 		flex-direction: column;
 		min-height: 100vh;
-		background-color: var(--n-00);
+		background: var(--n-01);
 	}
 
-	.main-content {
+	.pageMainContent {
 		flex: 1;
 		padding: 40px;
 		max-width: 1200px;
@@ -129,119 +185,14 @@
 		box-sizing: border-box;
 	}
 
-	.projects-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		margin-bottom: 32px;
-	}
-
-	.page-title {
-		font-family: var(--font-display);
-		font-size: 32px;
-		font-weight: 700;
-		margin: 0;
-		letter-spacing: -0.02em;
-		color: var(--n-10);
+	:global .pageHeader {
+		margin-bottom: 24px;
 	}
 
 	.projects-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 		gap: 24px;
-	}
-
-	.project-card {
-		background: var(--colorWhite);
-		border-radius: 8px;
-		box-shadow: 0 2px 8px var(--n-alpha-1);
-		transition: all 0.2s ease;
-		cursor: pointer;
-		border: 1px solid var(--n-03);
-		overflow: hidden;
-		position: relative;
-	}
-
-	.project-card:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 8px 16px var(--n-alpha-2);
-		border-color: var(--n-04);
-	}
-
-	.card-content {
-		padding: 20px;
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		box-sizing: border-box;
-	}
-
-	.card-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		margin-bottom: 8px;
-	}
-
-	.project-title {
-		font-size: 18px;
-		font-weight: 600;
-		margin: 0;
-		color: var(--n-09);
-	}
-
-	.delete-btn {
-		background: none;
-		border: none;
-		cursor: pointer;
-		color: var(--n-05);
-		padding: 4px;
-		border-radius: 5px;
-		transition:
-			color 0.2s,
-			background-color 0.2s;
-		opacity: 0;
-	}
-
-	.project-card:hover .delete-btn {
-		opacity: 1;
-	}
-
-	.delete-btn:hover {
-		color: var(--d-06);
-		background-color: var(--d-01);
-	}
-
-	.project-desc {
-		font-size: 14px;
-		color: var(--n-06);
-		margin: 0 0 20px 0;
-		flex: 1;
-		line-height: 1.4;
-	}
-
-	.card-footer {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		font-size: 12px;
-		color: var(--n-05);
-		border-top: 1px solid var(--n-02);
-		padding-top: 16px;
-	}
-
-	.meta-tag {
-		display: flex;
-		align-items: center;
-		background-color: var(--n-01);
-		padding: 4px 8px;
-		border-radius: 5px;
-		font-weight: 500;
-		color: var(--n-08);
-	}
-
-	.date {
-		margin-left: auto;
 	}
 
 	.empty-state {

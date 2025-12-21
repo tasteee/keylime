@@ -32,6 +32,53 @@
 	let animationFrameId: number
 	let isFollowEnabled = $state(true)
 	let previousLoopedBeat = $state(0)
+	let previousItemCount = $state(0)
+
+	$effect(() => {
+		const currentItemCount = projectStore.progressionItems.length
+		const hasItemsAdded = currentItemCount > previousItemCount
+
+		if (hasItemsAdded && middleElement) {
+			const selectedItemId = projectStore.selectedProgressionItemId
+			const items = projectStore.progressionItems
+
+			let targetItemIndex = items.length - 1
+
+			if (selectedItemId) {
+				const selectedIndex = items.findIndex((item) => item.id === selectedItemId)
+				if (selectedIndex !== -1 && selectedIndex < items.length - 1) {
+					targetItemIndex = selectedIndex + 1
+				}
+			}
+
+			let accumulatedBeats = 0
+			for (let i = 0; i < targetItemIndex; i++) {
+				accumulatedBeats += items[i].durationBeats
+			}
+
+			const targetItem = items[targetItemIndex]
+			const itemStartPosition = accumulatedBeats * PIXELS_PER_BEAT
+			const itemWidth = targetItem.durationBeats * PIXELS_PER_BEAT
+			const itemEndPosition = itemStartPosition + itemWidth
+
+			const scrollLeft = middleElement.scrollLeft
+			const viewportWidth = middleElement.clientWidth
+			const viewportEnd = scrollLeft + viewportWidth
+
+			const margin = 100
+
+			const isItemBeforeViewport = itemStartPosition < scrollLeft + margin
+			const isItemAfterViewport = itemEndPosition > viewportEnd - margin
+
+			if (isItemBeforeViewport) {
+				middleElement.scrollLeft = Math.max(0, itemStartPosition - margin)
+			} else if (isItemAfterViewport) {
+				middleElement.scrollLeft = itemEndPosition - viewportWidth + margin
+			}
+		}
+
+		previousItemCount = currentItemCount
+	})
 
 	const updateCursor = () => {
 		if (!playbackStore.isPlaying || !cursorElement) return

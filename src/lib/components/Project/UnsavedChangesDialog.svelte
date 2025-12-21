@@ -22,8 +22,8 @@
 			</Dialog.Description>
 		</Dialog.Header>
 		<Dialog.Footer>
-			<Button kind="outline" onclick={onCancel}>Cancel</Button>
-			<Button color="red" onclick={onDiscard}>Discard</Button>
+			<Button color="red" onclick={onDiscard}>Discard & Leave</Button>
+			<Button kind="outline" onclick={onCancel}>Keep Editing</Button>
 			<Button onclick={onConfirm}>Save & Leave</Button>
 		</Dialog.Footer>
 	</Dialog.Content>

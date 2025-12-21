@@ -5,10 +5,15 @@
 	let { class: className, ...restProps }: HTMLAttributes<HTMLDivElement> = $props()
 </script>
 
-<div
-	data-slot="dialog-header"
-	class={cn('space-y-1.5 sm:text-left mt-2 relative flex flex-col text-center', className)}
-	{...restProps}
->
+<div data-slot="dialog-header" class={cn('DialogHeader', className)} {...restProps}>
 	{@render restProps.children?.()}
 </div>
+
+<style>
+	.DialogHeader {
+		display: flex;
+		flex-direction: column;
+		gap: 0.375rem;
+		gap: 16px;
+	}
+</style>

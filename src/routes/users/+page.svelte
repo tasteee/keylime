@@ -35,13 +35,16 @@
 	}
 </script>
 
-<div class="page-container" in:fade>
+<div class="pageContainer" in:fade>
 	<TopBar />
 
-	<main class="main-content">
+	<main class="pageMainContent">
 		<div class="search-bar">
-			<Icon icon="mingcute:search-line" class="search-icon" />
-			<Input type="text" bind:value={searchQuery} placeholder="Search users..." class="search-input" />
+			<Input size="large" type="text" bind:value={searchQuery} placeholder="Search users..." class="search-input">
+				{#snippet startIcon()}
+					<Icon icon="mingcute:search-line" class="search-icon" />
+				{/snippet}
+			</Input>
 		</div>
 
 		{#if isLoading}
@@ -80,49 +83,10 @@
 </div>
 
 <style>
-	.page-container {
-		min-height: 100vh;
-		background-color: var(--n-00);
-	}
-
-	.main-content {
+	.pageMainContent {
 		max-width: 1200px;
 		margin: 0 auto;
 		padding: 40px;
-	}
-
-	.content-header {
-		margin-bottom: 32px;
-	}
-
-	.page-title {
-		font-family: var(--font-display);
-		font-size: 32px;
-		font-weight: 700;
-		margin: 0 0 8px 0;
-		color: var(--n-10);
-	}
-
-	.page-subtitle {
-		font-size: 16px;
-		color: var(--n-06);
-		margin: 0;
-	}
-
-	.search-bar {
-		position: relative;
-		margin-bottom: 32px;
-	}
-
-	.search-icon {
-		position: absolute;
-		left: 12px;
-		top: 50%;
-		transform: translateY(-50%);
-		color: var(--n-05);
-		font-size: 20px;
-		pointer-events: none;
-		z-index: 1;
 	}
 
 	:global(.search-input) {

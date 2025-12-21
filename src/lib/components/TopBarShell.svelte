@@ -36,7 +36,6 @@
 <div class="TopBar">
 	<Box class="left" align="center" gap="24px" height="100%">
 		<a onclick={goToDashboard} href="#foo" class="logoBox">
-			<OrangeSlice class="logoIcon logoIconBottom" size={32} weight="fill" color="var(--a-05)" />
 			<OrangeSlice class="logoIcon" size={32} weight="fill" color="var(--n-03)" />
 			<span class="logo">KEYLIME</span>
 		</a>
@@ -73,19 +72,6 @@
 		font-weight: 900;
 		font-style: normal;
 		font-size: 28px;
-	}
-
-	:global .logoBox .logoIcon.logoIconBottom {
-		left: 1px;
-		opacity: 0;
-		transform: rotate(105deg) scale(1);
-	}
-
-	:global .logoBox .logoIcon {
-		position: absolute;
-		left: 0px;
-		top: -3px;
-		transform: rotate(102deg) scale(0.8);
 	}
 
 	.TopBar {

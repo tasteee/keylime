@@ -5,6 +5,16 @@
 	let { class: className, ...restProps }: HTMLAttributes<HTMLDivElement> = $props()
 </script>
 
-<div data-slot="dialog-footer" class={cn('gap-2 pt-4 flex items-center', className)} {...restProps}>
+<div data-slot="dialog-footer" class={cn('DialogFooter', className)} {...restProps}>
 	{@render restProps.children?.()}
 </div>
+
+<style>
+	.DialogFooter {
+		display: flex;
+		align-items: center;
+		justify-content: end;
+		gap: 8px;
+		padding-top: 24px;
+	}
+</style>

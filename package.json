@@ -67,6 +67,7 @@
 		"array-range": "^1.0.1",
 		"await-to-js": "^3.0.0",
 		"await-to-ts": "^1.0.6",
+		"dayjs": "^1.11.19",
 		"just-memoize": "^2.2.0",
 		"midi-writer-js": "^3.1.1",
 		"mode-watcher": "^1.1.0",
