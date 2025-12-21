@@ -149,3 +149,68 @@ export const getPublicProjects = async (options: GetPublicProjectsOptionsT) => {
 
   return { data, error }
 }
+
+type GetPublicUsersOptionsT = {
+  sortBy?: 'updatedAt' | 'createdAt' | 'userName'
+  sortOrder?: 'ascending' | 'descending'
+  searchQuery?: string
+}
+
+const DEFAULT_GET_PUBLIC_USERS_OPTIONS: GetPublicUsersOptionsT = {
+  sortBy: 'createdAt',
+  sortOrder: 'descending',
+  searchQuery: undefined,
+}
+
+export const getPublicUsers = async (options: GetPublicUsersOptionsT) => {
+  const finalOptions = { ...DEFAULT_GET_PUBLIC_USERS_OPTIONS, ...options }
+  const supabase = createSupabaseClient()
+
+  let query = supabase
+    .from('all_users')
+    .select('*')
+
+  if (!!finalOptions.searchQuery) {
+    query = query.or(`userName.ilike.%${finalOptions.searchQuery}%,bio.ilike.%${finalOptions.searchQuery}%`)
+  }
+
+  const sortByColumn = finalOptions.sortBy || 'createdAt'
+  const isAscending = finalOptions.sortOrder === 'ascending'
+  query = query.order(sortByColumn, { ascending: isAscending })
+
+  const result = await query
+  const data = result.data
+  const error = result.error
+  warnWhen(error, `Error fetching public users: ${error?.message}`)
+
+  return { data, error }
+}
+
+export const getUserByUserName = async (userName: string) => {
+  const supabase = createSupabaseClient()
+
+  const result = await supabase
+    .from('all_users')
+    .select('*')
+    .eq('userName', userName)
+    .single()
+
+  const data = result.data as UserT | null
+  const error = result.error as Error | null
+  if (!!error) warnWhen(error, `Error fetching user by userName: ${error.message}`)
+  return { data, error }
+}
+
+export const getPublicProjectsByUserName = async (userName: string) => {
+  const supabase = createSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('all_projects')
+    .select(`*, user:all_users!userId ( userName, avatarUrl )`)
+    .eq('isPublic', true)
+    .eq('user.userName', userName)
+    .order('updatedAt', { ascending: false })
+
+  warnWhen(error, `Error fetching public projects by userName: ${error?.message}`)
+  return { data, error }
+}
