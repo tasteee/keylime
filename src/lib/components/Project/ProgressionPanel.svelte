@@ -326,13 +326,27 @@
 		middleElement.scrollLeft += event.deltaY
 	}
 
-	const togglePlayback = () => {
-		playbackStore.togglePlayback()
+	const togglePlayback = async () => {
+		const isCurrentlyPlaying = playbackStore.isPlaying
+		if (isCurrentlyPlaying) {
+			playbackStore.stop()
+			return
+		}
+
+		await playbackStore.perform({
+			id: projectStore.id,
+			bpm: projectStore.bpm,
+			octave: projectStore.octave,
+			progressionChords: projectStore.progressionChords,
+			patternSignals: projectStore.patternActiveSignals,
+			patternSignalRows: projectStore.patternSignalRows,
+			patternDurationBars: projectStore.patternActiveDurationBeats / 4
+		})
 	}
 
 	const handleDownloadMidi = () => {
 		exportPerformanceAsMidi({
-			performance: playbackStore.performance,
+			performance: playbackStore.currentPerformance,
 			bpm: projectStore.bpm,
 			key: projectStore.key,
 			scale: projectStore.scale

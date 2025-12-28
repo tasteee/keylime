@@ -21,11 +21,37 @@ class DashboardStore {
       return
     }
 
-    this.userProjects = projects.map((project) => ({
-      ...project,
-      updatedAt: new Date(project.updatedAt),
-      createdAt: new Date(project.createdAt),
-    }))
+    this.userProjects = projects.map((project) => {
+      // Parse JSON fields from database
+      const parsedProgressionChords = typeof project.progressionChords === 'string'
+        ? JSON.parse(project.progressionChords)
+        : project.progressionChords
+
+      // Calculate startTime for each chord based on cumulative durations
+      let accumulatedStartTime = 0
+      const progressionChordsWithStartTime = parsedProgressionChords.map((chord: ProgressionChordT) => {
+        const startTime = accumulatedStartTime
+        accumulatedStartTime += chord.durationBeats
+        return {
+          ...chord,
+          startTime
+        }
+      })
+
+      return {
+        ...project,
+        updatedAt: new Date(project.updatedAt),
+        createdAt: new Date(project.createdAt),
+        octave: String(project.octave),
+        progressionChords: progressionChordsWithStartTime,
+        patternSignals: typeof project.patternSignals === 'string'
+          ? JSON.parse(project.patternSignals)
+          : project.patternSignals,
+        patternSignalRows: typeof project.patternSignalRows === 'string'
+          ? JSON.parse(project.patternSignalRows)
+          : project.patternSignalRows,
+      }
+    })
 
     this.isLoadingUserProjects = false
   }

@@ -97,6 +97,8 @@ type ProjectT = {
   patternSignals: SignalT[] // json... right? or array in supabase??
   patternSignalRows: SignalRowsT // json...
   patternDurationBars: number
+  originalProjectId: string | null // The ID of the very first ancestor project in the clone chain
+  cloneAncestorIds: string[] // Array of project IDs in chronological clone order, showing the full clone history
   createdAt: Date
   updatedAt: Date
 }
@@ -176,6 +178,8 @@ type DatabaseAllProjectsTableRowT = {
   patternSignals: JsonT
   patternSignalRows: JsonT
   patternDurationBars: number
+  originalProjectId: string | null
+  cloneAncestorIds: string[]
   createdAt: string
   updatedAt: string
 }

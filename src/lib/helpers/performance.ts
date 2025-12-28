@@ -11,6 +11,7 @@ type GeneratePerformanceArgsT = {
   signalRows: SignalRowsT
   patternLengthBeats: number
   progressionLengthBeats: number
+  octave: string
 }
 
 const getRandomBetween = (args: { min: number; max: number }) => {
@@ -113,7 +114,7 @@ export const generatePerformance = (args: GeneratePerformanceArgsT): Performance
       }
 
       // Derive notes from chord at performance generation time
-      const chordNotes = chordToNotes({ chord: activeChord, rootOctave: projectStore.octave })
+      const chordNotes = chordToNotes({ chord: activeChord, rootOctave: args.octave })
 
       // Calculate the end of this chord
       const chordStart = activeChord.startTime ?? 0

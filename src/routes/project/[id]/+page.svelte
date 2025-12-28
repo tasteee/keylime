@@ -65,7 +65,7 @@
 		}
 	}
 
-	const handleKeyDown = (event: KeyboardEvent) => {
+	const handleKeyDown = async (event: KeyboardEvent) => {
 		const isSpaceKey = event.code === 'Space'
 		if (!isSpaceKey) return
 
@@ -73,7 +73,22 @@
 		if (isTypingInInput) return
 
 		event.preventDefault()
-		playbackStore.togglePlayback()
+
+		const isCurrentlyPlaying = playbackStore.isPlaying
+		if (isCurrentlyPlaying) {
+			playbackStore.stop()
+			return
+		}
+
+		await playbackStore.perform({
+			id: projectStore.id,
+			bpm: projectStore.bpm,
+			octave: projectStore.octave,
+			progressionChords: projectStore.progressionChords,
+			patternSignals: projectStore.patternActiveSignals,
+			patternSignalRows: projectStore.patternSignalRows,
+			patternDurationBars: projectStore.patternActiveDurationBeats / 4
+		})
 	}
 
 	$effect(() => {
@@ -94,7 +109,7 @@
 	// project store so that when we return it's fresh.
 	onDestroy(() => {
 		if (browser) {
-			playbackStore.stopPerformance()
+			playbackStore.stop()
 			projectStore.reset()
 		}
 	})

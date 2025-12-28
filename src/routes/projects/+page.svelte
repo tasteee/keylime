@@ -59,6 +59,8 @@
 			return
 		}
 
+		console.log('Loaded projects sample:', projectResults[0])
+
 		projects = projectResults.map((project) => {
 			return {
 				...project,
@@ -108,16 +110,16 @@
 		<ProjectsBrowserBar onsubmit={handleFilterSubmit} />
 
 		{#if isLoading}
-			<div class="loading-state">
+			<div class="loading-state" in:fade>
 				<p>Loading projects...</p>
 			</div>
 		{:else if projects.length === 0}
-			<div class="empty-state">
+			<div class="empty-state" in:fade>
 				<Icon icon="mingcute:music-2-line" class="size-16 mb-4 opacity-30" />
 				<p>No projects found</p>
 			</div>
 		{:else}
-			<div class="projects-grid">
+			<div class="projects-grid" in:fade>
 				{#each projects as project (project.id)}
 					<ProjectCard {project} daysAgo={daysAgo(project.updatedAt)} onOpenProject={handleOpenProject} />
 				{/each}

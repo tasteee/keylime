@@ -42,7 +42,7 @@
 		if (!isLeftButton) return
 		event.preventDefault()
 		event.stopPropagation()
-		playbackStore.playChord(props.chord)
+		playbackStore.playChord(props.chord, projectStore.octave)
 	}
 
 	const onMouseUp = (event: MouseEvent) => {

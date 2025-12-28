@@ -4,7 +4,9 @@
 	import { authStore } from '$lib/stores/auth.svelte'
 	import Badge from '$lib/components/ui/badge/badge.svelte'
 	import Box from '$lib/components/ui/box.svelte'
+	import Button from '$lib/components/ui/button/button.svelte'
 	import { goto } from '$app/navigation'
+	import playbackStore from '$lib/stores/playback.svelte'
 
 	type ProjectCardPropsT = {
 		project: {
@@ -14,14 +16,24 @@
 			key: string
 			scale: string
 			bpm: number
+			octave: string
 			chordSymbols: string[]
 			updatedAt: Date
+			userId: string
+			progressionChords: ProgressionChordT[]
+			patternSignals: SignalT[]
+			patternSignalRows: SignalRowsT
+			patternDurationBars: number
 		}
 		daysAgo: string
 		onOpenProject: (projectId: string) => void
+		onCloneProject?: (projectId: string) => Promise<void>
 	}
 
 	const props: ProjectCardPropsT = $props()
+
+	const isOwnedByCurrentUser = $derived(props.project.userId === authStore.authUser?.id)
+	const isPlayingThisProject = $derived(playbackStore.isPlaying && playbackStore.currentProjectId === props.project.id)
 
 	const handleClick = () => {
 		props.onOpenProject(props.project.id)
@@ -33,9 +45,45 @@
 		props.onOpenProject(props.project.id)
 	}
 
-	const handleUserClick = (event: Event, userName: string) => {
+	const handleUserClick = (event: MouseEvent) => {
 		event.stopPropagation()
-		goto(`/users/${userName}`)
+		const userName = authStore.userProfile?.userName
+		if (userName) goto(`/users/${userName}`)
+	}
+
+	const handlePlayToggle = async (event: MouseEvent) => {
+		event.stopPropagation()
+
+		const isCurrentlyPlaying = isPlayingThisProject
+		if (isCurrentlyPlaying) {
+			playbackStore.stop()
+			return
+		}
+
+		await playbackStore.perform({
+			id: props.project.id,
+			bpm: props.project.bpm,
+			octave: props.project.octave,
+			progressionChords: props.project.progressionChords,
+			patternSignals: props.project.patternSignals,
+			patternSignalRows: props.project.patternSignalRows,
+			patternDurationBars: props.project.patternDurationBars
+		})
+	}
+
+	const handleOpenOrClone = async (event: MouseEvent) => {
+		event.stopPropagation()
+
+		const shouldOpen = isOwnedByCurrentUser
+		if (shouldOpen) {
+			goto(`/project/${props.project.id}`)
+			return
+		}
+
+		// Clone functionality
+		if (props.onCloneProject) {
+			await props.onCloneProject(props.project.id)
+		}
 	}
 </script>
 
@@ -71,6 +119,26 @@
 				<Badge kind="solid" color="dark" size="small">{symbol}</Badge>
 			{/each}
 		</Box>
+
+		<Box gap="8px" paddingTop="8px" class="projectCardActions">
+			<Button onclick={handlePlayToggle} size="medium" color="neutral" isIcon={true}>
+				{#if isPlayingThisProject}
+					<Icon icon="mingcute:stop-fill" width="18px" height="18px" />
+				{:else}
+					<Icon icon="mingcute:play-fill" width="18px" height="18px" />
+				{/if}
+			</Button>
+
+			<Button onclick={handleOpenOrClone} size="medium" color="brand" class="flex-1">
+				{#if isOwnedByCurrentUser}
+					<Icon icon="mingcute:folder-open-line" class="size-4 mr-1" />
+					Open
+				{:else}
+					<Icon icon="mingcute:copy-2-line" class="size-4 mr-1" />
+					Clone
+				{/if}
+			</Button>
+		</Box>
 	</Box>
 </Box>
 
@@ -86,6 +154,13 @@
 		border: 1px solid var(--n-03);
 		border-radius: 4px;
 		flex-wrap: wrap;
+	}
+
+	:global .userProjectCardContent .projectCardActions {
+		display: flex;
+		align-items: center;
+		border-top: 1px solid var(--n-03);
+		padding-top: 12px !important;
 	}
 
 	:global .userProjectCardContent .timeAgo {
