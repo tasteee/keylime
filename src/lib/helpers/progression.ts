@@ -75,3 +75,8 @@ export const resolveChordConflicts = (args: ResolveChordConflictsArgsT): ChordT[
 
   return [...validChords, ...newChords]
 }
+
+export const getProgressionTotalDuration = (progressionChords: ProgressionChordT[]): number => {
+  if (!progressionChords.length) return 0
+  return progressionChords.reduce((total, chord) => total + chord.durationBeats, 0)
+}

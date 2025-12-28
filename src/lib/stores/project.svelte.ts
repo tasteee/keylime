@@ -19,6 +19,7 @@ const createDefaultProjectData = () => {
   return {
     bpm: 124,
     chordSymbols: [],
+    cloneAncestorIds: [],
     createdAt: new Date(),
     description: '',
     id: crypto.randomUUID(),
@@ -27,10 +28,13 @@ const createDefaultProjectData = () => {
     maxVelocity: 80,
     minVelocity: 70,
     octave: '3',
+    originalProjectId: null,
     patternDurationBars: 1,
     patternSignalRows,
     patternSignals: [],
+    patternZoomLevel: 32,
     progressionChords: [],
+    progressionZoomLevel: 82,
     scale: 'Major',
     title: 'New Project',
     updatedAt: new Date(),
@@ -62,7 +66,8 @@ class ProjectStore {
   patternDurationBars = $state(1)
   baseProgressionItems: ProgressionItemT[] = $state([])
   selectedProgressionItemId: string | null = $state(null)
-  patternZoomLevel = $state(24) // cells are 24x24px
+  patternZoomLevel = $state(32) // cells are 32x32px by default
+  progressionZoomLevel = $state(82) // pixels per beat for progression
   createdAt = $state<Date | null>(new Date())
   updatedAt = $state<Date | null>(new Date())
 
@@ -81,6 +86,7 @@ class ProjectStore {
     const newZoomLevel = this.patternZoomLevel + addition
     const clampedZoomLevel = numbers.clamp(PATTERN_MIN_ZOOM, newZoomLevel, PATTERN_MAX_ZOOM)
     this.patternZoomLevel = clampedZoomLevel
+    this.markDirty()
   }
 
   // Regenerate all progression items with startTime calculated
@@ -291,6 +297,7 @@ class ProjectStore {
     return {
       bpm: this.bpm,
       chordSymbols: this.chordSymbols,
+      cloneAncestorIds: [],
       createdAt: this.createdAt,
       description: this.description,
       id: this.id,
@@ -299,10 +306,13 @@ class ProjectStore {
       maxVelocity: this.maxVelocity,
       minVelocity: this.minVelocity,
       octave: this.octave,
+      originalProjectId: null,
       patternDurationBars: this.patternDurationBars,
       patternSignalRows: this.patternSignalRows,
       patternSignals: this.patternSignals,
+      patternZoomLevel: this.patternZoomLevel,
       progressionChords: this.baseProgressionItems,
+      progressionZoomLevel: this.progressionZoomLevel,
       scale: this.scale,
       title: this.title,
       updatedAt: this.updatedAt,
@@ -350,6 +360,35 @@ class ProjectStore {
     return { success: true }
   }
 
+  saveClone = async () => {
+    if (!authStore.authUser) throw new Error('User must be authenticated to save project')
+
+    const newProjectId = crypto.randomUUID()
+    const clonedTitle = `${this.title} (Clone)`
+
+    this.id = newProjectId
+    this.title = clonedTitle
+    this.userId = authStore.authUser.id
+    this.createdAt = new Date()
+    this.updatedAt = new Date()
+
+    const supabase = createSupabaseClient()
+    const projectData = this.getProjectDocumentData()
+
+    const { error } = await supabase
+      .from('all_projects')
+      .insert(projectData)
+
+    if (error) throw new Error(`Failed to save clone: ${error.message}`)
+
+    this.isSaved = true
+    this.isDirty = false
+    this.captureInitialState()
+    console.log('Saved cloned project: ', projectData)
+
+    return { success: true, projectId: newProjectId }
+  }
+
   load = async (projectId: string) => {
     this.isLoading = true
 
@@ -372,6 +411,8 @@ class ProjectStore {
     this.minVelocity = project.minVelocity
     this.maxVelocity = project.maxVelocity
     this.patternDurationBars = project.patternDurationBars
+    this.patternZoomLevel = project.patternZoomLevel ?? 32
+    this.progressionZoomLevel = project.progressionZoomLevel ?? 82
     this.isPublic = project.isPublic
     this.createdAt = new Date(project.createdAt)
     this.updatedAt = new Date(project.updatedAt)

@@ -102,11 +102,17 @@ export const toFractionString = (value: number) => {
   return `${wholeNumber} ${fractionString}`
 }
 
+// numbers.randomize(100, 5555) // some number between 100 and 5555
+const randomize = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
 export const numbers = {
   toNumber,
   clamp,
   createClamp,
   loopClamp,
   createReverser,
-  toFractionString
+  toFractionString,
+  randomize,
 }

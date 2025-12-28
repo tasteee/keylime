@@ -88,6 +88,35 @@ class DashboardStore {
     this.loadUserProjects()
     return project
   }
+
+  cloneProject = async (projectId: string) => {
+    if (!authStore.authUser) return
+
+    let sourceProject = this.userProjects.find(project => project.id === projectId)
+
+    if (!sourceProject) {
+      const { getProjectById } = await import('$lib/modules/database')
+      const result = await getProjectById(projectId)
+      if (result.error || !result.data) return
+      sourceProject = result.data as ProjectT
+    }
+
+    const clonedProject = {
+      ...sourceProject,
+      id: crypto.randomUUID(),
+      userId: authStore.authUser.id,
+      title: `${sourceProject.title} (Clone)`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as ProjectT
+
+    const result = await addProject(clonedProject)
+    if (!result.data) return
+
+    const project = result.data as ProjectT
+    await this.loadUserProjects()
+    return project
+  }
 }
 
 const dashboardStore = new DashboardStore()

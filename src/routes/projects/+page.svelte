@@ -15,6 +15,7 @@
 	import Box from '$lib/components/ui/box.svelte'
 	import ProjectCard from '$lib/components/ProjectCard.svelte'
 	import ProjectsBrowserBar from '$lib/components/ProjectsBrowserBar.svelte'
+	import dashboardStore from '$lib/stores/dashboard.svelte'
 
 	dayjs.extend(relativeTime)
 
@@ -93,6 +94,13 @@
 		loadPublicProjects(options)
 	}
 
+	const handleCloneProject = async (projectId: string) => {
+		const clonedProject = await dashboardStore.cloneProject(projectId)
+		if (clonedProject) {
+			goto(`/project/${clonedProject.id}`)
+		}
+	}
+
 	$effect(() => {
 		loadPublicProjects()
 	})
@@ -121,7 +129,12 @@
 		{:else}
 			<div class="projects-grid" in:fade>
 				{#each projects as project (project.id)}
-					<ProjectCard {project} daysAgo={daysAgo(project.updatedAt)} onOpenProject={handleOpenProject} />
+					<ProjectCard
+						{project}
+						daysAgo={daysAgo(project.updatedAt)}
+						onOpenProject={handleOpenProject}
+						onCloneProject={handleCloneProject}
+					/>
 				{/each}
 			</div>
 		{/if}

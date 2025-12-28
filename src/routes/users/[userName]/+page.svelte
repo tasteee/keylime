@@ -11,6 +11,7 @@
 	import Box from '$lib/components/ui/box.svelte'
 	import dayjs from 'dayjs'
 	import relativeTime from 'dayjs/plugin/relativeTime'
+	import dashboardStore from '$lib/stores/dashboard.svelte'
 
 	dayjs.extend(relativeTime)
 
@@ -86,6 +87,13 @@
 		return authStore.userProfile?.userName === props.data.userName
 	})
 
+	const handleCloneProject = async (projectId: string) => {
+		const clonedProject = await dashboardStore.cloneProject(projectId)
+		if (clonedProject) {
+			goto(`/project/${clonedProject.id}`)
+		}
+	}
+
 	$effect(() => {
 		loadUserProfile()
 	})
@@ -139,7 +147,12 @@
 				{:else}
 					<div class="projects-grid">
 						{#each projects as project (project.id)}
-							<ProjectCard {project} daysAgo={daysAgo(project.updatedAt)} onOpenProject={handleOpenProject} />
+							<ProjectCard
+								{project}
+								daysAgo={daysAgo(project.updatedAt)}
+								onOpenProject={handleOpenProject}
+								onCloneProject={handleCloneProject}
+							/>
 						{/each}
 					</div>
 				{/if}

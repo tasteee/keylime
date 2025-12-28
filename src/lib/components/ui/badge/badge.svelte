@@ -125,6 +125,7 @@
 		border-style: solid;
 		border-color: transparent;
 		line-height: 1;
+		padding-bottom: 1px;
 	}
 
 	.keyBadge.isRound {

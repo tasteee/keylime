@@ -5,6 +5,7 @@
 	import 'overlayscrollbars/overlayscrollbars.css'
 	import '../app.css'
 	import '../lib/styles/shared.css'
+	import '../lib/styles/animations.css'
 
 	import { OverlayScrollbars, ClickScrollPlugin } from 'overlayscrollbars'
 	import { ModeWatcher } from 'mode-watcher'

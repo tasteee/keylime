@@ -5,14 +5,15 @@
 	import projectStore from '$lib/stores/project.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
 	import Icon from '@iconify/svelte'
-	import { exportPerformanceAsMidi } from '$lib/helpers/midiExport'
+	import { exportPerformanceAsMidi, exportChordsAsMidi } from '$lib/helpers/midiExport'
 	import { toFractionString } from '$lib/helpers/numbers'
-	import { DownloadSimple, Plus } from 'phosphor-svelte'
+	import { DownloadSimple, Plus, MagnifyingGlassPlus, MagnifyingGlassMinus } from 'phosphor-svelte'
 	import { Button } from '../ui/button'
 	import BottomBar from './BottomBar.svelte'
 	import Divider from '../ui/divider.svelte'
 	import Box from '$lib/components/ui/box.svelte'
 	import mainStore from '$lib/stores/main.svelte'
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
 
 	let isDraggingItem = $state(false)
 	let draggedItemId: string | null = $state(null)
@@ -27,6 +28,7 @@
 	let itemAreaElement: HTMLElement | null = $state(null)
 	let ghostItemMouseX = $state(0)
 	let ghostItemMouseY = $state(0)
+	let isDownloadPopoverOpen = $state(false)
 
 	let cursorElement: HTMLElement | null = $state(null)
 	let animationFrameId: number
@@ -138,9 +140,11 @@
 	const DRAG_THRESHOLD_PIXELS = 24
 	const MIN_DURATION_BEATS = 1 // Minimum item duration (1 beat)
 	const RESIZE_INCREMENT_BEATS = 0.5 // Snap to 0.5 beats when resizing
-	const PIXELS_PER_BEAT = 82 // Fixed width per beat for consistent sizing
 	const GAP_BETWEEN_ITEMS = 1 // Gap in pixels between items
 	const MAX_MARKER_BARS = 64 // Render markers up to this many bars
+
+	// Derived: PIXELS_PER_BEAT from store
+	const PIXELS_PER_BEAT = $derived(projectStore.progressionZoomLevel)
 
 	// Derived: total duration is sum of all item durations
 	const totalBeats = $derived.by(() => {
@@ -345,16 +349,47 @@
 	}
 
 	const handleDownloadMidi = () => {
-		exportPerformanceAsMidi({
-			performance: playbackStore.currentPerformance,
-			bpm: projectStore.bpm,
-			key: projectStore.key,
-			scale: projectStore.scale
-		})
+		const project = projectStore.getProjectDocumentData()
+		// Use derived progressionChords with calculated startTimes
+		const projectWithStartTimes = {
+			...project,
+			progressionChords: projectStore.progressionChords
+		}
+		exportPerformanceAsMidi(projectWithStartTimes)
+		isDownloadPopoverOpen = false
+	}
+
+	const handleDownloadChords = () => {
+		const project = projectStore.getProjectDocumentData()
+		// Use derived progressionChords with calculated startTimes
+		const projectWithStartTimes = {
+			...project,
+			progressionChords: projectStore.progressionChords
+		}
+		exportChordsAsMidi(projectWithStartTimes)
+		isDownloadPopoverOpen = false
 	}
 
 	const toggleFollow = () => {
 		isFollowEnabled = !isFollowEnabled
+	}
+
+	const zoomIn = () => {
+		const MIN_PIXELS_PER_BEAT = 40
+		const MAX_PIXELS_PER_BEAT = 160
+		const ZOOM_INCREMENT = 12
+		const newValue = Math.min(MAX_PIXELS_PER_BEAT, projectStore.progressionZoomLevel + ZOOM_INCREMENT)
+		projectStore.progressionZoomLevel = newValue
+		projectStore.markDirty()
+	}
+
+	const zoomOut = () => {
+		const MIN_PIXELS_PER_BEAT = 40
+		const MAX_PIXELS_PER_BEAT = 160
+		const ZOOM_INCREMENT = 12
+		const newValue = Math.max(MIN_PIXELS_PER_BEAT, projectStore.progressionZoomLevel - ZOOM_INCREMENT)
+		projectStore.progressionZoomLevel = newValue
+		projectStore.markDirty()
 	}
 </script>
 
@@ -383,10 +418,22 @@
 		<Divider margin="24px" />
 
 		<Box gap="16px" align="center">
-			<Button size="small" onclick={handleDownloadMidi}>
-				<DownloadSimple size={16} weight="bold" />
-				<span>Download</span>
-			</Button>
+			<DropdownMenu.Root bind:open={isDownloadPopoverOpen}>
+				<DropdownMenu.Trigger>
+					<Button size="small">
+						<DownloadSimple size={16} weight="bold" />
+						<span>Download</span>
+					</Button>
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content class="w-48">
+					<DropdownMenu.Item onclick={handleDownloadChords}>
+						<span>Chords</span>
+					</DropdownMenu.Item>
+					<DropdownMenu.Item onclick={handleDownloadMidi}>
+						<span>Performance</span>
+					</DropdownMenu.Item>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
 
 			<Button size="small" onclick={handleAddRest}>
 				<Plus size={16} weight="bold" />
@@ -401,6 +448,17 @@
 			>
 				<Icon icon="mingcute:arrow-right-line" width="16px" height="16px" />
 				<span>Follow</span>
+			</Button>
+		</Box>
+
+		<Divider margin="24px" />
+
+		<Box gap="8px" align="center">
+			<Button size="small" isIcon={true} onclick={zoomOut}>
+				<MagnifyingGlassMinus size={16} weight="bold" />
+			</Button>
+			<Button size="small" isIcon={true} onclick={zoomIn}>
+				<MagnifyingGlassPlus size={16} weight="bold" />
 			</Button>
 		</Box>
 

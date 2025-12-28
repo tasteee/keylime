@@ -119,6 +119,13 @@
 	const daysAgo = (date: Date) => {
 		return dayjs(date).fromNow()
 	}
+
+	const handleCloneProject = async (projectId: string) => {
+		const clonedProject = await dashboardStore.cloneProject(projectId)
+		if (clonedProject) {
+			goto(`/project/${clonedProject.id}`)
+		}
+	}
 </script>
 
 <div class="dashboard" in:fade>
@@ -140,7 +147,12 @@
 
 		<div class="projects-grid">
 			{#each filteredProjects as project (project.id)}
-				<ProjectCard {project} daysAgo={daysAgo(project.updatedAt)} onOpenProject={handleOpenProject} />
+				<ProjectCard
+					{project}
+					daysAgo={daysAgo(project.updatedAt)}
+					onOpenProject={handleOpenProject}
+					onCloneProject={handleCloneProject}
+				/>
 			{/each}
 		</div>
 

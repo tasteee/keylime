@@ -22,6 +22,11 @@
 				medium: 'isMediumSize',
 				large: 'isLargeSize'
 			},
+			align: {
+				left: 'isLeftAlign',
+				center: 'isCenterAlign',
+				right: 'isRightAlign'
+			},
 			isIcon: {
 				true: 'isIcon'
 			},
@@ -32,19 +37,22 @@
 		defaultVariants: {
 			kind: 'solid',
 			color: 'neutral',
-			size: 'small'
+			size: 'small',
+			align: 'center'
 		}
 	})
 
 	export type ButtonKind = VariantProps<typeof buttonVariants>['kind']
 	export type ButtonColor = VariantProps<typeof buttonVariants>['color']
 	export type ButtonSize = VariantProps<typeof buttonVariants>['size']
+	export type ButtonAlign = VariantProps<typeof buttonVariants>['align']
 
 	export type ButtonProps = WithElementRef<HTMLButtonAttributes> &
 		WithElementRef<HTMLAnchorAttributes> & {
 			kind?: ButtonKind
 			color?: ButtonColor
 			size?: ButtonSize
+			align?: ButtonAlign
 			isIcon?: boolean
 			isFullWidth?: boolean
 		}
@@ -56,6 +64,7 @@
 		kind = 'solid',
 		color = 'neutral',
 		size = 'small',
+		align = 'center',
 		isIcon = false,
 		isFullWidth = false,
 		ref = $bindable(null),
@@ -71,7 +80,7 @@
 	<a
 		bind:this={ref}
 		data-slot="button"
-		class={cn(buttonVariants({ kind, color, size, isIcon, isFullWidth }), className)}
+		class={cn(buttonVariants({ kind, color, size, align, isIcon, isFullWidth }), className)}
 		{href}
 		{...restProps}
 	>
@@ -81,7 +90,7 @@
 	<button
 		bind:this={ref}
 		data-slot="button"
-		class={cn(buttonVariants({ kind, color, size, isIcon, isFullWidth }), className)}
+		class={cn(buttonVariants({ kind, color, size, align, isIcon, isFullWidth }), className)}
 		{type}
 		{disabled}
 		{...restProps}
@@ -251,6 +260,19 @@
 	.keyActionButton.isFullWidth {
 		width: 100%;
 		flex: 1;
+	}
+
+	/* Alignment */
+	.keyActionButton.isLeftAlign {
+		justify-content: flex-start;
+	}
+
+	.keyActionButton.isCenterAlign {
+		justify-content: center;
+	}
+
+	.keyActionButton.isRightAlign {
+		justify-content: flex-end;
 	}
 
 	/* Kinds & Colors */

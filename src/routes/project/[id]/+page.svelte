@@ -124,7 +124,7 @@
 	onCancel={handleCancel}
 />
 
-<div class="app lightTheme">
+<div class="projectView lightTheme">
 	<TopBar />
 
 	<div class="content">
@@ -170,11 +170,17 @@
 </div>
 
 <style>
-	.app {
+	.projectView {
 		display: flex;
 		flex-direction: column;
 		height: 100%;
 		overflow: hidden;
+		user-select: none;
+	}
+
+	.projectView input,
+	.projectView .selectableText {
+		user-select: text;
 	}
 
 	.content {

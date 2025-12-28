@@ -260,9 +260,13 @@
 
 		<!-- Actions -->
 		<div class="flex-1"></div>
-		{#if hasActiveFilters}
-			<Button onclick={handleClearFilters} kind="ghost" size="large" class="h-8 text-muted-foreground">Clear</Button>
-		{/if}
+		<Button
+			onclick={handleClearFilters}
+			kind="ghost"
+			size="large"
+			class="h-8 text-muted-foreground"
+			disabled={!hasActiveFilters}>Clear</Button
+		>
 		<Button onclick={handleApplyFilters} color="dark" size="large" class="h-8">Apply</Button>
 	</div>
 </Box>

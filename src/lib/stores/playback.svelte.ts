@@ -144,19 +144,17 @@ class PlaybackStore {
 
     // If different project, stop current playback first
     const isDifferentProject = this.currentProjectId !== null && this.currentProjectId !== project.id
-    if (isDifferentProject) {
-      this.stop()
-    }
+    if (isDifferentProject) this.stop()
 
     this.currentProjectId = project.id
 
     // Log what we received
-    console.log('=== PERFORM CALLED ===')
-    console.log('Project ID:', project.id)
-    console.log('Progression Chords:', project.progressionChords)
-    console.log('Pattern Signals:', project.patternSignals)
-    console.log('Pattern Duration Bars:', project.patternDurationBars)
-    console.log('======================')
+    // console.log('=== PERFORM CALLED ===')
+    // console.log('Project ID:', project.id)
+    // console.log('Progression Chords:', project.progressionChords)
+    // console.log('Pattern Signals:', project.patternSignals)
+    // console.log('Pattern Duration Bars:', project.patternDurationBars)
+    // console.log('======================')
 
     // Generate performance from project data
     const patternLengthBeats = project.patternDurationBars * 4
@@ -176,14 +174,14 @@ class PlaybackStore {
     this.currentProgressionDuration = progressionLengthBeats
 
     // Log the full generated performance before playback
-    console.log('=== PERFORMANCE PLAYBACK START ===')
-    console.log('performance', JSON.parse(JSON.stringify(this.currentPerformance)))
-    console.log('from chords:', JSON.parse(JSON.stringify(project.progressionChords)))
-    console.log('and pattern:', JSON.parse(JSON.stringify(project.patternSignals)))
-    console.log('Performance Duration (beats):', this.currentProgressionDuration)
-    console.log('BPM:', this.currentBpm)
-    console.log('Pattern Duration (beats):', patternLengthBeats)
-    console.log('===================================')
+    // console.log('=== PERFORMANCE PLAYBACK START ===')
+    // console.log('performance', JSON.parse(JSON.stringify(this.currentPerformance)))
+    // console.log('from chords:', JSON.parse(JSON.stringify(project.progressionChords)))
+    // console.log('and pattern:', JSON.parse(JSON.stringify(project.patternSignals)))
+    // console.log('Performance Duration (beats):', this.currentProgressionDuration)
+    // console.log('BPM:', this.currentBpm)
+    // console.log('Pattern Duration (beats):', patternLengthBeats)
+    // console.log('===================================')
 
     this.isPlaying = true
     this.currentBeat = 0

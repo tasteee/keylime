@@ -25,7 +25,7 @@
 		{@render restProps.children?.()}
 		<DialogPrimitive.Close
 			class="ring-offset-background focus:ring-ring rounded-sm absolute opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none"
-			style="top: 30px; right: 30px;"
+			style="top: 24px; right: 30px;"
 		>
 			<Icon icon="mingcute:close-line" class="h-6 w-6" />
 			<span class="sr-only">Close</span>

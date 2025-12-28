@@ -6,6 +6,8 @@
 	import Box from '$lib/components/ui/box.svelte'
 	import { FloppyDisk, Download, Gear } from 'phosphor-svelte'
 	import to from 'await-to-ts'
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
+	import { goto } from '$app/navigation'
 
 	let isSettingsOpen = $state(false)
 	let isSaving = $state(false)
@@ -26,6 +28,20 @@
 		if (error) console.error('Failed to save project:', error)
 		isSaving = false
 	}
+
+	const handleSaveClone = async () => {
+		isSaving = true
+		const [error, result] = await to(projectStore.saveClone())
+		if (error) {
+			console.error('Failed to save clone:', error)
+			isSaving = false
+			return
+		}
+		isSaving = false
+		if (result?.projectId) {
+			goto(`/project/${result.projectId}`)
+		}
+	}
 </script>
 
 <Box class="ProjectInfoBar" padding="0 12px" height="48px" align="center" justify="between">
@@ -43,9 +59,23 @@
 			<Gear size={16} />
 		</Button>
 
-		<Button isIcon onclick={handleSave} aria-label="Save Project">
-			<FloppyDisk size={16} />
-		</Button>
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger>
+				<Button isIcon aria-label="Save Options">
+					<FloppyDisk size={16} />
+				</Button>
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content align="end">
+				<DropdownMenu.Item onclick={handleSave}>
+					Save
+					<FloppyDisk size={16} class="mr-2" />
+				</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={handleSaveClone}>
+					Clone & Save
+					<FloppyDisk size={16} class="mr-2" />
+				</DropdownMenu.Item>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
 	</Box>
 </Box>
 
