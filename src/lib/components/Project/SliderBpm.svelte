@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { Slider } from '$lib/components/ui/slider/index.js'
-	import projectStore from '$lib/stores/project.svelte'
+	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 
-	const value = $derived(projectStore.bpm)
+	const projectEditor = useProjectEditor()
+	const value = $derived(projectEditor.state.project.bpm)
 
 	const handleValueChange = (bpmValue: number) => {
 		if (bpmValue !== undefined) {
-			projectStore.bpm = bpmValue
-			projectStore.markDirty()
+			projectEditor.updateProject({ bpm: bpmValue })
 		}
 	}
 </script>

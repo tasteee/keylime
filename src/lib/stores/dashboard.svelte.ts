@@ -1,6 +1,8 @@
 import { SIGNAL_ROWS } from '$lib/constants/signalRows'
 import { addProject, deleteProjectById, getProjectsByUserId } from '$lib/modules/database'
+import { createNewProjectData, getFreshPatternSignalRows } from '$lib/modules/projects'
 import { authStore } from './auth.svelte'
+import { calculateStartTimes } from '$lib/helpers/progression'
 
 class DashboardStore {
   userProjects = $state<ProjectT[]>([])
@@ -28,15 +30,7 @@ class DashboardStore {
         : project.progressionChords
 
       // Calculate startTime for each chord based on cumulative durations
-      let accumulatedStartTime = 0
-      const progressionChordsWithStartTime = parsedProgressionChords.map((chord: ProgressionChordT) => {
-        const startTime = accumulatedStartTime
-        accumulatedStartTime += chord.durationBeats
-        return {
-          ...chord,
-          startTime
-        }
-      })
+      const progressionChordsWithStartTime = calculateStartTimes({ items: parsedProgressionChords })
 
       return {
         ...project,
@@ -63,26 +57,9 @@ class DashboardStore {
 
   createUserProject = async () => {
     if (!authStore.authUser) return
-
-    const newProject = {
-      userId: authStore.authUser.id,
-      title: 'New Project',
-      description: '',
-      bpm: 124,
-      key: 'C',
-      scale: 'Major',
-      octave: 3,
-      minVelocity: 70,
-      maxVelocity: 80,
-      patternDurationBars: 1,
-      isPublic: false,
-      progressionChords: [],
-      chordSymbols: [],
-      patternSignals: [],
-      patternSignalRows: JSON.parse(JSON.stringify(SIGNAL_ROWS))
-    } as unknown as ProjectT
-
-    const result = await addProject(newProject)
+    const userId = authStore.authUser.id
+    const newProjectData = createNewProjectData(userId)
+    const result = await addProject(newProjectData)
     if (!result.data) return
     const project = result.data as ProjectT
     this.loadUserProjects()

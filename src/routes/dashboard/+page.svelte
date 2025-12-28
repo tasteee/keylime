@@ -4,12 +4,10 @@
 	import dashboardStore from '$lib/stores/dashboard.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
-	import { Trash } from 'phosphor-svelte'
-	import { fade, fly } from 'svelte/transition'
+	import { fade } from 'svelte/transition'
 	import { browser } from '$app/environment'
 	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
 	import ConfirmDeleteDialog from '$lib/components/Dashboard/ConfirmDeleteDialog.svelte'
-	import { Badge } from '$lib/components/ui/badge'
 	import Box from '$lib/components/ui/box.svelte'
 	import ProjectCard from '$lib/components/ProjectCard.svelte'
 	import dayjs from 'dayjs'
@@ -29,9 +27,29 @@
 		chordSymbols: [] as string[]
 	})
 
+	// Redirect if not authenticated
+	$effect(() => {
+		console.log('[dashboard] Auth check effect:', {
+			browser,
+			isLoading: authStore.isLoading,
+			hasAuthUser: !!authStore.authUser,
+			userId: authStore.authUser?.id
+		})
+		if (browser && !authStore.isLoading && !authStore.authUser) {
+			console.log('[dashboard] No auth user, redirecting to /auth/login')
+			goto('/auth/login')
+		}
+	})
+
 	// Load projects when dashboard mounts.
 	$effect(() => {
+		console.log('[dashboard] Load projects effect:', {
+			browser,
+			hasAuthUser: !!authStore.authUser,
+			userId: authStore.authUser?.id
+		})
 		if (browser && authStore.authUser) {
+			console.log('[dashboard] Loading user projects')
 			dashboardStore.loadUserProjects()
 		}
 	})

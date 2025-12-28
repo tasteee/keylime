@@ -1,16 +1,12 @@
 import { browser } from '$app/environment'
-import { goto } from '$app/navigation'
+import { goto, invalidateAll } from '$app/navigation'
 import { getUserById } from '$lib/modules/database'
+import { asCleanAsync, cleanAsync } from '$lib/modules/promises'
 import { warnWhen } from '$lib/modules/warnWhen'
 import { createSupabaseClient } from '$lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
-type SignUpArgsT = {
-  email: string
-  password: string
-}
-
-type SignInArgsT = {
+type AuthOptionsT = {
   email: string
   password: string
 }
@@ -40,7 +36,6 @@ class AuthStore {
   userProfile = $state<UserT | null>(null)
   isLoading = $state(true)
   error = $state<string | null>(null)
-
   isAuthenticated = $derived(!!this.authUser)
 
   constructor() {
@@ -50,10 +45,14 @@ class AuthStore {
   loadUserProfile = async () => {
     // If there is no auth user,
     // clear the profile and return.
+    console.log('loadUserProfile called', JSON.stringify(this.authUser))
     if (!this.authUser) {
+      console.log('No auth user, clearing user profile and returning...')
       this.userProfile = null
       return
-    } const userId = this.authUser!.id
+    }
+
+    const userId = this.authUser!.id
     const result = await getUserById(userId)
 
     if (result.error) {
@@ -76,30 +75,46 @@ class AuthStore {
   }
 
   initialize = async () => {
+    console.log('[auth.store] Initializing auth store')
     const supabase = createSupabaseClient()
     const userResponse = await supabase.auth.getUser()
     const initialUser = userResponse.data.user
 
+    console.log('[auth.store] Initial user:', { userId: initialUser?.id, email: initialUser?.email })
     this.authUser = initialUser
 
     const hasInitialUser = !!initialUser
     if (hasInitialUser) await this.loadUserProfile()
 
     this.isLoading = false
+    console.log('[auth.store] Auth store initialized, isLoading=false')
 
-    const handleAuthStateChange = async (event: string, session: any) => {
-      const userResponse = await supabase.auth.getUser()
-      const authenticatedUser = userResponse.data.user
-      this.authUser = authenticatedUser
-      const hasAuthenticatedUser = !!authenticatedUser
-      if (hasAuthenticatedUser) return await this.loadUserProfile()
-      this.userProfile = null
-    }
-
-    supabase.auth.onAuthStateChange(handleAuthStateChange)
+    supabase.auth.onAuthStateChange(this.handleAuthStateChange)
   }
 
-  signUp = async (args: SignUpArgsT): Promise<AuthResultT> => {
+  handleAuthStateChange = async (event: string, session: any) => {
+    console.log('[auth.store] Auth state changed:', { event, userId: session?.user?.id })
+
+    if (event === 'SIGNED_OUT') {
+      console.log('[auth.store] Handling SIGNED_OUT event')
+      await invalidateAll()
+      goto('/auth/login')
+      return
+    }
+
+    const supabase = createSupabaseClient()
+    const userResponse = await supabase.auth.getUser()
+    const authenticatedUser = userResponse.data.user
+    console.log('[auth.store] Updated auth user:', { userId: authenticatedUser?.id, email: authenticatedUser?.email })
+    this.authUser = authenticatedUser
+    const hasAuthenticatedUser = !!authenticatedUser
+    if (hasAuthenticatedUser) return await this.loadUserProfile()
+    console.log('[auth.store] Clearing user profile (no authenticated user)')
+    this.userProfile = null
+  }
+
+  signUp = async (args: AuthOptionsT): Promise<AuthResultT> => {
+    console.log('[auth.store] signUp called for:', args.email)
     this.error = null
     const supabase = createSupabaseClient()
 
@@ -108,9 +123,16 @@ class AuthStore {
       password: args.password
     })
 
+    console.log('[auth.store] signUp response:', {
+      hasError: !!signUpResponse.error,
+      userId: signUpResponse.data.user?.id,
+      email: signUpResponse.data.user?.email
+    })
+
     const hasSignUpError = !!signUpResponse.error
     if (hasSignUpError) {
       const errorMessage = signUpResponse.error.message
+      console.log('[auth.store] signUp error:', errorMessage)
       this.error = errorMessage
       return { success: false, error: errorMessage }
     }
@@ -119,10 +141,12 @@ class AuthStore {
     const hasNoUser = !signedUpUser
     if (hasNoUser) {
       const errorMessage = 'No user returned from signup'
+      console.log('[auth.store] signUp error:', errorMessage)
       this.error = errorMessage
       return { success: false, error: errorMessage }
     }
 
+    console.log('[auth.store] Creating user profile for userId:', signedUpUser.id)
     const createProfileResult = await this.createUserProfile({
       userId: signedUpUser.id,
       userName: args.email,
@@ -132,23 +156,26 @@ class AuthStore {
     const hasProfileError = !createProfileResult.success
     if (hasProfileError) {
       const errorMessage = createProfileResult.error || 'Failed to create user profile'
+      console.log('[auth.store] Profile creation error:', errorMessage)
       this.error = errorMessage
       return { success: false, error: errorMessage }
     }
 
+    console.log('[auth.store] Setting authUser and loading profile')
     this.authUser = signedUpUser
     await this.loadUserProfile()
+    console.log('[auth.store] signUp complete, returning success')
     return { success: true, user: signedUpUser }
   }
 
   createUserProfile = async (args: CreateUserProfileArgsT): Promise<AuthResultT> => {
     const supabase = createSupabaseClient()
 
-    const insertResponse = await supabase.from('all_users').insert({
+    const insertResponse = await supabase.from('all_users').insert([{
       id: args.userId,
       userName: args.userName,
       bio: args.bio
-    })
+    }] as any) // TODO: FIX this type
 
     const hasInsertError = !!insertResponse.error
     if (hasInsertError) {
@@ -159,53 +186,68 @@ class AuthStore {
     return { success: true }
   }
 
-  signIn = async (args: SignInArgsT): Promise<AuthResultT> => {
+  signIn = async (args: AuthOptionsT): Promise<AuthResultT> => {
+    console.log('[auth.store] signIn called for:', args.email)
+    console.log('[auth.store] Current authUser before signIn:', { userId: this.authUser?.id })
     this.error = null
     const supabase = createSupabaseClient()
-    console.log('Supabase', supabase)
+    console.log('[auth.store] Cookies before signIn:', document.cookie)
 
     const signInResponse = await supabase.auth.signInWithPassword({
       email: args.email,
       password: args.password
     })
 
+    console.log('[auth.store] signIn response:', {
+      hasError: !!signInResponse.error,
+      userId: signInResponse.data.user?.id,
+      email: signInResponse.data.user?.email,
+      hasSession: !!signInResponse.data.session
+    })
+    console.log('[auth.store] Cookies after signIn:', document.cookie)
+
     const hasSignInError = !!signInResponse.error
+
     if (hasSignInError) {
+      console.error('[auth.store] Sign-in error:', signInResponse.error.message)
       const errorMessage = signInResponse.error.message
       this.error = errorMessage
       return { success: false, error: errorMessage }
     }
 
     const signedInUser = signInResponse.data.user
+    console.log('[auth.store] Setting authUser to:', { userId: signedInUser?.id })
     this.authUser = signedInUser
     const hasSignedInUser = !!signedInUser
-    if (hasSignedInUser) await this.loadUserProfile()
+    if (hasSignedInUser) {
+      console.log('[auth.store] Loading user profile')
+      await this.loadUserProfile()
+    }
+    console.log('[auth.store] signIn complete, returning success')
     return { success: true, user: signedInUser }
   }
 
-  signOut = async (): Promise<AuthResultT> => {
-    console.log('signOut method called')
+
+  signOut = cleanAsync(async () => {
     this.error = null
+    const supabase = createSupabaseClient()
+    console.log('[auth.store] signOut')
+    console.log('[auth.store] Cookies before signOut:', document.cookie)
+    const signOutResponse = await supabase.auth.signOut()
+    console.log('[auth.store] Sign out response:', { error: signOutResponse.error })
+    console.log('[auth.store] Cookies after signOut:', document.cookie)
 
-    try {
-      const supabase = createSupabaseClient()
-      console.log('Calling supabase.auth.signOut()')
-
-      // Don't await - just fire and forget
-      supabase.auth.signOut().then((response) => {
-        console.log('Sign out response received:', response)
-      })
-
-      console.log('Clearing auth state immediately')
-      this.authUser = null
-      this.userProfile = null
-      console.log('Auth state cleared, returning success')
-      return { success: true }
-    } catch (error) {
-      console.error('Exception during signOut:', error)
-      return { success: false, error: String(error) }
+    if (signOutResponse.error) {
+      const errorMessage = signOutResponse.error.message
+      console.log('[auth.store] Sign out error:', errorMessage)
+      throw new Error(errorMessage)
     }
-  }
+
+    await invalidateAll()
+    goto('/auth/login')
+    return { didSucceed: true }
+
+  })
 
   resetPassword = async (args: ResetPasswordArgsT): Promise<AuthResultT> => {
     this.error = null

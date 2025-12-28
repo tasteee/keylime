@@ -4,8 +4,21 @@ import memoize from 'just-memoize';
 
 export const createSupabaseClient = memoize(() => {
   if (!isBrowser()) throw new Error('createSupabaseClient should only be called in the browser')
-  const client = createBrowserClient<DatabaseT>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)
-  console.log('Creating Supabase Browser Client', client)
+  console.log('[supabase.client] Creating new Supabase Browser Client')
+  const client = createBrowserClient<DatabaseT>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+    cookies: {
+      get(name: string) {
+        const value = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || ''
+        return value
+      },
+      set(name: string, value: string, options: any) {
+        document.cookie = `${name}=${value}; path=${options?.path || '/'}; ${options?.maxAge ? `max-age=${options.maxAge};` : ''} ${options?.sameSite ? `samesite=${options.sameSite};` : ''}`
+      },
+      remove(name: string, options: any) {
+        document.cookie = `${name}=; path=${options?.path || '/'}; max-age=0`
+      }
+    }
+  })
   return client
 })
 

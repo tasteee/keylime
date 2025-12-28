@@ -25,12 +25,12 @@ const createDebugLog = (args: {
   performance: PerformanceNoteT[]
 }) => {
   const lines: string[] = []
-  
+
   lines.push('='.repeat(60))
   lines.push('MIDI EXPORT DEBUG LOG')
   lines.push('='.repeat(60))
   lines.push('')
-  
+
   // Project info
   lines.push('INPUT PROJECT:')
   lines.push(`- BPM: ${args.project.bpm}`)
@@ -38,7 +38,7 @@ const createDebugLog = (args: {
   lines.push(`- Key: ${args.project.key}`)
   lines.push(`- Scale: ${args.project.scale}`)
   lines.push('')
-  
+
   // Progression info
   lines.push(`INPUT PROGRESSION (duration: ${args.progressionLengthBeats} beats = ${args.progressionLengthBeats / 4} bars):`)
   args.project.progressionChords.forEach((chord, chordIndex) => {
@@ -47,7 +47,7 @@ const createDebugLog = (args: {
     lines.push(`- [${chordIndex}] ${chord.symbol}, start: ${startTime}b, duration: ${chord.durationBeats}b, notes: ${notes.join(' ')}`)
   })
   lines.push('')
-  
+
   // Pattern info with signal row mapping
   const getSignalRowForSignal = (signalId: string): SignalRowT | null => {
     const rowEntries = Object.entries(args.project.patternSignalRows)
@@ -55,26 +55,26 @@ const createDebugLog = (args: {
     if (!foundEntry) return null
     return foundEntry[1]
   }
-  
+
   lines.push(`INPUT PATTERN (duration: ${args.patternLengthBeats} beats = ${args.patternLengthBeats / 4} bars):`)
   const sortedSignals = [...args.project.patternSignals].sort((signalA, signalB) => signalA.startTime - signalB.startTime)
   sortedSignals.forEach((signal, signalIndex) => {
     const signalRow = getSignalRowForSignal(signal.id)
     const rowLabel = signalRow?.label ?? 'UNKNOWN'
     const rowNoteIndex = signalRow?.index ?? '?'
-    const octaveDisplay = signal.octaveOffset === 0 
-      ? '' 
-      : signal.octaveOffset > 0 
-        ? `+${signal.octaveOffset}` 
+    const octaveDisplay = signal.octaveOffset === 0
+      ? ''
+      : signal.octaveOffset > 0
+        ? `+${signal.octaveOffset}`
         : signal.octaveOffset.toString()
     lines.push(`- [${signalIndex}] ${rowLabel}${octaveDisplay} (row noteIndex: ${rowNoteIndex}), start: ${signal.startTime}b, duration: ${signal.duration}b`)
   })
   lines.push('')
-  
+
   // Calculate expected count
   const numberOfPatternRepeats = Math.ceil(args.progressionLengthBeats / args.patternLengthBeats)
   const expectedNoteCount = args.project.patternSignals.length * numberOfPatternRepeats
-  
+
   // Performance output
   lines.push(`OUTPUT PERFORMANCE (total notes: ${args.performance.length}):`)
   args.performance.forEach((perfNote, noteIndex) => {
@@ -83,21 +83,21 @@ const createDebugLog = (args: {
     const chordIndexInProgression = args.project.progressionChords.findIndex((chord) => chord.id === perfNote.chordId)
     const chordNotes = chord ? chordToNotes({ chord, rootOctave: args.project.octave }) : []
     const chordNotesDisplay = chordNotes.length > 0 ? ` [${chordNotes.join(' ')}]` : ''
-    
+
     const signal = args.project.patternSignals.find((signal) => signal.id === perfNote.signalId)
     const signalRow = signal ? getSignalRowForSignal(signal.id) : null
     const rowLabel = signalRow?.label ?? 'UNKNOWN'
     const rowNoteIndex = signalRow?.index ?? '?'
-    const octaveDisplay = signal?.octaveOffset === 0 
-      ? '' 
-      : signal && signal.octaveOffset > 0 
-        ? `+${signal.octaveOffset}` 
+    const octaveDisplay = signal?.octaveOffset === 0
+      ? ''
+      : signal && signal.octaveOffset > 0
+        ? `+${signal.octaveOffset}`
         : signal?.octaveOffset.toString() ?? ''
-    
+
     lines.push(`- [${noteIndex}] ${perfNote.note} ← chord[${chordIndexInProgression}] ${chordSymbol}${chordNotesDisplay}, from ${rowLabel}${octaveDisplay} (noteIdx ${rowNoteIndex}), time: ${perfNote.startTime}b, dur: ${perfNote.duration}b`)
   })
   lines.push('')
-  
+
   // Summary
   lines.push('SUMMARY:')
   lines.push(`- Pattern repeats: ${numberOfPatternRepeats}x`)
@@ -109,7 +109,7 @@ const createDebugLog = (args: {
   lines.push(`- Difference: ${countDifferenceDisplay}`)
   lines.push('')
   lines.push('='.repeat(60))
-  
+
   const logOutput = lines.join('\n')
   console.log(logOutput)
   return logOutput
@@ -125,7 +125,9 @@ export const exportPerformanceAsMidi = (project: ProjectT) => {
     signalRows: project.patternSignalRows,
     patternLengthBeats,
     progressionLengthBeats,
-    octave: project.octave
+    octave: project.octave,
+    minVelocity: project.minVelocity,
+    maxVelocity: project.maxVelocity
   })
 
   // Generate debug log
@@ -148,7 +150,7 @@ export const exportPerformanceAsMidi = (project: ProjectT) => {
   // Group notes by start time and duration to play simultaneously
   type GroupKeyT = string
   const noteGroups = new Map<GroupKeyT, PerformanceNoteT[]>()
-  
+
   performance.forEach((performanceNote) => {
     const groupKey = `${performanceNote.startTime}_${performanceNote.duration}`
     const existingGroup = noteGroups.get(groupKey)
@@ -171,7 +173,7 @@ export const exportPerformanceAsMidi = (project: ProjectT) => {
     const firstNote = notes[0]
     const startTimeTicks = beatsToTicks(firstNote.startTime)
     const durationTicks = beatsToTicks(firstNote.duration)
-    
+
     const hasSingleNote = notes.length === 1
     if (hasSingleNote) {
       const midiPitch = convertNoteToMidi({ note: firstNote.note })
@@ -222,7 +224,7 @@ export const exportPerformanceAsMidi = (project: ProjectT) => {
 export const exportChordsAsMidi = (project: ProjectT) => {
   const hasNoChords = project.progressionChords.length === 0
   if (hasNoChords) return console.warn('No chords to export')
-  
+
   const track = new MidiWriter.Track()
   track.setTempo(project.bpm)
 

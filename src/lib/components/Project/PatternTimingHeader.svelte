@@ -1,5 +1,5 @@
 <script lang="ts">
-	import projectStore from '$lib/stores/project.svelte'
+	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 
 	const BAR_COUNT = 16
 	const BEATS_PER_BAR = 4
@@ -10,13 +10,15 @@
 
 	let { cellWidth = 32 }: Props = $props()
 
+	const projectEditor = useProjectEditor()
+	const patternDurationBars = $derived(projectEditor.state.project.patternDurationBars)
 	const beatWidth = $derived(cellWidth * 4) // 4 cells per beat
 	const barWidth = $derived(beatWidth * BEATS_PER_BAR)
 
 	let hoveredBarIndex: number | null = $state(null)
 
 	const handleBarClick = (index: number) => {
-		projectStore.patternDurationBars = index + 1
+		projectEditor.updateProject({ patternDurationBars: index + 1 })
 	}
 </script>
 
@@ -26,7 +28,7 @@
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="barMarker"
-			class:inactive={i >= projectStore.patternDurationBars}
+			class:inactive={i >= patternDurationBars}
 			style="width: {barWidth}px"
 			onmouseenter={() => (hoveredBarIndex = i)}
 			onmouseleave={() => (hoveredBarIndex = null)}
@@ -106,7 +108,7 @@
 	.setDurationText {
 		font-size: 12px;
 		font-weight: bold;
-		color: var(--grayscale10);
+		color: var(--n-07);
 	}
 
 	.setDurationText span {

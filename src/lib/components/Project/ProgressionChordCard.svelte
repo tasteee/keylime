@@ -1,9 +1,36 @@
 <script lang="ts">
 	import playbackStore from '$lib/stores/playback.svelte'
-	import projectStore from '$lib/stores/project.svelte'
 	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
 	import Icon from '@iconify/svelte'
 	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
+	import { getContext } from 'svelte'
+
+	type ProjectEditorContextT = {
+		state: {
+			project: ProjectT
+			isLoading: boolean
+			isSaving: boolean
+			isDirty: boolean
+			cleanProjectSnapshot: string
+			activeView: 'chords' | 'pattern'
+			selectedProgressionItemId: string | null
+		}
+		updateProject: (updates: Partial<ProjectT>) => void
+		updateProgressionItem: (updatedItem: Partial<ProgressionItemT>) => void
+		addProgressionChord: (chord: ChordT) => void
+		addProgressionRest: () => void
+		removeProgressionItem: (id: string) => void
+		duplicateProgressionItem: (id: string) => void
+		reorderProgressionItem: (args: { itemId: string; newIndex: number }) => void
+		selectProgressionItem: (id: string | null) => void
+		addPatternSignal: (signal: SignalT) => void
+		updatePatternSignal: (signalId: string, updates: Partial<SignalT>) => void
+		removePatternSignal: (signalId: string) => void
+		movePatternSignalToRow: (args: MoveSignalToRowOptionsT) => void
+		save: () => Promise<{ didSucceed: boolean }>
+		saveClone: () => Promise<{ didSucceed: boolean; newProjectId: string }>
+		checkIsDirty: () => boolean
+	}
 
 	type ProgressionChordCardPropsT = {
 		item: ProgressionItemT
@@ -16,9 +43,10 @@
 		onResizeMouseDown: (event: MouseEvent) => void
 	}
 
+	const context = getContext<ProjectEditorContextT>('projectEditor')
 	const props: ProgressionChordCardPropsT = $props()
 	const isRest = $derived(props.item.type === 'rest')
-	const isSelected = $derived(props.item.id === projectStore.selectedProgressionItemId)
+	const isSelected = $derived(props.item.id === context.state.selectedProgressionItemId)
 
 	const width = $derived(`${(props.item.durationBeats ?? 0) * props.pixelsPerBeat + (props.index === 0 ? 0 : 0)}px`)
 
@@ -57,7 +85,7 @@
 
 		// Only play chords, not rests
 		if (props.item.type === 'chord') {
-			playbackStore.playChord(props.item as ProgressionChordT, projectStore.octave)
+			playbackStore.playChord(props.item as ProgressionChordT, context.state.project.octave)
 		}
 	}
 
@@ -72,11 +100,12 @@
 		const isLeftButton = event.button === 0
 		if (!isLeftButton) return
 
-		// Stop playback handled by playChord internally
+		// stopChord(props.item)
 	}
 
 	const onMouseLeave = () => {
-		// Stop playback handled by playChord internally
+		// if mouse is down (currently playing chord),
+		// stopChord(props.item).
 	}
 </script>
 

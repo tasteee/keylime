@@ -14,10 +14,11 @@
 
 	const handleSubmit = async (event: SubmitEvent) => {
 		event.preventDefault()
+		console.log('[login] Form submitted')
 		errorMessage = null
 		isSubmitting = true
 		const result = await authStore.signIn({ email, password })
-		console.log('SIGN IN RESULT:', result)
+		console.log('[login] Sign in result:', result)
 		const hasError = !result.success
 
 		if (hasError) {
@@ -26,8 +27,9 @@
 			return
 		}
 
-		isSubmitting = false
-		goto('/dashboard')
+		console.log('[login] Sign in successful, redirecting to /dashboard')
+		// Force a full page reload to ensure server-side session is synced
+		window.location.href = '/dashboard'
 	}
 </script>
 

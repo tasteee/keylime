@@ -73,8 +73,8 @@ type SignalT = {
 type PerformanceNoteT = {
   id: string
   note: string
-  startTime: number // beats (absolute time in the progression)
-  duration: number // beats
+  startTime: number // ticks (milliseconds - absolute time in the performance)
+  duration: number // ticks (milliseconds)
   velocity: number
   chordId: string
   signalId: string
@@ -92,15 +92,14 @@ type ProjectT = {
   bpm: number
   minVelocity: number
   maxVelocity: number
-  progressionChords: ProgressionChordT[]
+  progressionDurationBars: number // Derived from progressionChords total duration
+  progressionChords: ProgressionItemT[] // Can be chords or rests
   chordSymbols: string[] // e.g., ['Cmaj7', 'Am7', ...] derived from progressionChords.
   patternSignals: SignalT[] // json... right? or array in supabase??
   patternSignalRows: SignalRowsT // json...
   patternDurationBars: number
-  patternZoomLevel: number
-  progressionZoomLevel: number
-  originalProjectId: string | null // The ID of the very first ancestor project in the clone chain
-  cloneAncestorIds: string[] // Array of project IDs in chronological clone order, showing the full clone history
+  patternZoomLevel: number // between 16 - 48, steps of 4. defai;t 32
+  progressionZoomLevel: number // between 40 and 160, steps of 12, default 82
   createdAt: Date
   updatedAt: Date
 }
@@ -180,8 +179,6 @@ type DatabaseAllProjectsTableRowT = {
   patternSignals: JsonT
   patternSignalRows: JsonT
   patternDurationBars: number
-  originalProjectId: string | null
-  cloneAncestorIds: string[]
   createdAt: string
   updatedAt: string
 }

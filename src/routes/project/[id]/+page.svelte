@@ -10,16 +10,17 @@
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { browser } from '$app/environment'
 	import { onMount, onDestroy } from 'svelte'
-	import { page } from '$app/stores'
-	import projectStore from '$lib/stores/project.svelte'
+	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 	import Box from '$lib/components/ui/box.svelte'
 	import { beforeNavigate, goto } from '$app/navigation'
 	import UnsavedChangesDialog from '$lib/components/Project/UnsavedChangesDialog.svelte'
+	import { hmu } from '$lib/modules/hitmeup'
+	import { calculateStartTimes } from '$lib/helpers/progression'
 
-	let currentProjectId = $state<string | null>(null)
-	let isLoading = $derived(
-		projectStore.isLoading || ($page.params.id && $page.params.id !== 'new' && $page.params.id !== projectStore.id)
-	)
+	const projectEditor = useProjectEditor()
+	const project = $derived(projectEditor.state.project)
+	const isLoading = $derived(projectEditor.state.isLoading)
+	const activeView = $derived(projectEditor.state.activeView)
 
 	let showUnsavedDialog = $state(false)
 	let pendingNavigation: { to: string | null } | null = $state(null)
@@ -29,7 +30,7 @@
 		if (isNavigationConfirmed) return
 		if (isLoading) return
 
-		if (projectStore.checkUnsavedChanges()) {
+		if (projectEditor.checkIsDirty()) {
 			cancel()
 			pendingNavigation = { to: to?.url.href || null }
 			showUnsavedDialog = true
@@ -37,7 +38,8 @@
 	})
 
 	const handleConfirmSave = async () => {
-		await projectStore.save()
+		console.log('handleConfirmSave')
+		await projectEditor.save()
 		isNavigationConfirmed = true
 		showUnsavedDialog = false
 		if (pendingNavigation?.to) {
@@ -59,7 +61,7 @@
 	}
 
 	const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-		if (projectStore.checkUnsavedChanges()) {
+		if (projectEditor.checkIsDirty()) {
 			e.preventDefault()
 			e.returnValue = ''
 		}
@@ -80,37 +82,77 @@
 			return
 		}
 
+		// Get active signals (those within pattern duration)
+		const patternActiveDurationBeats = project.patternDurationBars * 4
+		const patternActiveSignals = project.patternSignals.filter((signal) => {
+			return signal.startTime < patternActiveDurationBeats
+		})
+
+		// Calculate startTime for all progression items before passing to playback
+		const progressionWithStartTimes = calculateStartTimes({ items: project.progressionChords })
+
 		await playbackStore.perform({
-			id: projectStore.id,
-			bpm: projectStore.bpm,
-			octave: projectStore.octave,
-			progressionChords: projectStore.progressionChords,
-			patternSignals: projectStore.patternActiveSignals,
-			patternSignalRows: projectStore.patternSignalRows,
-			patternDurationBars: projectStore.patternActiveDurationBeats / 4
+			id: project.id,
+			bpm: project.bpm,
+			octave: project.octave,
+			progressionChords: progressionWithStartTimes,
+			patternSignals: patternActiveSignals,
+			patternSignalRows: project.patternSignalRows,
+			patternDurationBars: patternActiveDurationBeats / 4,
+			minVelocity: project.minVelocity,
+			maxVelocity: project.maxVelocity
 		})
 	}
 
 	$effect(() => {
-		if (!browser) return
-		const projectId = $page.params.id
-
-		if (projectId && projectId !== currentProjectId) {
-			currentProjectId = projectId
-			projectStore.load(projectId)
-		}
+		// Project loading is now handled by ContextFrame
+		// This effect is no longer needed
 	})
 
 	onMount(() => {
 		if (browser) playbackStore.load()
+
+		setTimeout(() => {
+			// Configure
+			hmu.configure({
+				tokens: {
+					brandBlue: '#0066CC'
+				},
+				levels: {
+					error: {
+						labelStyles: { backgroundColor: '$red', color: '$white' }
+					}
+				},
+				presets: {
+					api: {
+						level: 'info',
+						icon: '🌐',
+						prefix: 'API',
+						labelStyles: { backgroundColor: '$brandBlue', color: '$white' }
+					}
+				}
+			})
+
+			// Basic logging
+			hmu.log('Simple message')
+			hmu.error('Something broke!')
+
+			// With chaining
+			hmu.withIcon('🔥').withPrefix('ALERT').error('Critical!')
+
+			// Preset usage
+			hmu.api('Request completed')
+
+			// Chaining with presets
+			hmu.withLabel('v1').api('API ready')
+		}, 27777500)
 	})
 
-	// When we leave project view, stop playback and reset the
-	// project store so that when we return it's fresh.
+	// When we leave project view, stop playback
+	// Project reset is no longer needed since context is route-scoped
 	onDestroy(() => {
 		if (browser) {
 			playbackStore.stop()
-			projectStore.reset()
 		}
 	})
 </script>
@@ -154,11 +196,11 @@
 			<div class="flex h-full w-full flex-col">
 				<ProjectInfoBar />
 
-				{#if projectStore.activeView === 'chords'}
+				{#if activeView === 'chords'}
 					<ChordCardGrid />
 				{/if}
 
-				{#if projectStore.activeView === 'pattern'}
+				{#if activeView === 'pattern'}
 					<PatternEditor />
 				{/if}
 

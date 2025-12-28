@@ -43,20 +43,16 @@
 	}
 
 	const handleSave = async () => {
+		console.log('project settings dialog handleSave')
 		isSaving = true
-
-		try {
-			projectStore.title = localTitle
-			projectStore.description = localDescription
-			projectStore.isPublic = localIsPublic
-			projectStore.markDirty()
-			await projectStore.save()
-			onOpenChange(false)
-		} catch (error) {
-			console.error('Failed to save project:', error)
-		} finally {
-			isSaving = false
-		}
+		projectStore.title = localTitle
+		projectStore.description = localDescription
+		projectStore.isPublic = localIsPublic
+		projectStore.markDirty()
+		const saveResult = await projectStore.save()
+		console.log('project settings dialog result:', saveResult)
+		isSaving = false
+		onOpenChange(false)
 	}
 
 	const handleClose = () => {

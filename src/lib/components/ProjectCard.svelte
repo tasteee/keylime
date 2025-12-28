@@ -6,7 +6,8 @@
 	import Box from '$lib/components/ui/box.svelte'
 	import Button from '$lib/components/ui/button/button.svelte'
 	import { goto } from '$app/navigation'
-	import playbackStore from '$lib/stores/playback.svelte'
+	import { getContext } from 'svelte'
+	import { calculateStartTimes } from '$lib/helpers/progression'
 
 	type ProjectCardPropsT = {
 		project: {
@@ -24,16 +25,30 @@
 			patternSignals: SignalT[]
 			patternSignalRows: SignalRowsT
 			patternDurationBars: number
+			minVelocity: number
+			maxVelocity: number
 		}
 		daysAgo: string
 		onOpenProject: (projectId: string) => void
 		onCloneProject?: (projectId: string) => Promise<void>
 	}
 
+	type PlaybackContextT = {
+		state: {
+			isPlaying: boolean
+			currentProjectId: string | null
+		}
+		perform: (project: any) => Promise<void>
+		stop: () => void
+	}
+
 	const props: ProjectCardPropsT = $props()
+	const playbackContext = getContext<PlaybackContextT>('playback')
 
 	const isOwnedByCurrentUser = $derived(props.project.userId === authStore.authUser?.id)
-	const isPlayingThisProject = $derived(playbackStore.isPlaying && playbackStore.currentProjectId === props.project.id)
+	const isPlayingThisProject = $derived(
+		playbackContext.state.isPlaying && playbackContext.state.currentProjectId === props.project.id
+	)
 
 	const handleClick = () => {
 		props.onOpenProject(props.project.id)
@@ -56,18 +71,23 @@
 
 		const isCurrentlyPlaying = isPlayingThisProject
 		if (isCurrentlyPlaying) {
-			playbackStore.stop()
+			playbackContext.stop()
 			return
 		}
 
-		await playbackStore.perform({
+		// Calculate startTimes for progression chords
+		const progressionWithStartTimes = calculateStartTimes({ items: props.project.progressionChords })
+
+		await playbackContext.perform({
 			id: props.project.id,
 			bpm: props.project.bpm,
 			octave: props.project.octave,
-			progressionChords: props.project.progressionChords,
+			progressionChords: progressionWithStartTimes,
 			patternSignals: props.project.patternSignals,
 			patternSignalRows: props.project.patternSignalRows,
-			patternDurationBars: props.project.patternDurationBars
+			patternDurationBars: props.project.patternDurationBars,
+			minVelocity: props.project.minVelocity,
+			maxVelocity: props.project.maxVelocity
 		})
 	}
 

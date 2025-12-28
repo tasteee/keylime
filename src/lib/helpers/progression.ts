@@ -80,3 +80,19 @@ export const getProgressionTotalDuration = (progressionChords: ProgressionChordT
   if (!progressionChords.length) return 0
   return progressionChords.reduce((total, chord) => total + chord.durationBeats, 0)
 }
+
+type CalculateStartTimesArgsT = {
+  items: ProgressionItemT[]
+}
+
+export const calculateStartTimes = (args: CalculateStartTimesArgsT): ProgressionItemT[] => {
+  let accumulatedTime = 0
+  return args.items.map((item) => {
+    const itemWithStartTime = {
+      ...item,
+      startTime: accumulatedTime
+    }
+    accumulatedTime += item.durationBeats
+    return itemWithStartTime
+  })
+}

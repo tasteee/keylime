@@ -8,7 +8,6 @@
 	import Badge from '$lib/components/ui/badge/badge.svelte'
 	import Box from '$lib/components/ui/box.svelte'
 	import Icon from '@iconify/svelte'
-	import Label from './ui/label/label.svelte'
 	import chordsByScale from '$lib/constants/chordsByScale.json'
 	import Divider from './ui/divider.svelte'
 

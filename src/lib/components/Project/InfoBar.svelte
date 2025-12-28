@@ -1,10 +1,9 @@
 <script lang="ts">
-	import projectStore from '$lib/stores/project.svelte'
+	// const projectEditor = useProjectEditor()
+	// const infoText = $derived(projectEditor.state.project.infoText || 'Welcome to Keylime! Start by adding chords to your progression.')
 </script>
 
-<div class="InfoBar">
-	{projectStore.infoText || 'Welcome to Keylime! Start by adding chords to your progression.'}
-</div>
+<div class="InfoBar">Welcome to Keylime! Start by adding chords to your progression.</div>
 
 <style>
 	.InfoBar {

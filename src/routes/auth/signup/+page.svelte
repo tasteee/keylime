@@ -35,7 +35,11 @@
 		if (hasSignUpError) {
 			errorMessage = signUpResult.error || 'Failed to create account'
 			isSubmitting = false
+			return
 		}
+
+		// Force a full page reload to ensure server-side session is synced
+		window.location.href = '/dashboard'
 	}
 </script>
 

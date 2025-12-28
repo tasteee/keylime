@@ -11,10 +11,12 @@ type PerformProjectArgsT = {
   id: string
   bpm: number
   octave: string
-  progressionChords: ProgressionChordT[]
+  progressionChords: ProgressionItemT[]
   patternSignals: SignalT[]
   patternSignalRows: SignalRowsT
   patternDurationBars: number
+  minVelocity: number
+  maxVelocity: number
 }
 
 const getRandomBetween = (args: { min: number; max: number }) => {
@@ -46,9 +48,12 @@ const transposeNote = (args: { note: string; semitones: number }) => {
   return transposedNote
 }
 
-const getProgressionTotalDuration = (progressionChords: ProgressionChordT[]): number => {
-  if (!progressionChords.length) return 0
-  return progressionChords.reduce((total, item) => total + item.durationBeats, 0)
+// stopAll, stopNote, stopChord, playNote, playChord, 
+// updatePerformancePlayback, beginPerformancePlayback, stopPerformancePlayback
+
+const getProgressionTotalDuration = (progressionItems: ProgressionItemT[]): number => {
+  if (!progressionItems.length) return 0
+  return progressionItems.reduce((total, item) => total + item.durationBeats, 0)
 }
 
 class PlaybackStore {
@@ -61,7 +66,6 @@ class PlaybackStore {
   isLoaded = $state(false)
   isPlaying = $state(false)
   currentProjectId = $state<string | null>(null)
-  currentBeat = $state(0)
   loopStartTime = $state(0)
   scheduledNotes = $state(new Map()) as Map<string, ReturnType<typeof setTimeout>>
   activeNoteInstances = $state(new Map()) as Map<string, Set<string>>
@@ -73,9 +77,11 @@ class PlaybackStore {
   currentProgressionDuration = $state(0)
 
   load = async () => {
+    console.log('PlaybackStore: load called', { isLoaded: this.isLoaded, isLoading: this.isLoading })
     if (this.isLoaded) return
     if (this.isLoading) return
     this.isLoading = true
+    console.log('Loading project...')
     if (this.context) await this.context.resume()
     if (!this.context) this.context = new AudioContext()
     const pianoInstance = await new SplendidGrandPiano(this.context).load
@@ -166,7 +172,9 @@ class PlaybackStore {
       signalRows: project.patternSignalRows,
       patternLengthBeats,
       progressionLengthBeats,
-      octave: project.octave
+      octave: project.octave,
+      minVelocity: project.minVelocity,
+      maxVelocity: project.maxVelocity
     })
 
     this.currentBpm = project.bpm
@@ -174,17 +182,17 @@ class PlaybackStore {
     this.currentProgressionDuration = progressionLengthBeats
 
     // Log the full generated performance before playback
-    // console.log('=== PERFORMANCE PLAYBACK START ===')
-    // console.log('performance', JSON.parse(JSON.stringify(this.currentPerformance)))
-    // console.log('from chords:', JSON.parse(JSON.stringify(project.progressionChords)))
-    // console.log('and pattern:', JSON.parse(JSON.stringify(project.patternSignals)))
-    // console.log('Performance Duration (beats):', this.currentProgressionDuration)
-    // console.log('BPM:', this.currentBpm)
-    // console.log('Pattern Duration (beats):', patternLengthBeats)
-    // console.log('===================================')
+    console.log('=== PERFORMANCE PLAYBACK START ===')
+    console.log('Performance notes:', this.currentPerformance.length)
+    console.log('Progression chords:', project.progressionChords.length)
+    console.log('Pattern signals:', project.patternSignals.length)
+    console.log('Performance Duration (beats):', this.currentProgressionDuration)
+    console.log('Pattern Duration (beats):', patternLengthBeats)
+    console.log('BPM:', this.currentBpm)
+    console.log('Expected repeats:', Math.ceil(this.currentProgressionDuration / patternLengthBeats))
+    console.log('===================================')
 
     this.isPlaying = true
-    this.currentBeat = 0
     this.runPlaybackLoop()
   }
 
@@ -206,7 +214,9 @@ class PlaybackStore {
       signalRows: project.patternSignalRows,
       patternLengthBeats,
       progressionLengthBeats,
-      octave: project.octave
+      octave: project.octave,
+      minVelocity: project.minVelocity,
+      maxVelocity: project.maxVelocity
     })
 
     this.currentBpm = project.bpm
@@ -217,7 +227,6 @@ class PlaybackStore {
   // Stop playback and clear in-memory performance
   stop = () => {
     this.isPlaying = false
-    this.currentBeat = 0
     this.currentProjectId = null
     this.currentPerformance = []
     this.currentBpm = 120
@@ -316,7 +325,6 @@ class PlaybackStore {
     const loopDurationMs = this.currentProgressionDuration * msPerBeat
     const loopTimeoutId = setTimeout(() => {
       if (!this.isPlaying) return
-      this.currentBeat = 0
       this.runPlaybackLoop()
     }, loopDurationMs)
 

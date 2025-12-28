@@ -8,7 +8,7 @@
 	<NavigationMenu.Root>
 		<NavigationMenu.List>
 			<NavigationMenu.Item>
-				<NavigationMenu.Link href="/" class={navigationMenuTriggerStyle()}>Home</NavigationMenu.Link>
+				<NavigationMenu.Link href="/dashboard" class={navigationMenuTriggerStyle()}>Home</NavigationMenu.Link>
 			</NavigationMenu.Item>
 			<NavigationMenu.Item>
 				<NavigationMenu.Link href="/projects" class={navigationMenuTriggerStyle()}>Projects</NavigationMenu.Link>

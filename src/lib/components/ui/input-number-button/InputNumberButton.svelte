@@ -77,7 +77,17 @@
 
 	let isEditing = $state(false)
 	let inputElement = $state<HTMLInputElement | null>(null)
-	let tempValue = $state(value.toString())
+	let tempValue = $state(value?.toString() ?? '')
+
+	// if value is defaulted at first, and then project data arrives
+	// to fill it, we need to update tempValue accordingly...
+	// BUT,
+
+	$effect(() => {
+		if (!isEditing) {
+			tempValue = value?.toString() ?? ''
+		}
+	})
 
 	const minNumber = $derived(typeof min === 'string' ? parseFloat(min) : min)
 	const maxNumber = $derived(typeof max === 'string' ? parseFloat(max) : max)
@@ -85,7 +95,7 @@
 	const handleButtonClick = () => {
 		if (isDisabled) return
 		isEditing = true
-		tempValue = value.toString()
+		tempValue = value?.toString() ?? ''
 	}
 
 	const commitValue = () => {
@@ -95,7 +105,7 @@
 		const isValidNumber = !isNaN(parsedValue)
 
 		if (!isValidNumber) {
-			tempValue = value.toString()
+			tempValue = value?.toString() ?? ''
 			isEditing = false
 			return
 		}
@@ -135,7 +145,7 @@
 		const isEscapeKey = event.key === 'Escape'
 		if (isEscapeKey) {
 			event.preventDefault()
-			tempValue = value.toString()
+			tempValue = value?.toString() ?? ''
 			isEditing = false
 			if (inputElement) {
 				inputElement.blur()

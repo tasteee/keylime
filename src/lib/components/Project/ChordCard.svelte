@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
-	import projectStore from '$lib/stores/project.svelte'
+	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
 	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
@@ -11,7 +11,8 @@
 	}
 
 	const props: ChordCardPropsT = $props()
-
+	const projectEditor = useProjectEditor()
+	const project = $derived(projectEditor.state.project)
 	const isPlaying = $derived(playbackStore.currentlyPlayingChordId === props.chord.id)
 
 	const handleContextMenu = (event: MouseEvent) => {
@@ -32,7 +33,7 @@
 			id: crypto.randomUUID()
 		}
 
-		projectStore.addProgressionChord(chordToAdd)
+		projectEditor.addProgressionChord(chordToAdd)
 	}
 
 	const onMouseDown = (event: MouseEvent) => {
@@ -42,7 +43,7 @@
 		if (!isLeftButton) return
 		event.preventDefault()
 		event.stopPropagation()
-		playbackStore.playChord(props.chord, projectStore.octave)
+		playbackStore.playChord(props.chord, project.octave)
 	}
 
 	const onMouseUp = (event: MouseEvent) => {

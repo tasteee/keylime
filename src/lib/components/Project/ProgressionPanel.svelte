@@ -2,8 +2,6 @@
 	import ProgressionChordCard from './ProgressionChordCard.svelte'
 	import ProgressionSelectionControls from './ProgressionSelectionControls.svelte'
 	import ProgressionTimingMarkers from './ProgressionTimingMarkers.svelte'
-	import projectStore from '$lib/stores/project.svelte'
-	import playbackStore from '$lib/stores/playback.svelte'
 	import Icon from '@iconify/svelte'
 	import { exportPerformanceAsMidi, exportChordsAsMidi } from '$lib/helpers/midiExport'
 	import { toFractionString } from '$lib/helpers/numbers'
@@ -14,6 +12,53 @@
 	import Box from '$lib/components/ui/box.svelte'
 	import mainStore from '$lib/stores/main.svelte'
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
+	import { getContext } from 'svelte'
+	import GENERAL_CONFIG from '$lib/constants/general.json'
+
+	type ProjectEditorContextT = {
+		state: {
+			project: ProjectT
+			isLoading: boolean
+			isSaving: boolean
+			isDirty: boolean
+			cleanProjectSnapshot: string
+			activeView: 'chords' | 'pattern'
+			selectedProgressionItemId: string | null
+		}
+
+		updateProject: (updates: Partial<ProjectT>) => void
+		updateProgressionItem: (updatedItem: Partial<ProgressionItemT>) => void
+		addProgressionChord: (chord: ChordT) => void
+		addProgressionRest: () => void
+		removeProgressionItem: (id: string) => void
+		duplicateProgressionItem: (id: string) => void
+		reorderProgressionItem: (args: { itemId: string; newIndex: number }) => void
+		selectProgressionItem: (id: string | null) => void
+		addPatternSignal: (signal: SignalT) => void
+		updatePatternSignal: (signalId: string, updates: Partial<SignalT>) => void
+		removePatternSignal: (signalId: string) => void
+		movePatternSignalToRow: (args: MoveSignalToRowOptionsT) => void
+		save: () => Promise<{ didSucceed: boolean }>
+		saveClone: () => Promise<{ didSucceed: boolean; newProjectId: string }>
+		checkIsDirty: () => boolean
+	}
+
+	type PlaybackContextT = {
+		state: {
+			isPlaying: boolean
+			currentProjectId: string | null
+			loopStartTime: number
+		}
+		perform: (project: any) => Promise<void>
+		stop: () => void
+	}
+
+	const MIN_PIXELS_PER_BEAT = GENERAL_CONFIG.MIN_PROGRESSION_PIXELS_PER_BEAT
+	const MAX_PIXELS_PER_BEAT = GENERAL_CONFIG.MAX_PROGRESSION_PIXELS_PER_BEAT
+	const ZOOM_INCREMENT = GENERAL_CONFIG.PROGRESSION_ZOOM_INCREMENT
+
+	const context = getContext<ProjectEditorContextT>('projectEditor')
+	const playbackContext = getContext<PlaybackContextT>('playback')
 
 	let isDraggingItem = $state(false)
 	let draggedItemId: string | null = $state(null)
@@ -36,13 +81,37 @@
 	let previousLoopedBeat = $state(0)
 	let previousItemCount = $state(0)
 
+	// Derive progressionItems with calculated startTime from context progressionChords
+	const progressionItems = $derived.by(() => {
+		let accumulatedStartTime = 0
+		return context.state.project.progressionChords.map((item) => {
+			const startTime = accumulatedStartTime
+			accumulatedStartTime += item.durationBeats
+			return { ...item, startTime } as ProgressionItemT
+		})
+	})
+
+	// Derive total duration
+	const getProgressionTotalDuration = (): number => {
+		if (!context.state.project.progressionChords.length) return 0
+		return context.state.project.progressionChords.reduce((total, item) => total + item.durationBeats, 0)
+	}
+
+	// Derive active pattern signals
+	const patternActiveDurationBeats = $derived(context.state.project.patternDurationBars * 4)
+	const patternActiveSignals = $derived.by(() => {
+		return context.state.project.patternSignals.filter((signal) => {
+			return signal.startTime < patternActiveDurationBeats
+		})
+	})
+
 	$effect(() => {
-		const currentItemCount = projectStore.progressionItems.length
+		const currentItemCount = progressionItems.length
 		const hasItemsAdded = currentItemCount > previousItemCount
 
 		if (hasItemsAdded && middleElement) {
-			const selectedItemId = projectStore.selectedProgressionItemId
-			const items = projectStore.progressionItems
+			const selectedItemId = context.state.selectedProgressionItemId
+			const items = progressionItems
 
 			let targetItemIndex = items.length - 1
 
@@ -83,15 +152,15 @@
 	})
 
 	const updateCursor = () => {
-		if (!playbackStore.isPlaying || !cursorElement) return
+		if (!playbackContext.state.isPlaying || !cursorElement) return
 
 		const now = performance.now()
-		const elapsedMs = now - playbackStore.loopStartTime
-		const bpm = projectStore.bpm
+		const elapsedMs = now - playbackContext.state.loopStartTime
+		const bpm = context.state.project.bpm
 		const msPerBeat = 60000 / bpm
 		const currentBeat = elapsedMs / msPerBeat
 
-		const totalDurationBeats = projectStore.getProgressionTotalDuration()
+		const totalDurationBeats = getProgressionTotalDuration()
 		if (totalDurationBeats === 0) return
 
 		const loopedBeat = currentBeat % totalDurationBeats
@@ -120,7 +189,7 @@
 	}
 
 	$effect(() => {
-		if (playbackStore.isPlaying) {
+		if (playbackContext.state.isPlaying) {
 			animationFrameId = requestAnimationFrame(updateCursor)
 		} else {
 			cancelAnimationFrame(animationFrameId)
@@ -129,7 +198,7 @@
 	})
 
 	$effect(() => {
-		console.log('isDraggingItem:', isDraggingItem, 'draggedItemId:', draggedItemId)
+		// console.log('isDraggingItem:', isDraggingItem, 'draggedItemId:', draggedItemId)
 		if (isResizingItem) document.body.style.cursor = 'none !important'
 		// else if (isDraggingItem) document.body.style.cursor = 'grabbing'
 		else document.body.style.cursor = 'default'
@@ -144,16 +213,16 @@
 	const MAX_MARKER_BARS = 64 // Render markers up to this many bars
 
 	// Derived: PIXELS_PER_BEAT from store
-	const PIXELS_PER_BEAT = $derived(projectStore.progressionZoomLevel)
+	const PIXELS_PER_BEAT = $derived(context.state.project.progressionZoomLevel)
 
 	// Derived: total duration is sum of all item durations
 	const totalBeats = $derived.by(() => {
-		return projectStore.getProgressionTotalDuration()
+		return getProgressionTotalDuration()
 	})
 
 	// Derived: item area width in pixels (including gaps)
 	const itemAreaWidth = $derived.by(() => {
-		const numItems = projectStore.progressionItems.length
+		const numItems = progressionItems.length
 		const totalGaps = numItems > 0 ? (numItems - 1) * GAP_BETWEEN_ITEMS : 0
 		return totalBeats * PIXELS_PER_BEAT + totalGaps
 	})
@@ -161,14 +230,14 @@
 	// Derived: ghost item data when dragging
 	const ghostItem = $derived.by(() => {
 		if (!isDraggingItem || !draggedItemId) return null
-		const item = projectStore.progressionItems.find((i) => i.id === draggedItemId)
+		const item = progressionItems.find((i) => i.id === draggedItemId)
 		if (!item) return null
 		return item
 	})
 
 	// Derived: total duration in bars
 	const totalBars = $derived.by(() => {
-		const beats = projectStore.getProgressionTotalDuration()
+		const beats = getProgressionTotalDuration()
 		return Math.round((beats / BEATS_PER_BAR) * 1000) / 1000
 	})
 
@@ -176,12 +245,15 @@
 		// If an input is focused, dont handle keydown for progression items.
 		if (mainStore.isInputFocused) return
 		const isDeleteKey = event.key === 'Delete' || event.key === 'Backspace'
-		if (isDeleteKey) return projectStore.deleteSelectedProgressionItem()
+		if (isDeleteKey && context.state.selectedProgressionItemId) {
+			context.removeProgressionItem(context.state.selectedProgressionItemId)
+			return
+		}
 		const isDuplicateKey = (event.ctrlKey || event.metaKey) && event.key === 'd'
 
-		if (isDuplicateKey) {
+		if (isDuplicateKey && context.state.selectedProgressionItemId) {
 			event.preventDefault()
-			projectStore.duplicateSelectedProgressionItem()
+			context.duplicateProgressionItem(context.state.selectedProgressionItemId)
 		}
 	}
 
@@ -190,7 +262,7 @@
 		const itemElement = target.closest('.progressionItem') as HTMLElement
 		const itemId = itemElement?.dataset.itemId
 		event.stopPropagation()
-		projectStore.selectProgressionItem(itemId || null)
+		context.selectProgressionItem(itemId || null)
 	}
 
 	const handleItemMouseDown = (event: MouseEvent) => {
@@ -203,16 +275,16 @@
 		const itemId = itemElement.dataset.itemId
 		if (!itemId) return console.log('No itemId found on item element')
 
-		const itemIndex = projectStore.progressionItems.findIndex((i) => i.id === itemId)
+		const itemIndex = progressionItems.findIndex((i) => i.id === itemId)
 		if (itemIndex === -1) return
 
-		console.log('Drag started for item:', itemId, 'at index:', itemIndex)
+		// console.log('Drag started for item:', itemId, 'at index:', itemIndex)
 
 		isMouseDownOnItem = true
 		draggedItemId = itemId
 		dragStartX = event.clientX
 		dragStartIndex = itemIndex
-		projectStore.selectProgressionItem(itemId)
+		context.selectProgressionItem(itemId)
 
 		event.stopPropagation()
 		event.preventDefault()
@@ -224,14 +296,14 @@
 		const itemId = itemElement?.dataset.itemId
 		if (!itemId) return
 
-		const item = projectStore.getProgressionItem(itemId)
+		const item = context.state.project.progressionChords.find((i) => i.id === itemId)
 		if (!item) return
 
 		isResizingItem = true
 		resizingItemId = itemId
 		resizeStartX = event.clientX
 		resizeStartDuration = item.durationBeats ?? 0
-		projectStore.selectProgressionItem(itemId)
+		context.selectProgressionItem(itemId)
 
 		event.stopPropagation()
 		event.preventDefault()
@@ -241,14 +313,14 @@
 		if (!itemAreaElement) return
 
 		if (isResizingItem && resizingItemId) {
-			const item = projectStore.getProgressionItem(resizingItemId)
+			const item = context.state.project.progressionChords.find((i) => i.id === resizingItemId)
 			if (!item) return
 
 			const deltaX = event.clientX - resizeStartX
 			const deltaBeats = Math.round(deltaX / PIXELS_PER_BEAT / RESIZE_INCREMENT_BEATS) * RESIZE_INCREMENT_BEATS
 			const newDuration = Math.max(MIN_DURATION_BEATS, resizeStartDuration + deltaBeats)
 
-			projectStore.updateProgressionItem({
+			context.updateProgressionItem({
 				id: resizingItemId,
 				durationBeats: newDuration
 			})
@@ -260,7 +332,7 @@
 			const deltaX = Math.abs(event.clientX - dragStartX)
 			if (deltaX >= DRAG_THRESHOLD_PIXELS) {
 				isDraggingItem = true
-				console.log('Drag threshold reached, isDraggingItem:', isDraggingItem)
+				// console.log('Drag threshold reached, isDraggingItem:', isDraggingItem)
 			}
 		}
 
@@ -272,10 +344,10 @@
 
 		if (!isDraggingItem || !draggedItemId || !itemAreaElement) return
 
-		console.log('Dragging item:', draggedItemId)
+		// console.log('Dragging item:', draggedItemId)
 
 		// Calculate which item position we're hovering over
-		const items = projectStore.progressionItems
+		const items = progressionItems
 		const rect = itemAreaElement.getBoundingClientRect()
 		const mouseX = event.clientX - rect.left
 		const mousePositionBeats = mouseX / PIXELS_PER_BEAT
@@ -295,12 +367,12 @@
 			accumulatedBeats += item.durationBeats
 		}
 
-		console.log('Calculated newIndex:', newIndex, 'dragStartIndex:', dragStartIndex)
+		// console.log('Calculated newIndex:', newIndex, 'dragStartIndex:', dragStartIndex)
 
 		// Reorder the item if needed
 		if (newIndex !== dragStartIndex) {
-			console.log('Reordering item from', dragStartIndex, 'to', newIndex)
-			projectStore.reorderProgressionItem({ itemId: draggedItemId, newIndex })
+			// console.log('Reordering item from', dragStartIndex, 'to', newIndex)
+			context.reorderProgressionItem({ itemId: draggedItemId, newIndex })
 			dragStartIndex = newIndex
 		}
 	}
@@ -317,7 +389,7 @@
 	}
 
 	const handleAddRest = () => {
-		projectStore.addProgressionRest()
+		context.addProgressionRest()
 	}
 
 	const handleMiddleClick = (event: MouseEvent) => {
@@ -331,40 +403,43 @@
 	}
 
 	const togglePlayback = async () => {
-		const isCurrentlyPlaying = playbackStore.isPlaying
+		const isCurrentlyPlaying = playbackContext.state.isPlaying
+
 		if (isCurrentlyPlaying) {
-			playbackStore.stop()
+			playbackContext.stop()
 			return
 		}
 
-		await playbackStore.perform({
-			id: projectStore.id,
-			bpm: projectStore.bpm,
-			octave: projectStore.octave,
-			progressionChords: projectStore.progressionChords,
-			patternSignals: projectStore.patternActiveSignals,
-			patternSignalRows: projectStore.patternSignalRows,
-			patternDurationBars: projectStore.patternActiveDurationBeats / 4
+		playbackContext.perform({
+			id: context.state.project.id,
+			bpm: context.state.project.bpm,
+			octave: context.state.project.octave,
+			progressionChords: progressionItems,
+			patternSignals: patternActiveSignals,
+			patternSignalRows: context.state.project.patternSignalRows,
+			patternDurationBars: patternActiveDurationBeats / 4,
+			minVelocity: context.state.project.minVelocity,
+			maxVelocity: context.state.project.maxVelocity
 		})
 	}
 
 	const handleDownloadMidi = () => {
-		const project = projectStore.getProjectDocumentData()
+		const project = context.state.project
 		// Use derived progressionChords with calculated startTimes
 		const projectWithStartTimes = {
 			...project,
-			progressionChords: projectStore.progressionChords
+			progressionChords: progressionItems
 		}
 		exportPerformanceAsMidi(projectWithStartTimes)
 		isDownloadPopoverOpen = false
 	}
 
 	const handleDownloadChords = () => {
-		const project = projectStore.getProjectDocumentData()
+		const project = context.state.project
 		// Use derived progressionChords with calculated startTimes
 		const projectWithStartTimes = {
 			...project,
-			progressionChords: projectStore.progressionChords
+			progressionChords: progressionItems
 		}
 		exportChordsAsMidi(projectWithStartTimes)
 		isDownloadPopoverOpen = false
@@ -375,21 +450,13 @@
 	}
 
 	const zoomIn = () => {
-		const MIN_PIXELS_PER_BEAT = 40
-		const MAX_PIXELS_PER_BEAT = 160
-		const ZOOM_INCREMENT = 12
-		const newValue = Math.min(MAX_PIXELS_PER_BEAT, projectStore.progressionZoomLevel + ZOOM_INCREMENT)
-		projectStore.progressionZoomLevel = newValue
-		projectStore.markDirty()
+		const newValue = Math.min(MAX_PIXELS_PER_BEAT, context.state.project.progressionZoomLevel + ZOOM_INCREMENT)
+		context.updateProject({ progressionZoomLevel: newValue })
 	}
 
 	const zoomOut = () => {
-		const MIN_PIXELS_PER_BEAT = 40
-		const MAX_PIXELS_PER_BEAT = 160
-		const ZOOM_INCREMENT = 12
-		const newValue = Math.max(MIN_PIXELS_PER_BEAT, projectStore.progressionZoomLevel - ZOOM_INCREMENT)
-		projectStore.progressionZoomLevel = newValue
-		projectStore.markDirty()
+		const newValue = Math.max(MIN_PIXELS_PER_BEAT, context.state.project.progressionZoomLevel - ZOOM_INCREMENT)
+		context.updateProject({ progressionZoomLevel: newValue })
 	}
 </script>
 
@@ -400,7 +467,7 @@
 	<div class="progressionToolbar">
 		<Box gap="16px" align="center">
 			<Button onclick={togglePlayback} size="large" color="neutral" isIcon={true}>
-				{#if playbackStore.isPlaying}
+				{#if playbackContext.state.isPlaying}
 					<Icon icon="mingcute:stop-fill" width="20px" height="20px" />
 				{:else}
 					<Icon icon="mingcute:play-fill" width="20px" height="20px" />
@@ -478,10 +545,10 @@
 					beatsPerBar={BEATS_PER_BAR}
 					maxMarkerBars={MAX_MARKER_BARS}
 				/>
-				{#if playbackStore.isPlaying}
+				{#if playbackContext.state.isPlaying}
 					<div class="playbackCursor" bind:this={cursorElement}></div>
 				{/if}
-				{#each projectStore.progressionItems as item, index (item.id)}
+				{#each progressionItems as item, index (item.id)}
 					<ProgressionChordCard
 						{item}
 						{index}

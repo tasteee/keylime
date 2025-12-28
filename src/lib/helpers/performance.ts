@@ -2,16 +2,16 @@ import { Note } from 'tonal'
 import { getNoteFromSignalRow } from './signalRows'
 import { chordToNotes } from './chordToNotes'
 import { chordNotesToSignalRowNotes } from './chordNotesToSignalRowNotes'
-import outputStore from '$lib/stores/output.svelte'
-import projectStore from '$lib/stores/project.svelte'
 
 type GeneratePerformanceArgsT = {
-  chords: ProgressionChordT[]
+  chords: ProgressionItemT[]
   signals: SignalT[]
   signalRows: SignalRowsT
   patternLengthBeats: number
   progressionLengthBeats: number
   octave: string
+  minVelocity?: number
+  maxVelocity?: number
 }
 
 const getRandomBetween = (args: { min: number; max: number }) => {
@@ -53,18 +53,22 @@ const mapSignalToNote = (args: {
 }
 
 type FindChordAtTimeArgsT = {
-  chords: ProgressionChordT[]
+  chords: ProgressionItemT[]
   absoluteTime: number
 }
 
 const findChordAtTime = (args: FindChordAtTimeArgsT): ProgressionChordT | null => {
-  const foundChord = args.chords.find((chord) => {
-    const chordStart = chord.startTime ?? 0
-    const chordEnd = chordStart + chord.durationBeats
-    const isTimeWithinChord = args.absoluteTime >= chordStart && args.absoluteTime < chordEnd
-    return isTimeWithinChord
+  const foundItem = args.chords.find((item) => {
+    const itemStart = item.startTime ?? 0
+    const itemEnd = itemStart + item.durationBeats
+    const isTimeWithinItem = args.absoluteTime >= itemStart && args.absoluteTime < itemEnd
+    return isTimeWithinItem
   })
-  return foundChord ?? null
+
+  // Return null if it's a rest or if nothing was found
+  // if (!foundItem || foundItem.type === 'rest') return null
+
+  return foundItem as ProgressionChordT
 }
 
 export const generatePerformance = (args: GeneratePerformanceArgsT): PerformanceNoteT[] => {
@@ -87,31 +91,19 @@ export const generatePerformance = (args: GeneratePerformanceArgsT): Performance
 
   for (let repeatIndex = 0; repeatIndex < numberOfPatternRepeats; repeatIndex++) {
     const patternStartOffset = repeatIndex * args.patternLengthBeats
-    console.log(`Repeat ${repeatIndex}, offset: ${patternStartOffset} beats`)
 
     args.signals.forEach((signal) => {
       const signalRow = getSignalRowById({ signalRows: args.signalRows, signalId: signal.id })
-      if (!signalRow) {
-        console.log(`  Signal ${signal.id}: NO ROW FOUND`)
-        return
-      }
+      if (!signalRow) return
 
       const absoluteStartTime = patternStartOffset + signal.startTime
-      console.log(`  Signal ${signal.id} at absolute time ${absoluteStartTime} beats`)
 
       const isSignalBeyondProgression = absoluteStartTime >= args.progressionLengthBeats
-      if (isSignalBeyondProgression) {
-        console.log(`    SKIPPED: beyond progression`)
-        return
-      }
+      if (isSignalBeyondProgression) return
 
       const activeChord = findChordAtTime({ chords: args.chords, absoluteTime: absoluteStartTime })
-      console.log(`    Active chord:`, activeChord?.symbol || 'NONE')
 
-      if (!activeChord) {
-        console.log(`    SKIPPED: no active chord`)
-        return
-      }
+      if (!activeChord) return
 
       // Derive notes from chord at performance generation time
       const chordNotes = chordToNotes({ chord: activeChord, rootOctave: args.octave })
@@ -132,7 +124,9 @@ export const generatePerformance = (args: GeneratePerformanceArgsT): Performance
       const note = mapSignalToNote({ signal, chord: activeChord, signalRow, chordNotes })
       if (!note) return
 
-      const velocity = getRandomBetween({ min: outputStore.minVelocity, max: outputStore.maxVelocity })
+      const minVelocity = args.minVelocity ?? 70
+      const maxVelocity = args.maxVelocity ?? 80
+      const velocity = getRandomBetween({ min: minVelocity, max: maxVelocity })
 
       const performanceNote: PerformanceNoteT = {
         id: `${activeChord.id}-${signal.id}-${repeatIndex}`,

@@ -11,6 +11,7 @@
 	import { ModeWatcher } from 'mode-watcher'
 	import favicon from '$lib/assets/favicon.svg'
 	import DialogChordModifier from '$lib/components/Project/DialogChordModifier.svelte'
+	import PlaybackContextFrame from '$lib/components/PlaybackContextFrame.svelte'
 
 	let { children } = $props()
 
@@ -24,4 +25,6 @@
 <ModeWatcher />
 <DialogChordModifier />
 
-{@render children?.()}
+<PlaybackContextFrame>
+	{@render children?.()}
+</PlaybackContextFrame>

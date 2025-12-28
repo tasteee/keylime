@@ -1,14 +1,17 @@
 <script lang="ts">
 	import * as Select from '$lib/components/ui/select/index.js'
-	import projectStore from '$lib/stores/project.svelte'
+	import { useProjectEditor } from '$lib/modules/useProjectEditor'
+
+	const projectEditor = useProjectEditor()
+	const project = $derived(projectEditor.state.project)
 
 	const handleSelect = (value: string) => {
-		projectStore.key = value
+		projectEditor.updateProject({ key: value })
 	}
 </script>
 
-<Select.Root type="single" onValueChange={handleSelect} value={projectStore.key}>
-	<Select.Trigger size="small" label="Key" value={projectStore.key} />
+<Select.Root type="single" onValueChange={handleSelect} value={project.key}>
+	<Select.Trigger size="small" label="Key" value={project.key} />
 	<Select.Content>
 		<Select.Item value="A">A</Select.Item>
 		<Select.Item value="A#">A#</Select.Item>

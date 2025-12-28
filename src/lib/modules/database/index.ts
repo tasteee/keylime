@@ -1,9 +1,11 @@
+// TODO: Break into modular function/files.
 import { createSupabaseClient } from "$lib/supabase/client"
 import { warnWhen } from "$lib/modules/warnWhen"
 
 type GetUserReturnT = {
   user: UserT | null
   error: Error | null
+  didSucceed: boolean
 }
 
 export const getUserById = async (id: string): Promise<GetUserReturnT> => {
@@ -24,7 +26,7 @@ export const getUserById = async (id: string): Promise<GetUserReturnT> => {
     warnWhen(error, errorMessage)
   }
 
-  return { user, error }
+  return { user, error, didSucceed: !error }
 }
 
 
@@ -37,7 +39,7 @@ export const deleteProjectById = async (projectId: string) => {
     .eq('id', projectId)
 
   warnWhen(error, `Error deleting project by ID: ${error?.message}`)
-  return { error }
+  return { error, didSucceed: !error }
 }
 
 export const addProject = async (project: ProjectT) => {
@@ -50,7 +52,7 @@ export const addProject = async (project: ProjectT) => {
     .single()
 
   warnWhen(error, `Error adding project: ${error?.message}`)
-  return { data: data as ProjectT | null, error }
+  return { data: data as ProjectT | null, error, didSucceed: !error }
 }
 
 export const getProjectById = async (projectId: string) => {
@@ -65,7 +67,7 @@ export const getProjectById = async (projectId: string) => {
   const data = result.data as ProjectT | null
   const error = result.error as Error | null
   if (!!error) warnWhen(error, `Error fetching project by ID: ${error.message}`)
-  return { data, error }
+  return { data, error, didSucceed: !error }
 }
 
 export const getProjectsByUserId = async (userId: string) => {
@@ -78,7 +80,7 @@ export const getProjectsByUserId = async (userId: string) => {
     .order('updatedAt', { ascending: false })
 
   warnWhen(error, `Error fetching public projects: ${error?.message}`)
-  return { data, error }
+  return { data, error, didSucceed: !error }
 }
 
 type GetPublicProjectsOptionsT = {

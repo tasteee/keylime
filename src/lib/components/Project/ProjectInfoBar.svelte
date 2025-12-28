@@ -1,5 +1,5 @@
 <script lang="ts">
-	import projectStore from '$lib/stores/project.svelte'
+	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 	import SelectBpm from './SelectBpm.svelte'
 	import SelectOctave from './SelectOctave.svelte'
 	import DialogProjectSettings from './DialogProjectSettings.svelte'
@@ -7,14 +7,18 @@
 	import Box from '$lib/components/ui/box.svelte'
 	import Divider from '../ui/divider.svelte'
 	import { FloppyDisk, Download, Gear } from 'phosphor-svelte'
-	import to from 'await-to-ts'
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
 	import { goto } from '$app/navigation'
+	import { awaited } from '$lib/modules/the-awaited'
+
+	const projectEditor = useProjectEditor()
+	const project = $derived(projectEditor.state.project)
+	const isDirty = $derived(projectEditor.state.isDirty)
 
 	let isSettingsOpen = $state(false)
 	let isSaving = $state(false)
 
-	const dirtyIndicatorText = $derived(projectStore.isDirty ? '●' : '')
+	const dirtyIndicatorText = $derived(isDirty ? '●' : '')
 
 	const openSettings = () => {
 		isSettingsOpen = true
@@ -25,23 +29,27 @@
 	}
 
 	const handleSave = async () => {
+		console.log('project bar save icon action clicked')
 		isSaving = true
-		const [error] = await to(projectStore.save())
-		if (error) console.error('Failed to save project:', error)
+		const saveResult = await projectEditor.save()
+		console.log('project bar save success', saveResult)
 		isSaving = false
 	}
 
 	const handleSaveClone = async () => {
 		isSaving = true
-		const [error, result] = await to(projectStore.saveClone())
-		if (error) {
-			console.error('Failed to save clone:', error)
+		const saveCloneResult = await awaited(projectEditor.saveClone())
+
+		if (saveCloneResult.error) {
+			console.error('Failed to save clone:', saveCloneResult.error)
 			isSaving = false
 			return
 		}
+
 		isSaving = false
-		if (result?.projectId) {
-			goto(`/project/${result.projectId}`)
+
+		if (saveCloneResult.data) {
+			goto(`/project/${saveCloneResult.data.newProjectId}`)
 		}
 	}
 </script>
@@ -52,7 +60,7 @@
 		{#if dirtyIndicatorText}
 			<span class="dirtyIndicator">{dirtyIndicatorText}</span>
 		{/if}
-		<span class="projectTitle">{projectStore.title}</span>
+		<span class="projectTitle">{project.title}</span>
 	</Box>
 
 	<Box gap="8px" align="center">

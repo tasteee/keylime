@@ -1,12 +1,7 @@
 <script lang="ts">
-	import SelectKey from '$lib/components/Project/SelectKey.svelte'
-	import SelectOctave from '$lib/components/Project/SelectOctave.svelte'
-	import SelectScale from '$lib/components/Project/SelectScale.svelte'
-	import SelectKeymap from '$lib/components/Keyboard/SelectKeymap.svelte'
 	import { Button } from '$lib/components/ui/button'
-	import Icon from '@iconify/svelte'
 	import Divider from './ui/divider.svelte'
-	import { Orange, OrangeSlice, Plus, SignOut } from 'phosphor-svelte'
+	import { OrangeSlice, Plus, SignOut } from 'phosphor-svelte'
 	import { goto, invalidateAll } from '$app/navigation'
 	import { authStore } from '$lib/stores/auth.svelte'
 	import * as Avatar from '$lib/components/ui/avatar'
@@ -15,30 +10,24 @@
 	let props = $props()
 
 	const goToDashboard = () => {
+		console.log('[TopBar] Navigating to /dashboard')
 		goto('/dashboard')
 	}
 
 	const handleLogout = async () => {
-		console.log('handleLogout called')
-		try {
-			const result = await authStore.signOut()
-			console.log('signOut result:', result)
-			if (result.success) {
-				console.log('Redirecting to /')
-				window.location.href = '/'
-			}
-		} catch (error) {
-			console.error('Error during logout:', error)
-		}
+		console.log('[TopBar] handleLogout called')
+		await authStore.signOut()
 	}
 </script>
 
 <div class="TopBar">
 	<Box class="left" align="center" gap="24px" height="100%">
-		<a onclick={goToDashboard} href="#foo" class="logoBox">
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div onclick={goToDashboard} class="logoBox">
 			<OrangeSlice class="logoIcon" size={32} weight="fill" color="var(--n-03)" />
 			<span class="logo">KEYLIME</span>
-		</a>
+		</div>
 
 		<Divider isThin />
 	</Box>
@@ -65,6 +54,7 @@
 		display: flex;
 		align-items: center;
 		padding-left: 24px;
+		cursor: pointer;
 	}
 
 	.logoBox .logo {

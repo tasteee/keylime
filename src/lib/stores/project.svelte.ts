@@ -1,46 +1,16 @@
 import { SIGNAL_ROWS } from "$lib/constants/signalRows"
 import { numbers } from "$lib/helpers/numbers"
 import { getProjectById, getUserById } from "$lib/modules/database"
+import { createNewProjectData, getFreshPatternSignalRows } from "$lib/modules/projects"
+import { asCleanAsync, cleanAsync, type CleanAsyncReturnT } from "$lib/modules/promises"
+import { type TheAwaitedReturnT } from "$lib/modules/the-awaited"
 import { createSupabaseClient } from '$lib/supabase/client'
 import { authStore } from './auth.svelte'
-import to from 'await-to-ts'
 
 const TOTAL_UNITS = 64
 const PATTERN_MIN_ZOOM = 16
 const PATTERN_MAX_ZOOM = 48
 const PATTERN_ZOOM_STEP = 4
-
-// Create default project data with all keys in alphabetical order.
-// This ensures consistent serialization for state comparison.
-const createDefaultProjectData = () => {
-  const userId = authStore.authUser?.id
-  const patternSignalRows = JSON.parse(JSON.stringify(SIGNAL_ROWS))
-
-  return {
-    bpm: 124,
-    chordSymbols: [],
-    cloneAncestorIds: [],
-    createdAt: new Date(),
-    description: '',
-    id: crypto.randomUUID(),
-    isPublic: false,
-    key: 'C',
-    maxVelocity: 80,
-    minVelocity: 70,
-    octave: '3',
-    originalProjectId: null,
-    patternDurationBars: 1,
-    patternSignalRows,
-    patternSignals: [],
-    patternZoomLevel: 32,
-    progressionChords: [],
-    progressionZoomLevel: 82,
-    scale: 'Major',
-    title: 'New Project',
-    updatedAt: new Date(),
-    userId,
-  } as ProjectT
-}
 
 class ProjectStore {
   isLoading = $state(false)
@@ -62,7 +32,7 @@ class ProjectStore {
   isDirty = $state(false)
   infoText = $state('');
   patternSignals: SignalT[] = $state([])
-  patternSignalRows = $state(JSON.parse(JSON.stringify(SIGNAL_ROWS)))
+  patternSignalRows = $state(getFreshPatternSignalRows())
   patternDurationBars = $state(1)
   baseProgressionItems: ProgressionItemT[] = $state([])
   selectedProgressionItemId: string | null = $state(null)
@@ -134,7 +104,7 @@ class ProjectStore {
   movePatternSignalToRow = (options: MoveSignalToRowOptionsT) => {
     const fromRow = this.patternSignalRows[options.fromRowId]
     const toRow = this.patternSignalRows[options.toRowId]
-    fromRow.signalIds = fromRow.signalIds.filter((id) => id !== options.signalId)
+    fromRow.signalIds = fromRow.signalIds.filter((id: string) => id !== options.signalId)
     toRow.signalIds = [...toRow.signalIds, options.signalId]
   }
 
@@ -294,10 +264,12 @@ class ProjectStore {
   // Generate the current project data with keys in alphabetical order.
   // This is the single source of truth for serialization.
   private generateProjectData = (): ProjectT => {
+    const userId = authStore.authUser?.id
+    if (!userId) throw new Error('User must be authenticated to generate project data')
+    const data = createNewProjectData(userId,)
     return {
       bpm: this.bpm,
       chordSymbols: this.chordSymbols,
-      cloneAncestorIds: [],
       createdAt: this.createdAt,
       description: this.description,
       id: this.id,
@@ -340,16 +312,14 @@ class ProjectStore {
     return hasChanges
   }
 
-
-
-  save = async () => {
+  save = cleanAsync<{ didSucceed: boolean }>(async () => {
     if (!authStore.authUser) throw new Error('User must be authenticated to save project')
     const supabase = createSupabaseClient()
     const projectData = this.getProjectDocumentData()
 
     const { error } = await supabase
       .from('all_projects')
-      .upsert(projectData)
+      .upsert(projectData as any)
 
     if (error) throw new Error(`Failed to save project: ${error.message}`)
     this.updatedAt = new Date()
@@ -357,27 +327,25 @@ class ProjectStore {
     this.isDirty = false
     console.log('Saved project: ', projectData)
     this.captureInitialState()
-    return { success: true }
-  }
+    return { didSucceed: true }
+  })
 
-  saveClone = async () => {
+  saveClone = cleanAsync<{ didSucceed: boolean, newProjectId: string }>(async () => {
     if (!authStore.authUser) throw new Error('User must be authenticated to save project')
-
+    const supabase = createSupabaseClient()
     const newProjectId = crypto.randomUUID()
     const clonedTitle = `${this.title} (Clone)`
 
-    this.id = newProjectId
-    this.title = clonedTitle
-    this.userId = authStore.authUser.id
-    this.createdAt = new Date()
-    this.updatedAt = new Date()
-
-    const supabase = createSupabaseClient()
     const projectData = this.getProjectDocumentData()
+    projectData.id = newProjectId
+    projectData.title = clonedTitle
+    projectData.userId = authStore.authUser.id
+    projectData.createdAt = new Date()
+    projectData.updatedAt = new Date()
 
     const { error } = await supabase
       .from('all_projects')
-      .insert(projectData)
+      .insert(projectData as any)
 
     if (error) throw new Error(`Failed to save clone: ${error.message}`)
 
@@ -386,56 +354,59 @@ class ProjectStore {
     this.captureInitialState()
     console.log('Saved cloned project: ', projectData)
 
-    return { success: true, projectId: newProjectId }
-  }
+    return { didSucceed: true, newProjectId }
+  })
 
   load = async (projectId: string) => {
     this.isLoading = true
 
-    const projectResult = await getProjectById(projectId)
-    const project = projectResult.data
+    try {
+      const projectResult = await getProjectById(projectId)
+      const project = projectResult.data
 
-    if (projectResult.error || !project) {
+      if (projectResult.error || !project) {
+        throw new Error(`Failed to load project: ${projectResult.error?.message || 'Not found'}`)
+      }
+
+      this.id = project.id
+      this.title = project.title
+      this.description = project.description
+      this.userId = project.userId
+      this.key = project.key
+      this.scale = project.scale
+      this.octave = project.octave
+      this.bpm = project.bpm
+      this.minVelocity = project.minVelocity
+      this.maxVelocity = project.maxVelocity
+      this.patternDurationBars = project.patternDurationBars
+      this.patternZoomLevel = project.patternZoomLevel ?? 32
+      this.progressionZoomLevel = project.progressionZoomLevel ?? 82
+      this.isPublic = project.isPublic
+      this.createdAt = new Date(project.createdAt)
+      this.updatedAt = new Date(project.updatedAt)
+      this.baseProgressionItems = project.progressionChords || []
+      this.patternSignals = project.patternSignals || []
+
+      const hasValidSignalRows = project.patternSignalRows &&
+        typeof project.patternSignalRows === 'object' &&
+        Object.keys(project.patternSignalRows).length > 0
+
+      this.patternSignalRows = hasValidSignalRows ? project.patternSignalRows : getFreshPatternSignalRows()
+      const hasProgressionItems = this.baseProgressionItems.length > 0
+      this.selectedProgressionItemId = hasProgressionItems ? this.baseProgressionItems[0].id : null
+
+      this.isSaved = true
+      this.isDirty = false
+
+      // Capture the initial state AFTER all properties are set
+      this.captureInitialState()
+
+      return { success: true }
+    } catch (error) {
+      throw error
+    } finally {
       this.isLoading = false
-      throw new Error(`Failed to load project: ${projectResult.error?.message || 'Not found'}`)
     }
-
-    this.id = project.id
-    this.title = project.title
-    this.description = project.description
-    this.userId = project.userId
-    this.key = project.key
-    this.scale = project.scale
-    this.octave = project.octave
-    this.bpm = project.bpm
-    this.minVelocity = project.minVelocity
-    this.maxVelocity = project.maxVelocity
-    this.patternDurationBars = project.patternDurationBars
-    this.patternZoomLevel = project.patternZoomLevel ?? 32
-    this.progressionZoomLevel = project.progressionZoomLevel ?? 82
-    this.isPublic = project.isPublic
-    this.createdAt = new Date(project.createdAt)
-    this.updatedAt = new Date(project.updatedAt)
-    this.baseProgressionItems = project.progressionChords || []
-    this.patternSignals = project.patternSignals || []
-
-    const hasValidSignalRows = project.patternSignalRows &&
-      typeof project.patternSignalRows === 'object' &&
-      Object.keys(project.patternSignalRows).length > 0
-
-    this.patternSignalRows = hasValidSignalRows ? project.patternSignalRows : JSON.parse(JSON.stringify(SIGNAL_ROWS))
-
-    const hasProgressionItems = this.baseProgressionItems.length > 0
-    this.selectedProgressionItemId = hasProgressionItems ? this.baseProgressionItems[0].id : null
-
-    this.isSaved = true
-    this.isDirty = false
-    this.isLoading = false
-
-    // Capture the initial state AFTER all properties are set
-    this.captureInitialState()
-
-    return { success: true }
   }
 
   delete = async () => {
@@ -458,7 +429,8 @@ class ProjectStore {
   }
 
   reset = () => {
-    const blankProjectData = createDefaultProjectData()
+    const userId = this.userId
+    const blankProjectData = createNewProjectData(userId)
     Object.assign(this, blankProjectData)
     this.baseProgressionItems = []
     this.selectedProgressionItemId = null
