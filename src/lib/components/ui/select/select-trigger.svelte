@@ -129,6 +129,12 @@
 		outline: none;
 	}
 
+	:global(.keyActionSelectTrigger[data-state='open']) {
+		outline: 2px solid var(--a-05);
+		outline-offset: -2px;
+		transition: none;
+	}
+
 	:global(.keyActionSelectTrigger:disabled) {
 		pointer-events: none;
 		cursor: default;

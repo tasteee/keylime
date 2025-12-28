@@ -1,25 +1,22 @@
 <script lang="ts">
-	import * as Popover from '$lib/components/ui/popover/index.js'
-	import SliderBpm from '$lib/components/Project/SliderBpm.svelte'
-	import Icon from '@iconify/svelte'
+	import { InputNumberButton } from '$lib/components/ui/input-number-button/index.js'
 	import projectStore from '$lib/stores/project.svelte'
+
+	const handleBpmCommit = (newBpm: number) => {
+		projectStore.bpm = newBpm
+		projectStore.markDirty()
+	}
 </script>
 
-<Popover.Root>
-	<Popover.Trigger size="small" label="BPM" value={projectStore.bpm.toString()} />
-	<Popover.Content class="herPopover p-4 w-[300px]">
-		<div class="bpmSliderContainer">
-			<SliderBpm />
-		</div>
-	</Popover.Content>
-</Popover.Root>
-
-<style>
-	.bpmSliderContainer {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-		align-items: center;
-		width: 100%;
-	}
-</style>
+<InputNumberButton
+	bind:value={projectStore.bpm}
+	min={20}
+	max={300}
+	step={1}
+	inputWidth="48px"
+	label="BPM"
+	size="small"
+	kind="solid"
+	color="neutral"
+	oncommit={handleBpmCommit}
+/>

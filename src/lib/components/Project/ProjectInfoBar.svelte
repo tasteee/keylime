@@ -1,9 +1,11 @@
 <script lang="ts">
 	import projectStore from '$lib/stores/project.svelte'
 	import SelectBpm from './SelectBpm.svelte'
+	import SelectOctave from './SelectOctave.svelte'
 	import DialogProjectSettings from './DialogProjectSettings.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import Box from '$lib/components/ui/box.svelte'
+	import Divider from '../ui/divider.svelte'
 	import { FloppyDisk, Download, Gear } from 'phosphor-svelte'
 	import to from 'await-to-ts'
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
@@ -53,8 +55,12 @@
 		<span class="projectTitle">{projectStore.title}</span>
 	</Box>
 
-	<Box gap="8px">
+	<Box gap="8px" align="center">
 		<SelectBpm />
+		<SelectOctave />
+
+		<Divider margin="24px" />
+
 		<Button isIcon onclick={openSettings} aria-label="Project Settings">
 			<Gear size={16} />
 		</Button>

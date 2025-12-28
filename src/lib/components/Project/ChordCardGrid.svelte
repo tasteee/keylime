@@ -2,7 +2,6 @@
 	import ChordCard from './ChordCard.svelte'
 	import gridChordsStore from '$lib/stores/gridChords.svelte'
 	import SelectKey from './SelectKey.svelte'
-	import SelectOctave from './SelectOctave.svelte'
 	import SelectScale from './SelectScale.svelte'
 	import Box from '$lib/components/ui/box.svelte'
 	import Divider from '../ui/divider.svelte'
@@ -36,7 +35,6 @@
 		<Box gap="8px" align="center">
 			<SelectKey />
 			<SelectScale />
-			<SelectOctave />
 		</Box>
 
 		<Divider margin="24px" />

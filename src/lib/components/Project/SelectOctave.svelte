@@ -10,7 +10,7 @@
 </script>
 
 <Select.Root type="single" onValueChange={handleSelect} value={keyboardStore.rootOctave}>
-	<Select.Trigger size="small" label="Octave" value={keyboardStore.rootOctave.toString()} />
+	<Select.Trigger size="small" label="Base Octave" value={keyboardStore.rootOctave.toString()} />
 	<Select.Content>
 		<Select.Item value="0">0</Select.Item>
 		<Select.Item value="1">1</Select.Item>

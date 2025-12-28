@@ -136,20 +136,8 @@ html {
 }
 
 
-
-/* 
-
-Button solid primary small
-Button solid primary large
-Button solid secondary small
-Button solid secondary large
-Button outline primary small
-Button outline primary large
-Button outline secondary small
-Button outline secondary large
-Button ghost primary small
-Button ghost primary large
-Button ghost secondary small
-Button ghost secondary large
-
-*/
+/* set global bg color for selected input text to pink */
+::selection {
+  background-color: var(--a-02);
+  color: var(--n-09);
+}

@@ -462,6 +462,7 @@ class ProjectStore {
     Object.assign(this, blankProjectData)
     this.baseProgressionItems = []
     this.selectedProgressionItemId = null
+    this.activeView = 'chords'
     this.isSaved = false
     this.isDirty = false
     this.captureInitialState()
