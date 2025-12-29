@@ -55,6 +55,7 @@
 			align?: ButtonAlign
 			isIcon?: boolean
 			isFullWidth?: boolean
+			maxWidth?: string
 		}
 </script>
 
@@ -67,6 +68,7 @@
 		align = 'center',
 		isIcon = false,
 		isFullWidth = false,
+		maxWidth = undefined,
 		ref = $bindable(null),
 		href = undefined,
 		type = 'button',
@@ -81,6 +83,7 @@
 		bind:this={ref}
 		data-slot="button"
 		class={cn(buttonVariants({ kind, color, size, align, isIcon, isFullWidth }), className)}
+		style:max-width={maxWidth}
 		{href}
 		{...restProps}
 	>
@@ -91,6 +94,7 @@
 		bind:this={ref}
 		data-slot="button"
 		class={cn(buttonVariants({ kind, color, size, align, isIcon, isFullWidth }), className)}
+		style:max-width={maxWidth}
 		{type}
 		{disabled}
 		{...restProps}
@@ -124,7 +128,7 @@
 		--neutralColorBorderColor: rgb(209, 213, 219);
 		--neutralColorBorderColor-hover: rgb(156, 163, 175);
 		--neutralColorBorderColor-active: rgb(107, 114, 128);
-		--neutralColorBorderColor-disabled: rgb(243, 244, 246);
+		--neutralColorBorderColor-disabled: rgb(209, 213, 219);
 
 		--neutralColorTextColor: var(--colorBlack);
 		--neutralColorTextColor-hover: var(--colorBlack);
@@ -186,7 +190,7 @@
 		align-items: center;
 		justify-content: center;
 		gap: 0.5rem;
-		white-space: nowrap;
+
 		font-size: 0.875rem;
 		font-weight: 700;
 		transition: all 150ms ease;
@@ -196,6 +200,9 @@
 		border-width: 1px;
 		border-style: solid;
 		border-color: transparent;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.keyActionButton:focus-visible {

@@ -8,6 +8,8 @@
 	import Badge from '$lib/components/ui/badge/badge.svelte'
 	import Box from '$lib/components/ui/box.svelte'
 	import Icon from '@iconify/svelte'
+	import fuzzy from 'fuzzy'
+	import ALL_CHORD_NAMES from '$lib/constants/allChordNames.json'
 	import chordsByScale from '$lib/constants/chordsByScale.json'
 	import Divider from './ui/divider.svelte'
 
@@ -18,6 +20,7 @@
 		bpmMin: number | null
 		bpmMax: number | null
 		chordSymbols: string[]
+		chordMatchMode: 'all' | 'any'
 	}
 
 	type ProjectsBrowserBarPropsT = {
@@ -27,59 +30,9 @@
 	const props: ProjectsBrowserBarPropsT = $props()
 
 	const MUSICAL_KEYS = ['All', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#']
-	const SCALES = ['All', 'Major', 'Minor', 'Harmonic Minor']
+	const SCALES = ['All', 'Major', 'Minor']
 
-	const COMMON_CHORDS = [
-		'Cmaj7',
-		'Dm7',
-		'Em7',
-		'Fmaj7',
-		'G7',
-		'Am7',
-		'Bm7b5',
-		'Amaj7',
-		'Bm7',
-		'C#m7',
-		'Dmaj7',
-		'E7',
-		'F#m7',
-		'G#m7b5',
-		'Bbmaj7',
-		'Cm7',
-		'Dm7',
-		'Ebmaj7',
-		'F7',
-		'Gm7',
-		'Am7b5',
-		'Gmaj7',
-		'Am7',
-		'Bm7',
-		'Cmaj7',
-		'D7',
-		'Em7',
-		'F#m7b5',
-		'Fmaj7',
-		'Gm7',
-		'Am7',
-		'Bbmaj7',
-		'C7',
-		'Dm7',
-		'Em7b5',
-		'Emaj7',
-		'F#m7',
-		'G#m7',
-		'Amaj7',
-		'B7',
-		'C#m7',
-		'D#m7b5',
-		'Dbmaj7',
-		'Ebm7',
-		'Fm7',
-		'Gbmaj7',
-		'Ab7',
-		'Bbm7',
-		'Cm7b5'
-	]
+	const COMMON_CHORDS = ALL_CHORD_NAMES
 
 	let searchText = $state('')
 	let selectedKey = $state<string>('All')
@@ -88,6 +41,7 @@
 	let bpmMaxValue = $state('')
 	let chordSymbolInput = $state('')
 	let selectedChordSymbols = $state<string[]>([])
+	let chordMatchMode = $state<'all' | 'any'>('any')
 	let isChordPickerOpen = $state(false)
 
 	const availableChords = $derived.by(() => {
@@ -102,8 +56,12 @@
 
 	const filteredAvailableChords = $derived.by(() => {
 		if (!chordSymbolInput) return availableChords
-		return availableChords.filter((c) => c.toLowerCase().includes(chordSymbolInput.toLowerCase()))
+		const results = fuzzy.filter(chordSymbolInput, availableChords)
+		const matchedChords = results.map((result) => result.string)
+		return matchedChords
 	})
+
+	const hasReachedMaxChords = $derived(selectedChordSymbols.length >= 4)
 
 	const handleKeySelect = (value: string) => {
 		selectedKey = value
@@ -119,6 +77,8 @@
 
 		const isAlreadyAdded = selectedChordSymbols.includes(trimmedSymbol)
 		if (isAlreadyAdded) return
+
+		if (hasReachedMaxChords) return
 
 		selectedChordSymbols = [...selectedChordSymbols, trimmedSymbol]
 		chordSymbolInput = ''
@@ -138,7 +98,8 @@
 			scale: selectedScale === 'All' ? null : selectedScale,
 			bpmMin: bpmMinNumber,
 			bpmMax: bpmMaxNumber,
-			chordSymbols: selectedChordSymbols
+			chordSymbols: selectedChordSymbols,
+			chordMatchMode: chordMatchMode
 		}
 
 		props.onsubmit(filterOptions)
@@ -152,6 +113,7 @@
 		bpmMaxValue = ''
 		selectedChordSymbols = []
 		chordSymbolInput = ''
+		chordMatchMode = 'any'
 
 		const emptyOptions: FilterOptionsT = {
 			searchText: '',
@@ -159,7 +121,8 @@
 			scale: null,
 			bpmMin: null,
 			bpmMax: null,
-			chordSymbols: []
+			chordSymbols: [],
+			chordMatchMode: 'any'
 		}
 
 		props.onsubmit(emptyOptions)
@@ -177,15 +140,9 @@
 </script>
 
 <Box isColumn class="projectsBrowserBar" marginBottom="12px">
-	<Box gap="12px" marginBottom="8px" isFullWidth align="center">
-		<Input size="medium" type="text" bind:value={searchText} placeholder="Search projects..." class="bg-white flex-1">
-			{#snippet startIcon()}
-				<Icon icon="mingcute:search-line" class="searchIcon" />
-			{/snippet}
-		</Input>
-
-		<Divider />
-
+	<!-- Row 1: Key, Scale, BPM & Chords -->
+	<div class="mb-2 gap-3 flex w-full flex-wrap items-center">
+		<!-- Key -->
 		<Select.Root type="single" bind:value={selectedKey}>
 			<Select.Trigger size="medium" label="Key" value={selectedKey === 'All' ? undefined : selectedKey} />
 			<Select.Content>
@@ -195,6 +152,7 @@
 			</Select.Content>
 		</Select.Root>
 
+		<!-- Scale -->
 		<Select.Root type="single" bind:value={selectedScale}>
 			<Select.Trigger size="medium" label="Scale" value={selectedScale === 'All' ? undefined : selectedScale} />
 			<Select.Content>
@@ -203,10 +161,9 @@
 				{/each}
 			</Select.Content>
 		</Select.Root>
-	</Box>
 
-	<!-- Row 2: Secondary Filters & Chords -->
-	<div class="mb-2 gap-3 flex w-full flex-wrap items-center">
+		<Divider />
+
 		<!-- BPM -->
 		<RangeInput
 			label="BPM"
@@ -219,31 +176,55 @@
 			size="large"
 		/>
 
-		<!-- <div class="h-6 bg-border mx-1 w-px"></div> -->
 		<Divider />
 
 		<!-- Chord Picker -->
 		<Popover.Root bind:open={isChordPickerOpen}>
 			<Popover.Trigger size="large" label="Add Chord" />
 			<Popover.Content class="p-0 w-[280px]" align="start">
-				<div class="p-2 border-b">
-					<Input bind:value={chordSymbolInput} placeholder="Search chords..." class="h-8" size="large" autofocus />
-				</div>
-				<ScrollArea class="h-[200px]">
-					<div class="p-2 gap-1 grid grid-cols-3">
-						{#each filteredAvailableChords as chord}
-							<button
-								class="text-xs px-2 py-1.5 rounded hover:bg-accent hover:text-accent-foreground truncate text-left transition-colors"
-								onclick={() => handleAddChordSymbol(chord)}
-							>
-								{chord}
-							</button>
-						{/each}
-						{#if filteredAvailableChords.length === 0}
-							<div class="py-4 text-xs text-muted-foreground col-span-3 text-center">No chords found</div>
-						{/if}
+				{#if selectedChordSymbols.length > 0}
+					<div class="p-2 gap-2 flex items-center border-b">
+						<span class="text-xs text-muted-foreground">Match:</span>
+						<button
+							class="text-xs px-2 py-1 rounded transition-colors {chordMatchMode === 'any'
+								? 'bg-accent text-accent-foreground'
+								: 'hover:bg-accent/50'}"
+							onclick={() => (chordMatchMode = 'any')}
+						>
+							Any
+						</button>
+						<button
+							class="text-xs px-2 py-1 rounded transition-colors {chordMatchMode === 'all'
+								? 'bg-accent text-accent-foreground'
+								: 'hover:bg-accent/50'}"
+							onclick={() => (chordMatchMode = 'all')}
+						>
+							All
+						</button>
 					</div>
-				</ScrollArea>
+				{/if}
+				{#if hasReachedMaxChords}
+					<div class="p-3 text-xs text-muted-foreground text-center">Maximum of 4 chords selected</div>
+				{:else}
+					<div class="p-2 border-b">
+						<Input bind:value={chordSymbolInput} placeholder="Search chords..." class="h-8" size="large" autofocus />
+					</div>
+					<ScrollArea class="h-[200px]">
+						<div class="p-2 gap-1 grid grid-cols-3">
+							{#each filteredAvailableChords as chord}
+								<button
+									class="text-xs px-2 py-1.5 rounded hover:bg-accent hover:text-accent-foreground truncate text-left transition-colors"
+									onclick={() => handleAddChordSymbol(chord)}
+								>
+									{chord}
+								</button>
+							{/each}
+							{#if filteredAvailableChords.length === 0}
+								<div class="py-4 text-xs text-muted-foreground col-span-3 text-center">No chords found</div>
+							{/if}
+						</div>
+					</ScrollArea>
+				{/if}
 			</Popover.Content>
 		</Popover.Root>
 
@@ -256,18 +237,19 @@
 				</button>
 			</Badge>
 		{/each}
-
-		<!-- Actions -->
-		<div class="flex-1"></div>
-		<Button
-			onclick={handleClearFilters}
-			kind="ghost"
-			size="large"
-			class="h-8 text-muted-foreground"
-			disabled={!hasActiveFilters}>Clear</Button
-		>
-		<Button onclick={handleApplyFilters} color="dark" size="large" class="h-8">Apply</Button>
 	</div>
+
+	<!-- Row 2: Search Input & Actions -->
+	<Box gap="12px" marginBottom="8px" isFullWidth align="center">
+		<Input size="large" type="text" bind:value={searchText} placeholder="Search projects..." class="bg-white flex-1">
+			{#snippet startIcon()}
+				<Icon icon="mingcute:search-line" class="searchIcon" />
+			{/snippet}
+		</Input>
+
+		<Button onclick={handleClearFilters} kind="outline" size="large" class="" disabled={!hasActiveFilters}>Clear</Button>
+		<Button onclick={handleApplyFilters} color="dark" size="large" class="h-8">Apply</Button>
+	</Box>
 </Box>
 
 <style>

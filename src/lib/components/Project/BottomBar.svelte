@@ -48,6 +48,7 @@
 		flex-shrink: 0;
 		border-top: 1px solid var(--n-03);
 		background: var(--n-01);
+		background: var(--n-00);
 	}
 
 	.left,

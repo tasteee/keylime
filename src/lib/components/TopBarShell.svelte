@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button'
 	import Divider from './ui/divider.svelte'
-	import { OrangeSlice, Plus, SignOut } from 'phosphor-svelte'
-	import { goto, invalidateAll } from '$app/navigation'
+	import { OrangeSlice, SignOut } from 'phosphor-svelte'
+	import { goto } from '$app/navigation'
 	import { authStore } from '$lib/stores/auth.svelte'
 	import * as Avatar from '$lib/components/ui/avatar'
 	import Box from './ui/box.svelte'

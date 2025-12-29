@@ -3,17 +3,18 @@
 	import { Button } from '$lib/components/ui/button'
 	import { Label } from '$lib/components/ui/label'
 	import Icon from '@iconify/svelte'
-	import projectStore from '$lib/stores/project.svelte'
 	import Input from '../ui/input/input.svelte'
 	import { Textarea } from '../ui/textarea'
 	import { Checkbox } from '../ui/checkbox'
+	import type { useProjectEditor } from '$lib/modules/useProjectEditor'
 
 	type DialogProjectSettingsPropsT = {
 		isOpen: boolean
 		onOpenChange: (open: boolean) => void
+		projectEditor: ReturnType<typeof useProjectEditor>
 	}
 
-	let { isOpen = $bindable(false), onOpenChange }: DialogProjectSettingsPropsT = $props()
+	let { isOpen = $bindable(false), onOpenChange, projectEditor }: DialogProjectSettingsPropsT = $props()
 
 	let isSaving = $state(false)
 	let localTitle = $state('')
@@ -21,9 +22,9 @@
 	let localIsPublic = $state(false)
 
 	const captureInitialState = () => {
-		localTitle = projectStore.title
-		localDescription = projectStore.description
-		localIsPublic = projectStore.isPublic
+		localTitle = projectEditor.state.project.title
+		localDescription = projectEditor.state.project.description
+		localIsPublic = projectEditor.state.project.isPublic
 	}
 
 	$effect(() => {
@@ -45,11 +46,14 @@
 	const handleSave = async () => {
 		console.log('project settings dialog handleSave')
 		isSaving = true
-		projectStore.title = localTitle
-		projectStore.description = localDescription
-		projectStore.isPublic = localIsPublic
-		projectStore.markDirty()
-		const saveResult = await projectStore.save()
+
+		projectEditor.updateProject({
+			title: localTitle,
+			description: localDescription,
+			isPublic: localIsPublic
+		})
+
+		const saveResult = await projectEditor.save()
 		console.log('project settings dialog result:', saveResult)
 		isSaving = false
 		onOpenChange(false)
@@ -103,7 +107,7 @@
 				<Icon icon="mingcute:close-line" class="size-4" />
 				Close
 			</Button>
-			<Button onclick={handleSave} class="flex-1" disabled={isSaving}>
+			<Button color="brand" onclick={handleSave} class="flex-1" disabled={isSaving}>
 				<Icon icon="mingcute:save-line" class="size-4" />
 				{isSaving ? 'Saving...' : 'Save'}
 			</Button>

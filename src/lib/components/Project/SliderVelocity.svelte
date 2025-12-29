@@ -16,6 +16,14 @@
 			output.maxVelocity = maxValue
 		}
 	}
+
+	$effect(() => {
+		// when min/maxVelocity is changed in output store,
+		// persist it to localStorage and then in output.svelte.ts,
+		// read from localStorage FIRST, config SECOND.
+		localStorage.setItem('output.minVelocity', String(output.minVelocity))
+		localStorage.setItem('output.maxVelocity', String(output.maxVelocity))
+	})
 </script>
 
 <div class="gap-3 flex w-full items-center">

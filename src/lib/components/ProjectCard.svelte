@@ -5,6 +5,7 @@
 	import Badge from '$lib/components/ui/badge/badge.svelte'
 	import Box from '$lib/components/ui/box.svelte'
 	import Button from '$lib/components/ui/button/button.svelte'
+	import ChordBadge from '$lib/components/ChordBadge.svelte'
 	import { goto } from '$app/navigation'
 	import { getContext } from 'svelte'
 	import { calculateStartTimes } from '$lib/helpers/progression'
@@ -31,15 +32,6 @@
 		daysAgo: string
 		onOpenProject: (projectId: string) => void
 		onCloneProject?: (projectId: string) => Promise<void>
-	}
-
-	type PlaybackContextT = {
-		state: {
-			isPlaying: boolean
-			currentProjectId: string | null
-		}
-		perform: (project: any) => Promise<void>
-		stop: () => void
 	}
 
 	const props: ProjectCardPropsT = $props()
@@ -119,7 +111,7 @@
 					{authStore.userProfile?.userName?.slice(0, 2).toUpperCase() || 'U'}
 				</Avatar.Fallback>
 			</Avatar.Root>
-			<h3 class="project-title">{props.project.title}</h3>
+			<h3 class="projectTitle">{props.project.title}</h3>
 		</Box>
 
 		<Box gap="0px" class="userProjectCardFooter">
@@ -135,8 +127,8 @@
 		</Box>
 
 		<Box padding="8px" gap="12px" class="userProjectCardChordSymbols">
-			{#each props.project.chordSymbols as symbol (symbol)}
-				<Badge kind="solid" color="dark" size="small">{symbol}</Badge>
+			{#each props.project.progressionChords as chord (chord.id)}
+				<ChordBadge {...chord} />
 			{/each}
 		</Box>
 
@@ -219,11 +211,14 @@
 		margin-bottom: 12px;
 	}
 
-	.project-title {
+	.projectTitle {
 		font-size: 18px;
 		font-weight: 600;
 		margin: 0;
 		color: var(--n-09);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	:global .userProjectCardDescription {

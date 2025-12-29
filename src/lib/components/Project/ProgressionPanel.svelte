@@ -43,16 +43,6 @@
 		checkIsDirty: () => boolean
 	}
 
-	type PlaybackContextT = {
-		state: {
-			isPlaying: boolean
-			currentProjectId: string | null
-			loopStartTime: number
-		}
-		perform: (project: any) => Promise<void>
-		stop: () => void
-	}
-
 	const MIN_PIXELS_PER_BEAT = GENERAL_CONFIG.MIN_PROGRESSION_PIXELS_PER_BEAT
 	const MAX_PIXELS_PER_BEAT = GENERAL_CONFIG.MAX_PROGRESSION_PIXELS_PER_BEAT
 	const ZOOM_INCREMENT = GENERAL_CONFIG.PROGRESSION_ZOOM_INCREMENT
@@ -582,7 +572,7 @@
 		{/if}
 	</div>
 
-	<BottomBar />
+	<!-- <BottomBar /> -->
 </div>
 
 <style>

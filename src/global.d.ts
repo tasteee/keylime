@@ -224,3 +224,17 @@ type DatabaseT = {
     Enums: {}
   }
 }
+
+type PlaybackContextT = {
+  state: PlaybackStateT
+  load: () => Promise<void>
+  playNote: (args: PlayNoteArgsT) => Promise<void>
+  playChord: (chord: ChordT, octave: string, durationMs?: number) => Promise<void>
+  stopNote: (args: PlayNoteArgsT) => void
+  stopChord: (chord: ChordT) => void
+  perform: (project: PerformProjectArgsT) => Promise<void>
+  update: (project: PerformProjectArgsT) => void
+  stop: () => void
+  pausePerformance: () => void
+  stopPerformance: () => void
+}

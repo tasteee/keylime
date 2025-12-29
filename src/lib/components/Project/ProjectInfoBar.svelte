@@ -6,7 +6,7 @@
 	import { Button } from '$lib/components/ui/button'
 	import Box from '$lib/components/ui/box.svelte'
 	import Divider from '../ui/divider.svelte'
-	import { FloppyDisk, Download, Gear } from 'phosphor-svelte'
+	import { FloppyDisk, Download, Gear, PencilSimple } from 'phosphor-svelte'
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
 	import { goto } from '$app/navigation'
 	import { awaited } from '$lib/modules/the-awaited'
@@ -31,9 +31,15 @@
 	const handleSave = async () => {
 		console.log('project bar save icon action clicked')
 		isSaving = true
-		const saveResult = await projectEditor.save()
-		console.log('project bar save success', saveResult)
-		isSaving = false
+
+		try {
+			const saveResult = await projectEditor.save()
+			console.log('project bar save success', saveResult)
+		} catch (error) {
+			console.error('project bar save failed', error)
+		} finally {
+			isSaving = false
+		}
 	}
 
 	const handleSaveClone = async () => {
@@ -55,15 +61,25 @@
 </script>
 
 <Box class="ProjectInfoBar" padding="0 12px" height="48px" align="center" justify="between">
-	<Box gap="12px" align="center">
+	<Box gap="4px" align="center">
 		<span class="herPanelTitle">Project</span>
 		{#if dirtyIndicatorText}
 			<span class="dirtyIndicator">{dirtyIndicatorText}</span>
 		{/if}
-		<span class="projectTitle">{project.title}</span>
+		<Button
+			maxWidth="250px"
+			align="left"
+			kind="ghost"
+			size="small"
+			onclick={openSettings}
+			aria-label="Edit project settings"
+		>
+			<PencilSimple size={14} weight="regular" />
+			<span class="projectTitle">{project.title}</span>
+		</Button>
 	</Box>
 
-	<Box gap="8px" align="center">
+	<Box gap="8px" align="center" height="100%">
 		<SelectBpm />
 		<SelectOctave />
 
@@ -93,7 +109,7 @@
 	</Box>
 </Box>
 
-<DialogProjectSettings isOpen={isSettingsOpen} onOpenChange={handleSettingsOpenChange} />
+<DialogProjectSettings isOpen={isSettingsOpen} onOpenChange={handleSettingsOpenChange} {projectEditor} />
 
 <style>
 	:global(.ProjectInfoBar) {
@@ -122,5 +138,7 @@
 	.projectTitle {
 		font-size: 14px;
 		color: #525252;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 </style>

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import playbackStore from '$lib/stores/playback.svelte'
-	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
 	import Icon from '@iconify/svelte'
 	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
+	import DialogChordModifier from './DialogChordModifier.svelte'
 	import { getContext } from 'svelte'
 
 	type ProjectEditorContextT = {
@@ -45,9 +45,9 @@
 
 	const context = getContext<ProjectEditorContextT>('projectEditor')
 	const props: ProgressionChordCardPropsT = $props()
+	let isModifierDialogOpen = $state(false)
 	const isRest = $derived(props.item.type === 'rest')
 	const isSelected = $derived(props.item.id === context.state.selectedProgressionItemId)
-
 	const width = $derived(`${(props.item.durationBeats ?? 0) * props.pixelsPerBeat + (props.index === 0 ? 0 : 0)}px`)
 
 	// Check if chord is modified from original (only applicable to chords)
@@ -66,12 +66,25 @@
 		event.preventDefault()
 		event.stopPropagation()
 
+		console.log('handleContextMenu for item', props.item)
+
 		// Only open chord modifier for chord items, not rests
 		if (props.item.type === 'chord') {
-			chordModifierStore.openForProgressionChord({
-				chordId: props.item.id
-			})
+			isModifierDialogOpen = true
 		}
+	}
+
+	const handleModifierClose = () => {
+		isModifierDialogOpen = false
+	}
+
+	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: string }) => {
+		context.updateProgressionItem({
+			id: props.item.id,
+			octaveOffset: args.octaveOffset,
+			inversion: args.inversion,
+			voicing: args.voicing
+		})
 	}
 
 	const handleResizeRight = (event: MouseEvent) => {
@@ -140,7 +153,7 @@
 	<div class="itemContent">
 		<ChordSymbolDisplay symbol={props.item.symbol} />
 		{#if isModified}
-			<span class="modifiedIndicator">●</span>
+			<span class="modifiedIndicator">*</span>
 		{/if}
 	</div>
 
@@ -153,6 +166,16 @@
 		{/if}
 	</div>
 </div>
+
+{#if props.item.type === 'chord' && isModifierDialogOpen}
+	<DialogChordModifier
+		isOpen={isModifierDialogOpen}
+		chord={props.item as ProgressionChordT}
+		projectOctave={context.state.project.octave}
+		onClose={handleModifierClose}
+		onSave={handleModifierSave}
+	/>
+{/if}
 
 <style>
 	.progressionItem {
@@ -216,8 +239,12 @@
 	}
 
 	.modifiedIndicator {
-		font-size: 12px;
-		color: var(--color-pop-pink);
+		font-size: 18px;
+		font-weight: 900;
+		color: var(--a-05);
+		position: relative;
+		top: -4px;
+		right: 4px;
 	}
 
 	.dragHandle {

@@ -24,8 +24,11 @@
 		scale: null as string | null,
 		bpmMin: null as number | null,
 		bpmMax: null as number | null,
-		chordSymbols: [] as string[]
+		chordSymbols: [] as string[],
+		chordMatchMode: 'any' as 'all' | 'any'
 	})
+	let currentPage = $state(1)
+	let itemsPerPage = 20
 
 	// Redirect if not authenticated
 	$effect(() => {
@@ -50,7 +53,8 @@
 		})
 		if (browser && authStore.authUser) {
 			console.log('[dashboard] Loading user projects')
-			dashboardStore.loadUserProjects()
+			const offsetValue = (currentPage - 1) * itemsPerPage
+			dashboardStore.loadUserProjects(itemsPerPage, offsetValue)
 		}
 	})
 
@@ -115,15 +119,22 @@
 			})
 		}
 
-		// Filter by chord symbols (must include ALL specified chords)
+		// Filter by chord symbols
 		const hasChordSymbolsFilter = activeFilters.chordSymbols.length > 0
 		if (hasChordSymbolsFilter) {
+			const isMatchAll = activeFilters.chordMatchMode === 'all'
 			results = results.filter((project) => {
 				const projectChords = project.chordSymbols || []
-				const hasAllChords = activeFilters.chordSymbols.every((filterChord) => {
+				if (isMatchAll) {
+					const hasAllChords = activeFilters.chordSymbols.every((filterChord) => {
+						return projectChords.includes(filterChord)
+					})
+					return hasAllChords
+				}
+				const hasAnyChord = activeFilters.chordSymbols.some((filterChord) => {
 					return projectChords.includes(filterChord)
 				})
-				return hasAllChords
+				return hasAnyChord
 			})
 		}
 
@@ -144,6 +155,14 @@
 			goto(`/project/${clonedProject.id}`)
 		}
 	}
+
+	const handlePageChange = (page: number) => {
+		currentPage = page
+		const offsetValue = (page - 1) * itemsPerPage
+		dashboardStore.loadUserProjects(itemsPerPage, offsetValue)
+	}
+
+	const totalPages = $derived(Math.ceil(dashboardStore.totalProjectsCount / itemsPerPage))
 </script>
 
 <div class="dashboard" in:fade>
@@ -158,7 +177,7 @@
 					New Project
 				</Button>
 			</Box>
-			<p class="pageSubtitle">Explore chord progressions from the community</p>
+			<p class="pageSubtitle">Look at all these bangers.</p>
 		</Box>
 
 		<ProjectsBrowserBar onsubmit={handleFilterSubmit} />
@@ -182,6 +201,30 @@
 			<div class="empty-state">
 				<p>No projects yet. Create one to get started!</p>
 			</div>
+		{/if}
+
+		{#if dashboardStore.totalProjectsCount > itemsPerPage}
+			<Box justify="center" gap="8px" class="mt-6">
+				<Button
+					onclick={() => handlePageChange(currentPage - 1)}
+					disabled={currentPage === 1 || dashboardStore.isLoadingUserProjects}
+					kind="outline"
+					size="medium"
+				>
+					<Icon icon="mingcute:left-line" class="size-4" />
+				</Button>
+				<span class="text-sm text-muted-foreground">
+					Page {currentPage} of {totalPages}
+				</span>
+				<Button
+					onclick={() => handlePageChange(currentPage + 1)}
+					disabled={currentPage >= totalPages || dashboardStore.isLoadingUserProjects}
+					kind="outline"
+					size="medium"
+				>
+					<Icon icon="mingcute:right-line" class="size-4" />
+				</Button>
+			</Box>
 		{/if}
 	</main>
 </div>

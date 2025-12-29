@@ -4,7 +4,7 @@
 	type VoicingItemT = { value: VoicingT; label: string }
 
 	type SelectVoicingPropsT = {
-		value: VoicingT
+		value: VoicingT | string
 		onValueChange: (value: string | undefined) => void
 	}
 

@@ -1,25 +1,54 @@
 <script lang="ts">
 	import ChordCard from './ChordCard.svelte'
-	import gridChordsStore from '$lib/stores/gridChords.svelte'
 	import SelectKey from './SelectKey.svelte'
 	import SelectScale from './SelectScale.svelte'
 	import Box from '$lib/components/ui/box.svelte'
 	import Divider from '../ui/divider.svelte'
 	import Icon from '@iconify/svelte'
-	import projectStore from '$lib/stores/project.svelte'
+	import { getContext } from 'svelte'
 
-	const gridChords = $derived(gridChordsStore.gridChords)
+	type ProjectEditorContextT = {
+		state: {
+			project: ProjectT
+			isLoading: boolean
+			isSaving: boolean
+			isDirty: boolean
+			cleanProjectSnapshot: string
+			activeView: 'chords' | 'pattern'
+			selectedProgressionItemId: string | null
+		}
+		gridChords: ChordT[]
+		updateProject: (updates: Partial<ProjectT>) => void
+		updateProgressionItem: (updatedItem: Partial<ProgressionItemT>) => void
+		addProgressionChord: (chord: ChordT) => void
+		addProgressionRest: () => void
+		removeProgressionItem: (id: string) => void
+		duplicateProgressionItem: (id: string) => void
+		reorderProgressionItem: (args: { itemId: string; newIndex: number }) => void
+		selectProgressionItem: (id: string | null) => void
+		addPatternSignal: (signal: SignalT) => void
+		updatePatternSignal: (signalId: string, updates: Partial<SignalT>) => void
+		removePatternSignal: (signalId: string) => void
+		movePatternSignalToRow: (args: MoveSignalToRowOptionsT) => void
+		save: () => Promise<{ didSucceed: boolean }>
+		saveClone: () => Promise<{ didSucceed: boolean; newProjectId: string }>
+		checkIsDirty: () => boolean
+	}
+
+	const context = getContext<ProjectEditorContextT>('projectEditor')
+
+	const gridChords = $derived(context.gridChords)
 
 	const keyScaleText = $derived.by(() => {
-		const key = projectStore.key || ''
-		const scale = projectStore.scale || ''
+		const key = context.state.project.key || ''
+		const scale = context.state.project.scale || ''
 		return `${key} ${scale}`
 	})
 </script>
 
 <section class="ChordCardGrid">
 	<div class="chordToolbar">
-		<Box gap="16px" align="center">
+		<Box gap="16px" align="center" minWidth="100px">
 			<Icon icon="mingcute:grid-fill" width="20px" height="20px" />
 
 			<div class="titleSection">

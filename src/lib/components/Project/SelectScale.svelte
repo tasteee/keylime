@@ -15,6 +15,6 @@
 	<Select.Content>
 		<Select.Item value="Major">Major</Select.Item>
 		<Select.Item value="Minor">Minor</Select.Item>
-		<Select.Item value="Harmonic Minor">Harmonic Minor</Select.Item>
+		<!-- <Select.Item value="Harmonic Minor">Harmonic Minor</Select.Item> -->
 	</Select.Content>
 </Select.Root>

@@ -1,8 +1,37 @@
 import playbackStore from './playback.svelte'
-import projectStore from './project.svelte'
-import gridChordsStore from './gridChords.svelte'
 import { generateChord, applyVoicingAndInversion } from '$lib/helpers/chords'
 import { Note } from 'tonal'
+import { getContext } from 'svelte'
+
+type ProjectEditorContextT = {
+  state: {
+    project: ProjectT
+    isLoading: boolean
+    isSaving: boolean
+    isDirty: boolean
+    cleanProjectSnapshot: string
+    activeView: 'chords' | 'pattern'
+    selectedProgressionItemId: string | null
+  }
+  gridChords: ChordT[]
+  updateProject: (updates: Partial<ProjectT>) => void
+  updateProgressionItem: (updatedItem: Partial<ProgressionItemT>) => void
+  addProgressionChord: (chord: ChordT) => void
+  addProgressionRest: () => void
+  removeProgressionItem: (id: string) => void
+  duplicateProgressionItem: (id: string) => void
+  reorderProgressionItem: (args: { itemId: string; newIndex: number }) => void
+  selectProgressionItem: (id: string | null) => void
+  addPatternSignal: (signal: SignalT) => void
+  updatePatternSignal: (signalId: string, updates: Partial<SignalT>) => void
+  removePatternSignal: (signalId: string) => void
+  movePatternSignalToRow: (args: MoveSignalToRowOptionsT) => void
+  getGridChord: (chordId: string) => ChordT | undefined
+  updateGridChordModifiers: (args: { chordId: string; octaveOffset?: number; inversion?: number; voicing?: VoicingT }) => void
+  save: () => Promise<{ didSucceed: boolean }>
+  saveClone: () => Promise<{ didSucceed: boolean; newProjectId: string }>
+  checkIsDirty: () => boolean
+}
 
 type ChordSourceT = 'grid' | 'progression'
 
@@ -34,15 +63,22 @@ class ChordModifierStore {
 
   private initialStateSnapshot: InitialStateSnapshotT | null = null
 
+  private getProjectEditorContext = (): ProjectEditorContextT => {
+    return getContext<ProjectEditorContextT>('projectEditor')
+  }
+
   // Get the current chord being modified (fully computed with all modifications)
   currentChord = $derived.by(() => {
     const isModifierOpen = this.state.isOpen
     if (!isModifierOpen) return null
 
+    const context = this.getProjectEditorContext()
+
     const isProgressionChord = this.state.source === 'progression'
     if (isProgressionChord) {
-      const progressionChord = projectStore.getProgressionChord(this.state.chordId!)
+      const progressionChord = context.state.project.progressionChords.find((c) => c.id === this.state.chordId)
       if (!progressionChord) return null
+      if (progressionChord.type !== 'chord') return null
 
       // Return the progression chord with current modifier values applied
       return this.applyModifiersToChord(progressionChord)
@@ -50,7 +86,7 @@ class ChordModifierStore {
 
     const isGridChord = this.state.source === 'grid'
     if (isGridChord) {
-      const gridChord = gridChordsStore.getChord(this.state.chordId!)
+      const gridChord = context.getGridChord(this.state.chordId!)
       if (!gridChord) return null
 
       // Return the grid chord with current modifier values applied
@@ -61,7 +97,8 @@ class ChordModifierStore {
   })
 
   openForGridChord = (args: { chordId: string }) => {
-    const gridChord = gridChordsStore.getChord(args.chordId)
+    const context = this.getProjectEditorContext()
+    const gridChord = context.getGridChord(args.chordId)
     if (!gridChord) return
 
     this.state.isOpen = true
@@ -79,12 +116,14 @@ class ChordModifierStore {
     }
   }
 
-  openForProgressionChord = (args: { chordId: string }) => {
-    const progressionChord = projectStore.getProgressionChord(args.chordId)
+  openForProgressionChord = (chordId: string) => {
+    const context = this.getProjectEditorContext()
+    const progressionChord = context.state.project.progressionChords.find((c) => c.id === chordId)
     if (!progressionChord) return
+    if (progressionChord.type !== 'chord') return
 
     this.state.isOpen = true
-    this.state.chordId = args.chordId
+    this.state.chordId = chordId
     this.state.source = 'progression'
     // Load existing modifiers from the progression chord
     this.state.octaveOffset = progressionChord.octaveOffset
@@ -96,6 +135,8 @@ class ChordModifierStore {
       inversion: progressionChord.inversion,
       voicing: progressionChord.voicing as VoicingT
     }
+
+    console.log('Opened chord modifier for progression chord', chordId, 'with state', this.state)
   }
 
   closeDialog = () => {
@@ -151,12 +192,14 @@ class ChordModifierStore {
   }
 
   private saveToProgressionIfNeeded = () => {
+    const context = this.getProjectEditorContext()
+
     const isProgressionChord = this.state.source === 'progression'
     if (isProgressionChord) {
       const chordId = this.state.chordId
       if (!chordId) return
 
-      projectStore.updateProgressionItem({
+      context.updateProgressionItem({
         id: chordId,
         octaveOffset: this.state.octaveOffset,
         inversion: this.state.inversion,
@@ -170,7 +213,7 @@ class ChordModifierStore {
       const chordId = this.state.chordId
       if (!chordId) return
 
-      gridChordsStore.updateChordModifiers({
+      context.updateGridChordModifiers({
         chordId,
         octaveOffset: this.state.octaveOffset,
         inversion: this.state.inversion,
@@ -182,7 +225,8 @@ class ChordModifierStore {
   private playCurrentChord = () => {
     const chord = this.currentChord
     if (!chord) return
-    playbackStore.playChord(chord, 500)
+    const context = this.getProjectEditorContext()
+    playbackStore.playChord(chord, String(context.state.project.octave), 500)
   }
 
   private applyModifiersToChord = (baseChord: ChordT): ChordT => {

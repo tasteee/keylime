@@ -8,13 +8,14 @@ class DashboardStore {
   userProjects = $state<ProjectT[]>([])
   isLoadingUserProjects = $state(false)
   error = $state<string | null>(null)
+  totalProjectsCount = $state(0)
 
-  loadUserProjects = async () => {
+  loadUserProjects = async (limit: number = 20, offset: number = 0) => {
     if (!authStore.authUser) return
     this.isLoadingUserProjects = true
     this.error = null
 
-    const results = await getProjectsByUserId(authStore.authUser.id)
+    const results = await getProjectsByUserId(authStore.authUser.id, limit, offset)
     const projects = (results.data || []) as ProjectT[]
 
     if (results.error) {
@@ -22,6 +23,8 @@ class DashboardStore {
       this.isLoadingUserProjects = false
       return
     }
+
+    this.totalProjectsCount = results.totalCount || 0
 
     this.userProjects = projects.map((project) => {
       // Parse JSON fields from database

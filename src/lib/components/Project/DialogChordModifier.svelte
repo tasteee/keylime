@@ -4,53 +4,92 @@
 	import { Button } from '$lib/components/ui/button'
 	import { Label } from '$lib/components/ui/label'
 	import Icon from '@iconify/svelte'
-	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
 	import SelectInversion from './SelectInversion.svelte'
 	import SelectVoicing from './SelectVoicing.svelte'
 	import Box from '$lib/components/ui/box.svelte'
+	import playbackStore from '$lib/stores/playback.svelte'
 
-	const isOpen = $derived(chordModifierStore.state.isOpen)
-	const currentChord = $derived(chordModifierStore.currentChord)
-	const octaveOffset = $derived(chordModifierStore.state.octaveOffset)
-	const inversion = $derived(chordModifierStore.state.inversion)
-	const voicing = $derived(chordModifierStore.state.voicing)
-	const chordName = $derived(currentChord?.symbol ?? 'Chord')
+	type DialogChordModifierPropsT = {
+		isOpen: boolean
+		chord: ProgressionChordT
+		projectOctave: string
+		onClose: () => void
+		onSave: (args: { octaveOffset: number; inversion: number; voicing: string }) => void
+	}
+
+	const props: DialogChordModifierPropsT = $props()
+  console.log('DialogChordModifier props:', props)
+	const chordName = $derived(props.chord.symbol)
+
+	// Local state for modifiers
+	let octaveOffset = $state(Number(props.chord.octaveOffset))
+	let inversion = $state(props.chord.inversion)
+	let voicing = $state(props.chord.voicing)
+
+	// Reset local state when dialog opens with new chord
+	$effect(() => {
+		if (props.isOpen) {
+			octaveOffset = props.chord.octaveOffset
+			inversion = props.chord.inversion
+			voicing = props.chord.voicing
+		}
+	})
 
 	const incrementOctave = () => {
-		chordModifierStore.updateOctaveOffset(octaveOffset + 1)
+		octaveOffset = octaveOffset + 1
+		playCurrentChord()
 	}
 
 	const decrementOctave = () => {
-		chordModifierStore.updateOctaveOffset(octaveOffset - 1)
+		octaveOffset = octaveOffset - 1
+		playCurrentChord()
 	}
 
 	const handleVoicingChange = (value: string | undefined) => {
 		if (!value) return
-		chordModifierStore.updateVoicing(value as VoicingT)
+		voicing = value as VoicingT
+		playCurrentChord()
 	}
 
 	const handleInversionChange = (value: string | undefined) => {
 		if (!value) return
 		const numValue = parseInt(value, 10)
-		chordModifierStore.updateInversion(numValue)
+		inversion = numValue
+		playCurrentChord()
 	}
 
 	const octaveDisplayValue = $derived(octaveOffset === 0 ? '±0' : octaveOffset > 0 ? `+${octaveOffset}` : `${octaveOffset}`)
 
 	const handleOpenChange = (open: boolean) => {
-		if (!open) chordModifierStore.discardChanges()
+		if (!open) {
+			props.onClose()
+		}
 	}
 
 	const handleReset = () => {
-		chordModifierStore.resetModifiers()
+		octaveOffset = 0
+		inversion = 0
+		voicing = 'closed'
+		playCurrentChord()
 	}
 
 	const handleConfirm = () => {
-		chordModifierStore.confirmChanges()
+		props.onSave({ octaveOffset, inversion, voicing })
+		props.onClose()
+	}
+
+	const playCurrentChord = () => {
+		const modifiedChord: ProgressionChordT = {
+			...props.chord,
+			octaveOffset,
+			inversion,
+			voicing
+		}
+		playbackStore.playChord(modifiedChord, props.projectOctave)
 	}
 </script>
 
-<Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
+<Dialog.Root open={props.isOpen} onOpenChange={handleOpenChange}>
 	<Dialog.Content>
 		<Dialog.Header>
 			<Dialog.Title class="text-3xl">{chordName}</Dialog.Title>

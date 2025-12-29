@@ -2,10 +2,22 @@
 	import { createNewProjectData, loadProject, saveProject } from '$lib/modules/projects'
 	import { authStore } from '$lib/stores/auth.svelte'
 	import { getFreshPatternSignalRows } from '$lib/modules/projects'
-	import { onMount, setContext } from 'svelte'
+	import { getContext, onMount, setContext } from 'svelte'
 	import { browser } from '$app/environment'
+	import chordsByScale from '$lib/constants/chordsByScale.json'
+	import { generateChord } from '$lib/helpers/chords'
 
 	const props = $props()
+
+	type GridChordModifiersT = {
+		octaveOffset: number
+		inversion: number
+		voicing: VoicingT
+	}
+
+	type GridChordMapT = {
+		[chordId: string]: GridChordModifiersT
+	}
 
 	type ProjectEditorStateT = {
 		project: ProjectT
@@ -15,10 +27,12 @@
 		cleanProjectSnapshot: string
 		activeView: 'chords' | 'pattern'
 		selectedProgressionItemId: string | null
+		gridChordModifiers: GridChordMapT
 	}
 
 	type ProjectEditorContextT = {
 		state: ProjectEditorStateT
+		gridChords: ChordT[]
 		updateProject: (updates: Partial<ProjectT>) => void
 		updateProgressionItem: (updatedItem: Partial<ProgressionItemT>) => void
 		addProgressionChord: (chord: ChordT) => void
@@ -31,6 +45,15 @@
 		updatePatternSignal: (signalId: string, updates: Partial<SignalT>) => void
 		removePatternSignal: (signalId: string) => void
 		movePatternSignalToRow: (args: MoveSignalToRowOptionsT) => void
+		getGridChord: (chordId: string) => ChordT | undefined
+		updateGridChordModifiers: (args: {
+			chordId: string
+			octaveOffset?: number
+			inversion?: number
+			voicing?: VoicingT
+		}) => void
+		getGridChordIdForName: (name: string) => string
+		getDefaultGridChordModifiers: () => GridChordModifiersT
 		save: () => Promise<{ didSucceed: boolean }>
 		saveClone: () => Promise<{ didSucceed: boolean; newProjectId: string }>
 		checkIsDirty: () => boolean
@@ -83,7 +106,8 @@
 			isDirty: false,
 			cleanProjectSnapshot: '{}',
 			activeView: 'chords',
-			selectedProgressionItemId: null
+			selectedProgressionItemId: null,
+			gridChordModifiers: {}
 		}
 	}
 
@@ -232,12 +256,104 @@
 		updateProject({ patternSignalRows: updatedSignalRows })
 	}
 
+	const getDefaultGridChordModifiers = (): GridChordModifiersT => {
+		return {
+			octaveOffset: 0,
+			inversion: 0,
+			voicing: 'closed'
+		}
+	}
+
+	const getGridChordIdForName = (name: string): string => {
+		const scale = editorState.project.key + ' ' + editorState.project.scale
+		return `grid-${scale}-${name}`
+	}
+
+	const updateGridChordModifiers = (args: {
+		chordId: string
+		octaveOffset?: number
+		inversion?: number
+		voicing?: VoicingT
+	}) => {
+		const currentModifiers = editorState.gridChordModifiers[args.chordId] || getDefaultGridChordModifiers()
+
+		editorState.gridChordModifiers[args.chordId] = {
+			octaveOffset: args.octaveOffset ?? currentModifiers.octaveOffset,
+			inversion: args.inversion ?? currentModifiers.inversion,
+			voicing: args.voicing ?? currentModifiers.voicing
+		}
+	}
+
+	const gridChords = $derived.by(() => {
+		const scale = editorState.project.key + ' ' + editorState.project.scale
+		const inScaleChordNames = chordsByScale[scale as keyof typeof chordsByScale]
+
+		if (!inScaleChordNames) return []
+
+		const chords: ChordT[] = inScaleChordNames.map((name) => {
+			const chordId = getGridChordIdForName(name)
+			const modifiers = editorState.gridChordModifiers[chordId] || getDefaultGridChordModifiers()
+
+			const baseChord = generateChord({
+				name,
+				baseOctave: String(editorState.project.octave)
+			})
+
+			const chord: ChordT = {
+				...baseChord,
+				id: chordId,
+				octaveOffset: modifiers.octaveOffset,
+				inversion: modifiers.inversion,
+				voicing: modifiers.voicing
+			}
+
+			return chord
+		})
+
+		return chords
+	})
+
+	const getGridChord = (chordId: string): ChordT | undefined => {
+		return gridChords.find((chord) => chord.id === chordId)
+	}
+
 	const save = async (): Promise<{ didSucceed: boolean }> => {
 		if (!authStore.authUser) throw new Error('User must be authenticated to save project')
-
 		editorState.isSaving = true
 
 		try {
+			// Parse the clean snapshot to check the original owner
+			const cleanProject = JSON.parse(editorState.cleanProjectSnapshot) as Partial<ProjectT>
+			const isOtherUsersProject = cleanProject.userId && cleanProject.userId !== authStore.authUser.id
+
+			// If this is another user's project, create a new one (clone)
+			if (isOtherUsersProject) {
+				const newProjectId = crypto.randomUUID()
+				const projectToSave = {
+					...editorState.project,
+					id: newProjectId,
+					userId: authStore.authUser.id,
+					createdAt: new Date(),
+					updatedAt: new Date()
+				}
+
+				const supabaseSaveResult = await saveProject(projectToSave)
+
+				if (supabaseSaveResult.error) {
+					throw new Error(`Failed to save cloned project: ${supabaseSaveResult.error.message}`)
+				}
+
+				const syncedProject = (supabaseSaveResult.data?.[0] as unknown as ProjectT) || projectToSave
+
+				editorState.project = syncedProject
+				editorState.cleanProjectSnapshot = createCleanSnapshot(syncedProject)
+				editorState.isDirty = false
+
+				console.log('Saved cloned project:', syncedProject)
+				return { didSucceed: true }
+			}
+
+			// Otherwise, update the existing project
 			const projectToSave = {
 				...editorState.project,
 				userId: authStore.authUser.id,
@@ -336,6 +452,14 @@
 		editorState.isDirty = false
 		editorState.isLoading = false
 
+		// If this project belongs to another user, mark it as a clone
+		const isOtherUsersProject = authStore.authUser && loadedProject.userId !== authStore.authUser.id
+		if (isOtherUsersProject) {
+			const clonedTitle = `${loadedProject.title} (Clone)`
+			editorState.project = { ...loadedProject, title: clonedTitle }
+			editorState.isDirty = true
+		}
+
 		const hasProgressionItems = loadedProject.progressionChords.length > 0
 		editorState.selectedProgressionItemId = hasProgressionItems ? loadedProject.progressionChords[0].id : null
 
@@ -345,6 +469,9 @@
 
 	const context: ProjectEditorContextT = {
 		state: editorState,
+		get gridChords() {
+			return gridChords
+		},
 		updateProject,
 		updateProgressionItem,
 		addProgressionChord,
@@ -357,6 +484,10 @@
 		updatePatternSignal,
 		removePatternSignal,
 		movePatternSignalToRow,
+		getGridChord,
+		updateGridChordModifiers,
+		getGridChordIdForName,
+		getDefaultGridChordModifiers,
 		save,
 		saveClone,
 		checkIsDirty
@@ -373,6 +504,12 @@
 
 		if (projectId) {
 			loadProjectData(projectId)
+		}
+
+		return () => {
+			// when user navigates away, stop playback from PlaybackContextFrame context
+			const playbackContext = getContext<PlaybackContextT>('playback')
+			playbackContext.stop()
 		}
 	})
 </script>

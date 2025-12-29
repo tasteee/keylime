@@ -80,7 +80,15 @@ class ProjectStore {
   })
 
   chordSymbols: string[] = $derived.by(() => {
-    return this.progressionChords.map((chord) => chord.symbol)
+    return this.progressionChords.map((chord) => {
+      const hasOctaveOffset = chord.octaveOffset !== 0
+      const hasInversion = chord.inversion !== 0
+      const hasVoicingModifier = chord.voicing !== 'closed'
+      const isModified = hasOctaveOffset || hasInversion || hasVoicingModifier
+
+      const symbolWithModifier = isModified ? chord.symbol + '*' : chord.symbol
+      return symbolWithModifier
+    })
   })
 
   patternActiveDurationBeats = $derived.by(() => {

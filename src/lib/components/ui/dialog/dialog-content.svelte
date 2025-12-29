@@ -37,8 +37,8 @@
 	:global([data-slot='dialog-content']) {
 		max-height: 85vh;
 		overflow-y: auto;
-		background-color: white;
-		border: 1px solid var(--n-03);
+		background: white;
+		border: 2px solid var(--n-03);
 		border-radius: 8px;
 		padding: 24px;
 		position: fixed;

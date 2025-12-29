@@ -208,7 +208,7 @@
 			</div>
 		{/if}
 	</div>
-	<InfoBar />
+	<!-- <InfoBar /> -->
 </div>
 
 <style>

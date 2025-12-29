@@ -70,17 +70,18 @@ export const getProjectById = async (projectId: string) => {
   return { data, error, didSucceed: !error }
 }
 
-export const getProjectsByUserId = async (userId: string) => {
+export const getProjectsByUserId = async (userId: string, limit: number = 20, offset: number = 0) => {
   const supabase = createSupabaseClient()
 
-  const { data, error } = await supabase
+  const { data, error, count } = await supabase
     .from('all_projects')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('userId', userId)
     .order('updatedAt', { ascending: false })
+    .range(offset, offset + limit - 1)
 
   warnWhen(error, `Error fetching public projects: ${error?.message}`)
-  return { data, error, didSucceed: !error }
+  return { data, error, didSucceed: !error, totalCount: count ?? 0 }
 }
 
 type GetPublicProjectsOptionsT = {
@@ -92,6 +93,9 @@ type GetPublicProjectsOptionsT = {
   maxBpm?: number
   searchQuery?: string
   chordSymbols?: string[]
+  chordMatchMode?: 'all' | 'any'
+  limit?: number
+  offset?: number
 }
 
 const DEFAULT_GET_PUBLIC_PROJECTS_OPTIONS: GetPublicProjectsOptionsT = {
@@ -103,6 +107,9 @@ const DEFAULT_GET_PUBLIC_PROJECTS_OPTIONS: GetPublicProjectsOptionsT = {
   maxBpm: undefined,
   searchQuery: undefined,
   chordSymbols: undefined,
+  chordMatchMode: 'any',
+  limit: 20,
+  offset: 0,
 }
 
 export const getPublicProjects = async (options: GetPublicProjectsOptionsT) => {
@@ -137,19 +144,36 @@ export const getPublicProjects = async (options: GetPublicProjectsOptionsT) => {
   }
 
   if (Array.isArray(finalOptions.chordSymbols) && finalOptions.chordSymbols!.length > 0) {
-    query = query.contains('chordSymbols', finalOptions.chordSymbols)
+    const isMatchAll = finalOptions.chordMatchMode === 'all'
+    if (isMatchAll) {
+      query = query.contains('chordSymbols', finalOptions.chordSymbols)
+    }
+    if (!isMatchAll) {
+      query = query.overlaps('chordSymbols', finalOptions.chordSymbols)
+    }
   }
 
   const sortByColumn = finalOptions.sortBy || 'updatedAt'
   const isAscending = finalOptions.sortOrder === 'ascending'
   query = query.order(sortByColumn, { ascending: isAscending })
 
+  const limitValue = finalOptions.limit ?? 20
+  const offsetValue = finalOptions.offset ?? 0
+  query = query.range(offsetValue, offsetValue + limitValue - 1)
+
   const result = await query
   const data = result.data
   const error = result.error
   warnWhen(error, `Error fetching public projects: ${error?.message}`)
 
-  return { data, error }
+  const countQuery = supabase
+    .from('all_projects')
+    .select('id', { count: 'exact', head: true })
+    .eq('isPublic', true)
+  const countResult = await countQuery
+  const totalCount = countResult.count ?? 0
+
+  return { data, error, totalCount }
 }
 
 type GetPublicUsersOptionsT = {

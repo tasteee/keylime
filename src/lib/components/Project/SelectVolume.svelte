@@ -13,7 +13,7 @@
 </script>
 
 <Popover.Root>
-	<Popover.Trigger size="small" value={output.volume.toString()}>
+	<Popover.Trigger color="brand" size="small" value={output.volume.toString()}>
 		{#snippet label()}
 			<Icon icon="mingcute:volume-line" />
 		{/snippet}

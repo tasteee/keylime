@@ -18,6 +18,7 @@
 
 		// Geometry
 		width?: string
+		minWidth?: string
 		height?: string
 		padding?: string
 		paddingBottom?: string
@@ -58,6 +59,7 @@
 		justify = 'flex-start',
 		align = 'stretch',
 		width,
+		minWidth,
 		height,
 		padding,
 		class: className = '',
@@ -100,6 +102,7 @@
 			`justify-content: ${cssJustifyContent}`,
 			`align-items: ${cssAlignItems}`,
 			width || isFullWidth ? `width: ${width || '100%'}` : '',
+			minWidth ? `min-width: ${minWidth}` : '',
 			height ? `height: ${height}` : '',
 			padding ? `padding: ${padding}` : '',
 			props.paddingBottom ? `padding-bottom: ${props.paddingBottom}` : '',
