@@ -36,7 +36,6 @@
 	}
 
 	const context = getContext<ProjectEditorContextT>('projectEditor')
-
 	const gridChords = $derived(context.gridChords)
 
 	const keyScaleText = $derived.by(() => {

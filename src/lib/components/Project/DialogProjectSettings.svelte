@@ -103,11 +103,11 @@
 		</div>
 
 		<Dialog.Footer>
-			<Button kind="outline" onclick={handleClose} class="flex-1">
+			<Button size="large" isFullWidth kind="outline" onclick={handleClose} class="flex-1">
 				<Icon icon="mingcute:close-line" class="size-4" />
 				Close
 			</Button>
-			<Button color="brand" onclick={handleSave} class="flex-1" disabled={isSaving}>
+			<Button size="large" isFullWidth color="brand" onclick={handleSave} class="flex-1" disabled={isSaving}>
 				<Icon icon="mingcute:save-line" class="size-4" />
 				{isSaving ? 'Saving...' : 'Save'}
 			</Button>

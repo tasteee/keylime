@@ -168,11 +168,11 @@
 <div class="dashboard" in:fade>
 	<TopBar />
 
-	<main class="pageMainContent">
+	<main data-page-content-scrollable class="pageMainContent">
 		<Box class="pageHeader" isColumn>
 			<Box isFullWidth justify="between" align="center" class="pageHeaderRow">
 				<h1 class="pageTitle">My Projects</h1>
-				<Button onclick={handleCreateProject}>
+				<Button onclick={handleCreateProject} size="medium" color="brand">
 					<Icon icon="mingcute:add-line" class="mr-2 size-4" />
 					New Project
 				</Button>
@@ -247,15 +247,6 @@
 		flex-direction: column;
 		min-height: 100vh;
 		background: var(--n-01);
-	}
-
-	.pageMainContent {
-		flex: 1;
-		padding: 40px;
-		max-width: 1200px;
-		margin: 0 auto;
-		width: 100%;
-		box-sizing: border-box;
 	}
 
 	:global .pageHeader {

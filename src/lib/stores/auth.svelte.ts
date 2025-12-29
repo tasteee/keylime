@@ -1,6 +1,6 @@
 import { browser } from '$app/environment'
 import { goto, invalidateAll } from '$app/navigation'
-import { getUserById } from '$lib/modules/database'
+import { getUserById, updateUserProfile, checkUsernameAvailable } from '$lib/modules/database'
 import { asCleanAsync, cleanAsync } from '$lib/modules/promises'
 import { warnWhen } from '$lib/modules/warnWhen'
 import { createSupabaseClient } from '$lib/supabase/client'
@@ -23,6 +23,14 @@ type ResetPasswordArgsT = {
 
 type UpdatePasswordArgsT = {
   newPassword: string
+}
+
+type UpdateUserSettingsArgsT = {
+  userName?: string
+  email?: string
+  bio?: string
+  avatarUrl?: string
+  newPassword?: string
 }
 
 type AuthResultT = {
@@ -146,10 +154,14 @@ class AuthStore {
       return { success: false, error: errorMessage }
     }
 
+    console.log('[auth.store] Generating username for:', args.email)
+    const generatedUsername = await this.generateUniqueUsername(args.email)
+    console.log('[auth.store] Generated username:', generatedUsername)
+
     console.log('[auth.store] Creating user profile for userId:', signedUpUser.id)
     const createProfileResult = await this.createUserProfile({
       userId: signedUpUser.id,
-      userName: args.email,
+      userName: generatedUsername,
       bio: ''
     })
 
@@ -166,6 +178,23 @@ class AuthStore {
     await this.loadUserProfile()
     console.log('[auth.store] signUp complete, returning success')
     return { success: true, user: signedUpUser }
+  }
+
+  generateUniqueUsername = async (email: string): Promise<string> => {
+    const baseUsername = email.split('@')[0]
+    const isBaseAvailable = await checkUsernameAvailable(baseUsername)
+    if (isBaseAvailable) return baseUsername
+
+    const maxAttempts = 100
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const randomDigits = Math.floor(1000 + Math.random() * 9000)
+      const candidateUsername = `${baseUsername}${randomDigits}`
+      const isCandidateAvailable = await checkUsernameAvailable(candidateUsername)
+      if (isCandidateAvailable) return candidateUsername
+    }
+
+    const fallbackUsername = `${baseUsername}${Date.now()}`
+    return fallbackUsername
   }
 
   createUserProfile = async (args: CreateUserProfileArgsT): Promise<AuthResultT> => {
@@ -282,6 +311,66 @@ class AuthStore {
       this.error = errorMessage
       return { success: false, error: errorMessage }
     }
+
+    return { success: true }
+  }
+
+  updateUserSettings = async (args: UpdateUserSettingsArgsT): Promise<AuthResultT> => {
+    this.error = null
+
+    const hasNoAuthUser = !this.authUser
+    if (hasNoAuthUser) {
+      const errorMessage = 'No authenticated user'
+      this.error = errorMessage
+      return { success: false, error: errorMessage }
+    }
+
+    const supabase = createSupabaseClient()
+
+    const hasEmailUpdate = args.email && args.email !== this.authUser?.email
+    if (hasEmailUpdate) {
+      const updateEmailResponse = await supabase.auth.updateUser({
+        email: args.email
+      })
+
+      const hasEmailError = !!updateEmailResponse.error
+      if (hasEmailError) {
+        const errorMessage = updateEmailResponse.error.message
+        this.error = errorMessage
+        return { success: false, error: errorMessage }
+      }
+    }
+
+    const hasPasswordUpdate = args.newPassword && args.newPassword.length > 0
+    if (hasPasswordUpdate) {
+      const updatePasswordResult = await this.updatePassword({
+        newPassword: args.newPassword!
+      })
+
+      const hasPasswordError = !updatePasswordResult.success
+      if (hasPasswordError) {
+        return updatePasswordResult
+      }
+    }
+
+    const hasProfileUpdate = args.userName || args.bio !== undefined || args.avatarUrl !== undefined
+    if (hasProfileUpdate) {
+      const updateProfileResult = await updateUserProfile({
+        userId: this.authUser!.id,
+        userName: args.userName,
+        bio: args.bio,
+        avatarUrl: args.avatarUrl
+      })
+
+      const hasProfileError = !updateProfileResult.didSucceed
+      if (hasProfileError) {
+        const errorMessage = updateProfileResult.error?.message || 'Failed to update profile'
+        this.error = errorMessage
+        return { success: false, error: errorMessage }
+      }
+    }
+
+    await this.loadUserProfile()
 
     return { success: true }
   }

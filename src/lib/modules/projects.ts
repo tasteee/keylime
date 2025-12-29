@@ -60,13 +60,20 @@ export const saveProject = async (project: ProjectT): Promise<any> => {
   console.log('saveProject called for project:', project)
   const supabase = createSupabaseClient()
 
-  const supabaseSaveResult = await supabase
-    .from('all_projects')
-    .upsert(project as any)
-    .select()
+  console.log('About to call supabase upsert...')
 
-  console.log('supabase save result:', supabaseSaveResult)
-  return supabaseSaveResult
+  try {
+    const supabaseSaveResult = await supabase
+      .from('all_projects')
+      .upsert(project as any)
+      .select()
+
+    console.log('supabase save result:', supabaseSaveResult)
+    return supabaseSaveResult
+  } catch (error) {
+    console.error('Error in saveProject:', error)
+    throw error
+  }
 }
 
 export const deleteProject = async (id: string) => {

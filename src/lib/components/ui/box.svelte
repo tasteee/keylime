@@ -90,8 +90,8 @@
 	// Logic to resolve Alignment based on User's X/Y Mental Model
 	// justify -> always horizontal control
 	// align -> always vertical control
-	let cssJustifyContent = $derived(getFlexValue(isColumn ? align : justify))
-	let cssAlignItems = $derived(getFlexValue(isColumn ? justify : align))
+	let cssJustifyContent = $derived.by(() => getFlexValue(isColumn ? align : justify))
+	let cssAlignItems = $derived.by(() => getFlexValue(isColumn ? justify : align))
 
 	let cssStyles = $derived(
 		[

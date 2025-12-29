@@ -113,7 +113,7 @@
 <div class="pageContainer" in:fade>
 	<TopBar />
 
-	<main class="pageMainContent">
+	<main data-page-content-scrollable class="pageMainContent">
 		<Box isColumn class="pageContentHeader">
 			<h1 class="pageTitle">Discover Projects</h1>
 			<p class="pageSubtitle">Explore projects from the community and what-not.</p>

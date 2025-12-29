@@ -6,8 +6,11 @@
 	import { authStore } from '$lib/stores/auth.svelte'
 	import * as Avatar from '$lib/components/ui/avatar'
 	import Box from './ui/box.svelte'
+	import DialogUserSettings from './DialogUserSettings.svelte'
 
 	let props = $props()
+
+	let isSettingsDialogOpen = $state(false)
 
 	const goToDashboard = () => {
 		console.log('[TopBar] Navigating to /dashboard')
@@ -17,6 +20,14 @@
 	const handleLogout = async () => {
 		console.log('[TopBar] handleLogout called')
 		await authStore.signOut()
+	}
+
+	const openUserSettings = () => {
+		isSettingsDialogOpen = true
+	}
+
+	const handleSettingsDialogChange = (open: boolean) => {
+		isSettingsDialogOpen = open
 	}
 </script>
 
@@ -39,14 +50,20 @@
 
 		<Box align="center" gap="8px" class="userControls">
 			<Button kind="ghost" isIcon onclick={handleLogout}><SignOut width={24} color="var(--n-08)" /></Button>
-			<Avatar.Root class="size-6">
-				<Avatar.Fallback class="logoFont">
-					{authStore.userProfile?.userName?.slice(0, 2).toUpperCase() || 'U'}
-				</Avatar.Fallback>
-			</Avatar.Root>
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div onclick={openUserSettings} class="avatarButton">
+				<Avatar.Root class="size-6">
+					<Avatar.Fallback class="logoFont">
+						{authStore.userProfile?.userName?.slice(0, 2).toUpperCase() || 'U'}
+					</Avatar.Fallback>
+				</Avatar.Root>
+			</div>
 		</Box>
 	</Box>
 </div>
+
+<DialogUserSettings isOpen={isSettingsDialogOpen} onOpenChange={handleSettingsDialogChange} />
 
 <style>
 	.logoBox {
@@ -89,5 +106,14 @@
 		gap: 10px;
 		color: var(--foreground);
 		text-decoration: none;
+	}
+
+	.avatarButton {
+		cursor: pointer;
+		transition: opacity 0.2s ease;
+	}
+
+	.avatarButton:hover {
+		opacity: 0.8;
 	}
 </style>

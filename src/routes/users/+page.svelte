@@ -74,7 +74,7 @@
 <div class="pageContainer" in:fade>
 	<TopBar />
 
-	<main class="pageMainContent">
+	<main data-page-content-scrollable class="pageMainContent">
 		<Box isColumn class="pageContentHeader">
 			<h1 class="pageTitle">Discover Creators</h1>
 			<p class="pageSubtitle">Explore musicians and their chord progressions</p>

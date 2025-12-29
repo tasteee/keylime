@@ -32,9 +32,26 @@
 }
 
 .pageMainContent {
-  max-width: 1200px;
-  margin: 0 auto;
+  /* max-width: 1200px; */
+  margin: 0;
+}
+
+[data-page-content-scrollable] {
+  flex: 1;
   padding: 40px;
+  /* max-width: 1200px; */
+  /* margin: 0 auto; */
+  width: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: 40px max(24px, calc((100vw - 1200px) / 2));
+
+  overflow-x: hidden;
+  max-height: calc(100vh - 110px);
+}
+
+[data-page-content-scrollable]::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .pageContentHeader {

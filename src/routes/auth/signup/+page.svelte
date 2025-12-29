@@ -45,14 +45,16 @@
 
 <div class="authPage">
 	<div class="authCard">
-		<Box gap="24px" isColumn>
+		<Box gap="24px" isColumn align="stretch" justify="stretch">
 			<div class="header">
+				<h1 class="logo">KEYLIME</h1>
+
 				<h1 class="title">Create Account</h1>
 				<p class="subtitle">Sign up to get started</p>
 			</div>
 
 			<form class="form" onsubmit={handleSubmit}>
-				<Box gap="16px" isColumn>
+				<Box gap="16px" isColumn align="stretch" justify="stretch">
 					{#if errorMessage}
 						<div class="error">
 							{errorMessage}
@@ -60,15 +62,30 @@
 					{/if}
 					<div class="field">
 						<Label for="email">Email</Label>
-						<Input type="email" id="email" name="email" placeholder="name@example.com" required bind:value={email} />
+						<Input
+							size="large"
+							type="email"
+							id="email"
+							name="email"
+							placeholder="name@example.com"
+							required
+							bind:value={email}
+						/>
 					</div>
 					<div class="field">
 						<Label for="password">Password</Label>
-						<Input type="password" id="password" name="password" required bind:value={password} />
+						<Input size="large" type="password" id="password" name="password" required bind:value={password} />
 					</div>
 					<div class="field">
 						<Label for="confirmPassword">Confirm Password</Label>
-						<Input type="password" id="confirmPassword" name="confirmPassword" required bind:value={confirmPassword} />
+						<Input
+							size="large"
+							type="password"
+							id="confirmPassword"
+							name="confirmPassword"
+							required
+							bind:value={confirmPassword}
+						/>
 					</div>
 				</Box>
 
@@ -114,6 +131,7 @@
 	.header {
 		text-align: center;
 		margin-bottom: 8px;
+		width: 100%;
 	}
 
 	.title {
@@ -133,6 +151,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 24px;
+		width: 100%;
 	}
 
 	.field {
@@ -156,6 +175,7 @@
 
 	.footer {
 		text-align: center;
+		width: 100%;
 	}
 
 	.link {

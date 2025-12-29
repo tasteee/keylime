@@ -227,6 +227,38 @@ export const getUserByUserName = async (userName: string) => {
   return { data, error }
 }
 
+export const checkUsernameAvailable = async (userName: string): Promise<boolean> => {
+  const result = await getUserByUserName(userName)
+  const isNotFound = result.error && result.error.message.includes('multiple (or no) rows')
+  const isAvailable = !result.data || !!isNotFound
+  return isAvailable
+}
+
+type UpdateUserProfileArgsT = {
+  userId: string
+  userName?: string
+  bio?: string
+  avatarUrl?: string
+}
+
+export const updateUserProfile = async (args: UpdateUserProfileArgsT) => {
+  const supabase = createSupabaseClient()
+
+  const updateData: Partial<UserT> = {}
+  if (args.userName !== undefined) updateData.userName = args.userName
+  if (args.bio !== undefined) updateData.bio = args.bio
+  if (args.avatarUrl !== undefined) updateData.avatarUrl = args.avatarUrl
+
+  const { error } = await supabase
+    .from('all_users')
+    // @ts-ignore - Supabase type generation issue
+    .update(updateData)
+    .eq('id', args.userId)
+
+  if (!!error) warnWhen(error, `Error updating user profile: ${error.message}`)
+  return { error, didSucceed: !error }
+}
+
 export const getPublicProjectsByUserName = async (userName: string) => {
   const supabase = createSupabaseClient()
 
