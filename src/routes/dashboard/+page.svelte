@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
 	import { authStore } from '$lib/stores/auth.svelte'
-	import dashboardStore from '$lib/stores/dashboard.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
 	import { fade } from 'svelte/transition'
@@ -10,12 +9,24 @@
 	import ConfirmDeleteDialog from '$lib/components/Dashboard/ConfirmDeleteDialog.svelte'
 	import Box from '$lib/components/ui/box.svelte'
 	import ProjectCard from '$lib/components/ProjectCard.svelte'
-	import dayjs from 'dayjs'
-	import relativeTime from 'dayjs/plugin/relativeTime'
+	import { daysAgo } from '$lib/modules/dateTime'
 	import ProjectsBrowserBar from '$lib/components/ProjectsBrowserBar.svelte'
+	import { addProject, deleteProjectById, getProjectsByUserId, cloneProjectById } from '$lib/modules/database'
+	import { createNewProjectData } from '$lib/modules/projects'
+	import { calculateStartTimes } from '$lib/helpers/progression'
 
-	dayjs.extend(relativeTime)
+	type PropsT = {
+		data: {
+			activeUser: UserT | null
+			projects: ProjectT[]
+		}
+	}
 
+	const props: PropsT = $props()
+
+	let userProjects = $state<ProjectT[]>([])
+	let isLoadingUserProjects = $state(false)
+	let totalProjectsCount = $state(0)
 	let isDeleteDialogOpen = $state(false)
 	let projectToDelete = $state<{ id: string; title: string } | null>(null)
 	let activeFilters = $state({
@@ -27,8 +38,36 @@
 		chordSymbols: [] as string[],
 		chordMatchMode: 'any' as 'all' | 'any'
 	})
+
 	let currentPage = $state(1)
-	let itemsPerPage = 20
+	const itemsPerPage = 20
+
+	const parseProjectData = (project: ProjectT): ProjectT => {
+		const parsedProgressionChords =
+			typeof project.progressionChords === 'string' ? JSON.parse(project.progressionChords) : project.progressionChords
+
+		const progressionChordsWithStartTime = calculateStartTimes({ items: parsedProgressionChords })
+
+		return {
+			...project,
+			updatedAt: new Date(project.updatedAt),
+			createdAt: new Date(project.createdAt),
+			octave: String(project.octave),
+			progressionChords: progressionChordsWithStartTime,
+			patternSignals:
+				typeof project.patternSignals === 'string' ? JSON.parse(project.patternSignals) : project.patternSignals,
+			patternSignalRows:
+				typeof project.patternSignalRows === 'string' ? JSON.parse(project.patternSignalRows) : project.patternSignalRows
+		}
+	}
+
+	// Initialize with SSR data
+	$effect(() => {
+		if (browser && props.data.projects.length > 0) {
+			userProjects = props.data.projects.map(parseProjectData)
+			totalProjectsCount = props.data.projects.length
+		}
+	})
 
 	// Redirect if not authenticated
 	$effect(() => {
@@ -44,23 +83,32 @@
 		}
 	})
 
-	// Load projects when dashboard mounts.
-	$effect(() => {
-		console.log('[dashboard] Load projects effect:', {
-			browser,
-			hasAuthUser: !!authStore.authUser,
-			userId: authStore.authUser?.id
-		})
-		if (browser && authStore.authUser) {
-			console.log('[dashboard] Loading user projects')
-			const offsetValue = (currentPage - 1) * itemsPerPage
-			dashboardStore.loadUserProjects(itemsPerPage, offsetValue)
+	const loadUserProjects = async (limit: number = 20, offset: number = 0) => {
+		if (!authStore.authUser) return
+		isLoadingUserProjects = true
+
+		const results = await getProjectsByUserId(authStore.authUser.id, limit, offset)
+		const projects = (results.data || []) as ProjectT[]
+
+		if (results.error) {
+			console.error('Error loading user projects:', results.error)
+			isLoadingUserProjects = false
+			return
 		}
-	})
+
+		totalProjectsCount = results.totalCount || 0
+		userProjects = projects.map(parseProjectData)
+		isLoadingUserProjects = false
+	}
 
 	const handleCreateProject = async () => {
-		const project = await dashboardStore.createUserProject()
-		if (project) goto(`/project/${project.id}`)
+		const userId = props.data.activeUser.id
+		const newProjectData = createNewProjectData(userId)
+		const result = await addProject(newProjectData)
+		console.log('\n\n\nhandleCreateProject result:', { result, newProjectData, userId })
+		if (!result.data) return
+		const project = result.data as ProjectT
+		goto(`/project/${project.id}`)
 	}
 
 	const handleDeleteProject = (event: Event, id: string, title: string) => {
@@ -69,9 +117,10 @@
 		isDeleteDialogOpen = true
 	}
 
-	const handleConfirmDelete = () => {
+	const handleConfirmDelete = async () => {
 		if (projectToDelete) {
-			dashboardStore.deleteUserProject(projectToDelete.id)
+			await deleteProjectById(projectToDelete.id)
+			await loadUserProjects()
 			projectToDelete = null
 		}
 	}
@@ -81,7 +130,7 @@
 	}
 
 	const filteredProjects = $derived.by(() => {
-		let results = dashboardStore.userProjects
+		let results = userProjects
 
 		// Filter by search text
 		const hasSearchText = activeFilters.searchText.trim().length > 0
@@ -145,33 +194,31 @@
 		goto(`/project/${id}`)
 	}
 
-	const daysAgo = (date: Date) => {
-		return dayjs(date).fromNow()
-	}
-
 	const handleCloneProject = async (projectId: string) => {
-		const clonedProject = await dashboardStore.cloneProject(projectId)
-		if (clonedProject) {
-			goto(`/project/${clonedProject.id}`)
+		if (!authStore.authUser) return
+		const result = await cloneProjectById(projectId, authStore.authUser.id)
+		if (result.data) {
+			await loadUserProjects()
+			goto(`/project/${result.data.id}`)
 		}
 	}
 
 	const handlePageChange = (page: number) => {
 		currentPage = page
 		const offsetValue = (page - 1) * itemsPerPage
-		dashboardStore.loadUserProjects(itemsPerPage, offsetValue)
+		loadUserProjects(itemsPerPage, offsetValue)
 	}
 
-	const totalPages = $derived(Math.ceil(dashboardStore.totalProjectsCount / itemsPerPage))
+	const totalPages = $derived(Math.ceil(totalProjectsCount / itemsPerPage))
 </script>
 
 <div class="dashboard" in:fade>
 	<TopBar />
 
 	<main data-page-content-scrollable class="pageMainContent">
-		<Box class="pageHeader" isColumn>
-			<Box isFullWidth justify="between" align="center" class="pageHeaderRow">
-				<h1 class="pageTitle">My Projects</h1>
+		<Box class="pageContentHeader" isColumn>
+			<Box isFullWidth justify="between" align="center">
+				<h1 class="pageTitle">Your Projects</h1>
 				<Button onclick={handleCreateProject} size="medium" color="brand">
 					<Icon icon="mingcute:add-line" class="mr-2 size-4" />
 					New Project
@@ -193,21 +240,21 @@
 			{/each}
 		</div>
 
-		{#if filteredProjects.length === 0 && dashboardStore.userProjects.length > 0}
+		{#if filteredProjects.length === 0 && userProjects.length > 0}
 			<div class="empty-state">
 				<p>No projects match your filters.</p>
 			</div>
-		{:else if dashboardStore.userProjects.length === 0}
+		{:else if userProjects.length === 0}
 			<div class="empty-state">
 				<p>No projects yet. Create one to get started!</p>
 			</div>
 		{/if}
 
-		{#if dashboardStore.totalProjectsCount > itemsPerPage}
+		{#if totalProjectsCount > itemsPerPage}
 			<Box justify="center" gap="8px" class="mt-6">
 				<Button
 					onclick={() => handlePageChange(currentPage - 1)}
-					disabled={currentPage === 1 || dashboardStore.isLoadingUserProjects}
+					disabled={currentPage === 1 || isLoadingUserProjects}
 					kind="outline"
 					size="medium"
 				>
@@ -218,7 +265,7 @@
 				</span>
 				<Button
 					onclick={() => handlePageChange(currentPage + 1)}
-					disabled={currentPage >= totalPages || dashboardStore.isLoadingUserProjects}
+					disabled={currentPage >= totalPages || isLoadingUserProjects}
 					kind="outline"
 					size="medium"
 				>
@@ -247,10 +294,6 @@
 		flex-direction: column;
 		min-height: 100vh;
 		background: var(--n-01);
-	}
-
-	:global .pageHeader {
-		margin-bottom: 24px;
 	}
 
 	.projects-grid {

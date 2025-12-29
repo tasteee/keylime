@@ -6,7 +6,6 @@
 	import PatternEditor from '$lib/components/Project/PatternEditor.svelte'
 	import ProgressionPanel from '$lib/components/Project/ProgressionPanel.svelte'
 	import TopBar from '$lib/components/Project/TopBar.svelte'
-	import InfoBar from '$lib/components/Project/InfoBar.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { browser } from '$app/environment'
 	import { onMount, onDestroy } from 'svelte'
@@ -208,7 +207,6 @@
 			</div>
 		{/if}
 	</div>
-	<!-- <InfoBar /> -->
 </div>
 
 <style>

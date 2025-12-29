@@ -44,7 +44,7 @@
 		position: fixed;
 		top: 50%;
 		left: 50%;
-		z-index: 1500;
+		z-index: 10001 !important;
 		transform: translate(-50%, -50%);
 		box-shadow:
 			0 10px 15px -3px rgba(0, 0, 0, 0.1),

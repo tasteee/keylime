@@ -1,7 +1,6 @@
 import { goto } from "$app/navigation"
 import { SIGNAL_ROWS } from "$lib/constants/signalRows"
-import { createSupabaseClient } from "$lib/supabase/client"
-import { awaited } from "./the-awaited"
+import { supabase } from "$lib/supabase/client"
 
 export const getFreshPatternSignalRows = () => {
   return JSON.parse(JSON.stringify(SIGNAL_ROWS))
@@ -58,7 +57,6 @@ export const createClonedProjectData = (userId: string, overrides: Partial<Proje
 // overwrite or create a new project in the database.
 export const saveProject = async (project: ProjectT): Promise<any> => {
   console.log('saveProject called for project:', project)
-  const supabase = createSupabaseClient()
 
   console.log('About to call supabase upsert...')
 
@@ -77,7 +75,6 @@ export const saveProject = async (project: ProjectT): Promise<any> => {
 }
 
 export const deleteProject = async (id: string) => {
-  const supabase = createSupabaseClient()
 
   const supabaseDeleteResult = await supabase
     .from('all_projects')
@@ -92,7 +89,7 @@ export const goToProjectEditor = (id: string) => {
 }
 
 export const loadProject = async (id: string): Promise<any> => {
-  const supabase = createSupabaseClient()
+
 
   const supabaseLoadResult = await supabase
     .from('all_projects')

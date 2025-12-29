@@ -91,7 +91,7 @@
 
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger>
-				<Button isIcon aria-label="Save Options">
+				<Button color={isDirty ? 'brand' : undefined} isIcon aria-label="Save Options" ondblclick={handleSave}>
 					<FloppyDisk size={16} />
 				</Button>
 			</DropdownMenu.Trigger>

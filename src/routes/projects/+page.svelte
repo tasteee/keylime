@@ -1,36 +1,36 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button'
-	import { Input } from '$lib/components/ui/input'
-	import * as Avatar from '$lib/components/ui/avatar'
 	import Icon from '@iconify/svelte'
-	import dayjs from 'dayjs'
-	import relativeTime from 'dayjs/plugin/relativeTime'
+	import { daysAgo } from '$lib/modules/dateTime'
 	import { goto } from '$app/navigation'
-	import { authStore } from '$lib/stores/auth.svelte'
 	import { fade } from 'svelte/transition'
 	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
-	import { createSupabaseClient } from '$lib/supabase/client'
-	import { getPublicProjects } from '$lib/modules/database'
-	import Badge from '$lib/components/ui/badge/badge.svelte'
+	import { getPublicProjects, cloneProjectById } from '$lib/modules/database'
 	import Box from '$lib/components/ui/box.svelte'
 	import ProjectCard from '$lib/components/ProjectCard.svelte'
 	import ProjectsBrowserBar from '$lib/components/ProjectsBrowserBar.svelte'
-	import dashboardStore from '$lib/stores/dashboard.svelte'
-
-	dayjs.extend(relativeTime)
+	import { authStore } from '$lib/stores/auth.svelte'
 
 	type ProjectResultT = ProjectT & {
 		userName: string
 		avatarUrl: string | null
 	}
 
-	dayjs.extend(relativeTime)
+	type PropsT = {
+		data: {
+			projects: ProjectResultT[]
+		}
+	}
 
-	let projects = $state<ProjectResultT[]>([])
+	const props: PropsT = $props()
+
+	let projects = $state<ProjectResultT[]>(props.data.projects)
 	let isLoading = $state(false)
 	let currentPage = $state(1)
-	let totalCount = $state(0)
-	let itemsPerPage = 20
+	let totalCount = $state(props.data.projects.length)
+	let currentFilterOptions = $state<FilterOptionsT | undefined>(undefined)
+
+	const itemsPerPage = 20
 
 	type FilterOptionsT = {
 		searchText: string
@@ -45,6 +45,7 @@
 	const loadPublicProjects = async (filterOptions?: FilterOptionsT, page: number = 1) => {
 		isLoading = true
 		currentPage = page
+		currentFilterOptions = filterOptions
 
 		const offsetValue = (page - 1) * itemsPerPage
 
@@ -90,24 +91,25 @@
 		goto(`/project/${projectId}`)
 	}
 
-	const daysAgo = (date: Date) => {
-		return dayjs(date).fromNow()
-	}
-
 	const handleFilterSubmit = (options: FilterOptionsT) => {
 		loadPublicProjects(options, 1)
 	}
 
 	const handleCloneProject = async (projectId: string) => {
-		const clonedProject = await dashboardStore.cloneProject(projectId)
-		if (clonedProject) {
-			goto(`/project/${clonedProject.id}`)
+		if (!authStore.authUser) return
+		const result = await cloneProjectById(projectId, authStore.authUser.id)
+		if (result.data) {
+			goto(`/project/${result.data.id}`)
 		}
 	}
 
-	$effect(() => {
-		loadPublicProjects()
-	})
+	const handlePreviousPage = () => {
+		loadPublicProjects(currentFilterOptions, currentPage - 1)
+	}
+
+	const handleNextPage = () => {
+		loadPublicProjects(currentFilterOptions, currentPage + 1)
+	}
 </script>
 
 <div class="pageContainer" in:fade>
@@ -145,19 +147,14 @@
 
 		{#if totalCount > itemsPerPage}
 			<Box justify="center" gap="8px" class="mt-6">
-				<Button
-					onclick={() => loadPublicProjects(undefined, currentPage - 1)}
-					disabled={currentPage === 1 || isLoading}
-					kind="outline"
-					size="medium"
-				>
+				<Button onnclick={handlePreviousPage} disabled={currentPage === 1 || isLoading} kind="outline" size="medium">
 					<Icon icon="mingcute:left-line" class="size-4" />
 				</Button>
 				<span class="text-sm text-muted-foreground">
 					Page {currentPage} of {Math.ceil(totalCount / itemsPerPage)}
 				</span>
 				<Button
-					onclick={() => loadPublicProjects(undefined, currentPage + 1)}
+					onnclick={handleNextPage}
 					disabled={currentPage >= Math.ceil(totalCount / itemsPerPage) || isLoading}
 					kind="outline"
 					size="medium"

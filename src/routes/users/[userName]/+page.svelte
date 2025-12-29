@@ -1,37 +1,32 @@
 <script lang="ts">
-	import { page } from '$app/stores'
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
 	import { goto } from '$app/navigation'
 	import { authStore } from '$lib/stores/auth.svelte'
 	import { fade } from 'svelte/transition'
 	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
-	import { getUserByUserName, getPublicProjectsByUserName } from '$lib/modules/database'
+	import { cloneProjectById } from '$lib/modules/database'
 	import ProjectCard from '$lib/components/ProjectCard.svelte'
 	import ProjectsBrowserBar from '$lib/components/ProjectsBrowserBar.svelte'
 	import Box from '$lib/components/ui/box.svelte'
 	import dayjs from 'dayjs'
 	import relativeTime from 'dayjs/plugin/relativeTime'
-	import dashboardStore from '$lib/stores/dashboard.svelte'
+	import { browser } from '$app/environment'
+	import { calculateStartTimes } from '$lib/helpers/progression'
 
 	dayjs.extend(relativeTime)
 
 	type UserProfilePagePropsT = {
 		data: {
-			userName: string
+			user: UserT | null
+			projects: ProjectT[]
 		}
 	}
 
 	const props: UserProfilePagePropsT = $props()
 
-	type ProjectResultT = ProjectT & {
-		userName: string
-		avatarUrl: string | null
-	}
-
 	let userProfile = $state<UserT | null>(null)
-	let projects = $state<ProjectResultT[]>([])
-	let isLoading = $state(true)
+	let projects = $state<ProjectT[]>([])
 	let activeFilters = $state({
 		searchText: '',
 		key: null as string | null,
@@ -44,40 +39,40 @@
 	let currentPage = $state(1)
 	let itemsPerPage = 20
 
-	const loadUserProfile = async () => {
-		isLoading = true
-		const userName = $page.params.userName
+	const parseProjectData = (project: ProjectT): ProjectT => {
+		const parsedProgressionChords =
+			typeof project.progressionChords === 'string' ? JSON.parse(project.progressionChords) : project.progressionChords
 
-		const userResult = await getUserByUserName(userName)
-		const projectsResult = await getPublicProjectsByUserName(userName)
+		const progressionChordsWithStartTime = calculateStartTimes({ items: parsedProgressionChords })
 
-		if (userResult.error || !userResult.data) {
-			console.error('Error loading user profile:', userResult.error)
-			userProfile = null
-			projects = []
-			isLoading = false
-			return
+		return {
+			...project,
+			updatedAt: new Date(project.updatedAt),
+			createdAt: new Date(project.createdAt),
+			octave: String(project.octave),
+			progressionChords: progressionChordsWithStartTime as any,
+			patternSignals:
+				typeof project.patternSignals === 'string' ? JSON.parse(project.patternSignals) : project.patternSignals,
+			patternSignalRows:
+				typeof project.patternSignalRows === 'string' ? JSON.parse(project.patternSignalRows) : project.patternSignalRows
 		}
-
-		userProfile = {
-			...userResult.data,
-			updatedAt: new Date(userResult.data.updatedAt),
-			createdAt: new Date(userResult.data.createdAt)
-		}
-
-		const projectResults = (projectsResult.data || []) as ProjectResultT[]
-		projects = projectResults.map((project) => {
-			return {
-				...project,
-				userName: project.userName,
-				avatarUrl: project.avatarUrl,
-				updatedAt: new Date(project.updatedAt),
-				createdAt: new Date(project.createdAt)
-			}
-		})
-
-		isLoading = false
 	}
+
+	$effect(() => {
+		if (browser && props.data.user) {
+			userProfile = {
+				...props.data.user,
+				updatedAt: new Date(props.data.user.updatedAt),
+				createdAt: new Date(props.data.user.createdAt)
+			}
+		}
+	})
+
+	$effect(() => {
+		if (browser && props.data.projects.length > 0) {
+			projects = props.data.projects.map(parseProjectData)
+		}
+	})
 
 	const handleOpenProject = (projectId: string) => {
 		goto(`/project/${projectId}`)
@@ -95,14 +90,11 @@
 		return dayjs(date).fromNow()
 	}
 
-	const isOwnProfile = $derived.by(() => {
-		return authStore.userProfile?.userName === props.data.userName
-	})
-
 	const handleCloneProject = async (projectId: string) => {
-		const clonedProject = await dashboardStore.cloneProject(projectId)
-		if (clonedProject) {
-			goto(`/project/${clonedProject.id}`)
+		if (!authStore.authUser) return
+		const result = await cloneProjectById(projectId, authStore.authUser.id)
+		if (result.data) {
+			goto(`/project/${result.data.id}`)
 		}
 	}
 
@@ -185,8 +177,8 @@
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}
 
-	$effect(() => {
-		loadUserProfile()
+	const isOwnProfile = $derived.by(() => {
+		return authStore.userProfile?.userName === userProfile?.userName
 	})
 </script>
 
@@ -194,15 +186,11 @@
 	<TopBar />
 
 	<main data-page-content-scrollable class="pageMainContent">
-		{#if isLoading}
-			<div class="loading-state">
-				<p>Loading profile...</p>
-			</div>
-		{:else if !userProfile}
+		{#if !userProfile}
 			<div class="error-state">
 				<Icon icon="mingcute:user-3-line" class="size-16 mb-4 opacity-30" />
 				<h2>User Not Found</h2>
-				<p>The user @{props.data.userName} could not be found.</p>
+				<p>The user could not be found.</p>
 				<Button onclick={handleGoBack} class="mt-4">Back to Users</Button>
 			</div>
 		{:else}
@@ -253,7 +241,7 @@
 				<div class="projects-grid">
 					{#each paginatedProjects as project (project.id)}
 						<ProjectCard
-							{project}
+							project={project as any}
 							daysAgo={daysAgo(project.updatedAt)}
 							onOpenProject={handleOpenProject}
 							onCloneProject={handleCloneProject}
@@ -292,17 +280,7 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-		background: var(--n-01);
 		overflow: hidden;
-	}
-
-	:global .pageHeader {
-		margin-bottom: 24px;
-		background: var(--colorWhite);
-		border-radius: 12px;
-		padding: 32px;
-		border: 1px solid var(--n-03);
-		box-shadow: 0 2px 8px var(--n-alpha-1);
 	}
 
 	.header-avatar {
@@ -348,14 +326,6 @@
 		gap: 6px;
 	}
 
-	.inline-icon {
-		font-size: 14px;
-	}
-
-	.section-header {
-		margin-bottom: 24px;
-	}
-
 	.section-title {
 		font-size: 20px;
 		font-weight: 700;
@@ -376,7 +346,6 @@
 		margin-bottom: 32px;
 	}
 
-	.loading-state,
 	.error-state,
 	.empty-state {
 		text-align: center;

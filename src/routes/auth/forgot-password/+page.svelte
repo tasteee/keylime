@@ -3,8 +3,8 @@
 	import { Input } from '$lib/components/ui/input'
 	import { Label } from '$lib/components/ui/label'
 	import { goto } from '$app/navigation'
-	import { createSupabaseClient } from '$lib/supabase/client'
 	import { fade } from 'svelte/transition'
+	import { supabase } from '$lib/supabase/client'
 
 	let email = $state('')
 	let isSubmitting = $state(false)
@@ -16,7 +16,6 @@
 		isSubmitting = true
 		error = null
 
-		const supabase = createSupabaseClient()
 		const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
 			redirectTo: `${window.location.origin}/auth/reset-password`
 		})

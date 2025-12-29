@@ -1,20 +1,12 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button'
 	import { Input } from '$lib/components/ui/input'
-	import * as Avatar from '$lib/components/ui/avatar'
 	import Icon from '@iconify/svelte'
-	import dayjs from 'dayjs'
-	import relativeTime from 'dayjs/plugin/relativeTime'
+	import { daysAgo } from '$lib/modules/dateTime'
 	import { goto } from '$app/navigation'
-	import { authStore } from '$lib/stores/auth.svelte'
 	import { fade } from 'svelte/transition'
 	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
-	import { createSupabaseClient } from '$lib/supabase/client'
 	import { getPublicUsers } from '$lib/modules/database'
-	import Badge from '$lib/components/ui/badge/badge.svelte'
 	import Box from '$lib/components/ui/box.svelte'
-
-	dayjs.extend(relativeTime)
 
 	let users = $state<UserT[]>([])
 	let isLoading = $state(false)
@@ -54,10 +46,6 @@
 
 	const handleUserClick = (userName: string) => {
 		goto(`/users/${userName}`)
-	}
-
-	const daysAgo = (date: Date) => {
-		return dayjs(date).fromNow()
 	}
 
 	const handleSearch = (event: Event) => {

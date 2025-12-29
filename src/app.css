@@ -522,5 +522,28 @@ h3 {
 }
 
 [data-bits-floating-content-wrapper] {
-  z-index: 99999999 !important;
+  z-index: 9999 !important;
+}
+
+[data-slot='dialog-overlay'] {
+  position: absolute;
+  inset: 0;
+  z-index: 110 !important;
+}
+
+[data-slot='dialog-overlay'][data-state='open'] {
+  animation: fadeIn 150ms ease-out;
+}
+
+[data-slot='dialog-overlay'][data-state='closed'] {
+  animation: fadeOut 150ms ease-in;
+}
+
+.pageHeader {
+  margin-bottom: 24px;
+  background: var(--colorWhite);
+  border-radius: 12px;
+  padding: 32px;
+  border: 1px solid var(--n-03);
+  box-shadow: 0 2px 8px var(--n-alpha-1);
 }

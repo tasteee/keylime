@@ -6,6 +6,7 @@
 	import Box from '$lib/components/ui/box.svelte'
 	import Button from '$lib/components/ui/button/button.svelte'
 	import ChordBadge from '$lib/components/ChordBadge.svelte'
+	import * as Dialog from '$lib/components/ui/dialog'
 	import { goto } from '$app/navigation'
 	import { getContext } from 'svelte'
 	import { calculateStartTimes } from '$lib/helpers/progression'
@@ -32,10 +33,13 @@
 		daysAgo: string
 		onOpenProject: (projectId: string) => void
 		onCloneProject?: (projectId: string) => Promise<void>
+		onDeleteProject?: (projectId: string) => Promise<void>
 	}
 
 	const props: ProjectCardPropsT = $props()
 	const playbackContext = getContext<PlaybackContextT>('playback')
+
+	let isDeleteDialogOpen = $state(false)
 
 	const isOwnedByCurrentUser = $derived(props.project.userId === authStore.authUser?.id)
 	const isPlayingThisProject = $derived(
@@ -97,10 +101,32 @@
 			await props.onCloneProject(props.project.id)
 		}
 	}
+
+	const handleDeleteClick = (event: MouseEvent) => {
+		event.stopPropagation()
+		isDeleteDialogOpen = true
+	}
+
+	const handleConfirmDelete = async () => {
+		if (props.onDeleteProject) {
+			await props.onDeleteProject(props.project.id)
+		}
+		isDeleteDialogOpen = false
+	}
+
+	const handleCancelDelete = () => {
+		isDeleteDialogOpen = false
+	}
 </script>
 
 <Box class="userProjectCard" role="button" tabIndex={0} onclick={handleClick} onkeydown={handleKeyDown}>
 	<Box gap="12px" isColumn justify="stretch" width="100%" class="userProjectCardContent">
+		{#if isOwnedByCurrentUser}
+			<Button class="deleteButton" onclick={handleDeleteClick} size="small" color="neutral" isIcon={true}>
+				<Icon icon="mingcute:delete-2-line" width="16px" height="16px" />
+			</Button>
+		{/if}
+
 		<Box class="timeAgo" paddingLeft="44px">
 			<p class="days-ago">{props.daysAgo}</p>
 		</Box>
@@ -154,11 +180,39 @@
 	</Box>
 </Box>
 
+<Dialog.Root bind:open={isDeleteDialogOpen}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Delete Project</Dialog.Title>
+			<Dialog.Description>
+				Are you sure you want to delete "{props.project.title}"? This action cannot be undone.
+			</Dialog.Description>
+		</Dialog.Header>
+		<Dialog.Footer>
+			<Button onclick={handleCancelDelete} color="neutral" size="medium">Cancel</Button>
+			<Button onclick={handleConfirmDelete} color="danger" size="medium">Delete</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
+
 <style>
 	:global .userProjectCardContent {
 		padding: 24px;
 		padding-top: 14px;
 		position: relative;
+	}
+
+	:global .userProjectCardContent .deleteButton {
+		position: absolute;
+		top: 12px;
+		right: 12px;
+		z-index: 10;
+		opacity: 0.6;
+		transition: opacity 0.2s ease;
+	}
+
+	:global .userProjectCardContent .deleteButton:hover {
+		opacity: 1;
 	}
 
 	:global .userProjectCardContent .userProjectCardChordSymbols {

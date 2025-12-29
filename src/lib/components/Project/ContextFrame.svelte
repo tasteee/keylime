@@ -6,8 +6,14 @@
 	import { browser } from '$app/environment'
 	import chordsByScale from '$lib/constants/chordsByScale.json'
 	import { generateChord } from '$lib/helpers/chords'
+	import { calculateStartTimes } from '$lib/helpers/progression'
 
-	const props = $props()
+	type PropsT = {
+		children: () => any
+		project: ProjectT | null
+	}
+
+	const props: PropsT = $props()
 
 	type GridChordModifiersT = {
 		octaveOffset: number
@@ -72,9 +78,63 @@
 		return totalBars
 	}
 
+	const parseProjectData = (project: ProjectT): ProjectT => {
+		const parsedProgressionChords =
+			typeof project.progressionChords === 'string' ? JSON.parse(project.progressionChords) : project.progressionChords
+
+		const progressionChordsWithStartTime = calculateStartTimes({ items: parsedProgressionChords })
+
+		return {
+			...project,
+			updatedAt: new Date(project.updatedAt),
+			createdAt: new Date(project.createdAt),
+			octave: String(project.octave),
+			progressionChords: progressionChordsWithStartTime,
+			patternSignals:
+				typeof project.patternSignals === 'string' ? JSON.parse(project.patternSignals) : project.patternSignals,
+			patternSignalRows:
+				typeof project.patternSignalRows === 'string' ? JSON.parse(project.patternSignalRows) : project.patternSignalRows
+		}
+	}
+
 	const createInitialState = (): ProjectEditorStateT => {
-		// Create a minimal placeholder state that doesn't require auth
-		// This works for both SSR and initial client hydration
+		const hasProjectData = props.project !== null
+
+		if (hasProjectData) {
+			const parsedProject = parseProjectData(props.project)
+
+			const hasValidSignalRows =
+				parsedProject.patternSignalRows &&
+				typeof parsedProject.patternSignalRows === 'object' &&
+				Object.keys(parsedProject.patternSignalRows).length > 0
+
+			const patternSignalRows = hasValidSignalRows ? parsedProject.patternSignalRows : getFreshPatternSignalRows()
+
+			const progressionDurationBars =
+				parsedProject.progressionDurationBars ?? calculateProgressionDurationBars(parsedProject.progressionChords)
+
+			const loadedProject = {
+				...parsedProject,
+				patternSignalRows,
+				progressionDurationBars
+			}
+
+			const hasProgressionItems = loadedProject.progressionChords.length > 0
+			const selectedProgressionItemId = hasProgressionItems ? loadedProject.progressionChords[0].id : null
+
+			return {
+				project: loadedProject,
+				isLoading: false,
+				isSaving: false,
+				isDirty: false,
+				cleanProjectSnapshot: createCleanSnapshot(loadedProject),
+				activeView: 'chords',
+				selectedProgressionItemId,
+				gridChordModifiers: {}
+			}
+		}
+
+		// Create a minimal placeholder state if no project data
 		const emptyProject = {
 			id: '',
 			title: '',
@@ -497,14 +557,6 @@
 
 	onMount(() => {
 		if (!browser) return
-
-		const url = new URL(window.location.href)
-		const pathParts = url.pathname.split('/')
-		const projectId = pathParts[pathParts.length - 1]
-
-		if (projectId) {
-			loadProjectData(projectId)
-		}
 
 		return () => {
 			// when user navigates away, stop playback from PlaybackContextFrame context

@@ -1,6 +1,6 @@
 // TODO: Break into modular function/files.
-import { createSupabaseClient } from "$lib/supabase/client"
 import { warnWhen } from "$lib/modules/warnWhen"
+import { supabase } from "$lib/supabase/client"
 
 type GetUserReturnT = {
   user: UserT | null
@@ -9,8 +9,6 @@ type GetUserReturnT = {
 }
 
 export const getUserById = async (id: string): Promise<GetUserReturnT> => {
-  const supabase = createSupabaseClient()
-
   const result = await supabase
     .from('all_users')
     .select('*')
@@ -31,8 +29,6 @@ export const getUserById = async (id: string): Promise<GetUserReturnT> => {
 
 
 export const deleteProjectById = async (projectId: string) => {
-  const supabase = createSupabaseClient()
-
   const { error } = await supabase
     .from('all_projects')
     .delete()
@@ -43,8 +39,6 @@ export const deleteProjectById = async (projectId: string) => {
 }
 
 export const addProject = async (project: ProjectT) => {
-  const supabase = createSupabaseClient()
-
   const { data, error } = await supabase
     .from('all_projects')
     .insert(project as any)
@@ -55,9 +49,35 @@ export const addProject = async (project: ProjectT) => {
   return { data: data as ProjectT | null, error, didSucceed: !error }
 }
 
-export const getProjectById = async (projectId: string) => {
-  const supabase = createSupabaseClient()
+export const cloneProjectById = async (projectId: string, currentUserId: string) => {
+  const fetchResult = await getProjectById(projectId)
 
+  if (fetchResult.error || !fetchResult.data) {
+    warnWhen(true, `Error fetching project to clone: ${fetchResult.error?.message}`)
+    return { data: null, error: fetchResult.error, didSucceed: false }
+  }
+
+  const sourceProject = fetchResult.data
+  const clonedProject = {
+    ...sourceProject,
+    id: crypto.randomUUID(),
+    userId: currentUserId,
+    title: `${sourceProject.title} (Clone)`,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  } as ProjectT
+
+  const insertResult = await addProject(clonedProject)
+
+  if (insertResult.error || !insertResult.data) {
+    warnWhen(true, `Error saving cloned project: ${insertResult.error?.message}`)
+    return { data: null, error: insertResult.error, didSucceed: false }
+  }
+
+  return { data: insertResult.data, error: null, didSucceed: true }
+}
+
+export const getProjectById = async (projectId: string) => {
   const result = await supabase
     .from('all_projects')
     .select('*')
@@ -66,13 +86,13 @@ export const getProjectById = async (projectId: string) => {
 
   const data = result.data as ProjectT | null
   const error = result.error as Error | null
-  if (!!error) warnWhen(error, `Error fetching project by ID: ${error.message}`)
-  return { data, error, didSucceed: !error }
+  warnWhen(!data, `Received no project by id: ${projectId}`)
+  warnWhen(error, `Error fetching project by ID: ${error?.message}`)
+  console.log('getProjectById result:', { data, error })
+  return { data, error }
 }
 
 export const getProjectsByUserId = async (userId: string, limit: number = 20, offset: number = 0) => {
-  const supabase = createSupabaseClient()
-
   const { data, error, count } = await supabase
     .from('all_projects')
     .select('*', { count: 'exact' })
@@ -80,8 +100,8 @@ export const getProjectsByUserId = async (userId: string, limit: number = 20, of
     .order('updatedAt', { ascending: false })
     .range(offset, offset + limit - 1)
 
-  warnWhen(error, `Error fetching public projects: ${error?.message}`)
-  return { data, error, didSucceed: !error, totalCount: count ?? 0 }
+  console.info(`getProjectsByUserId | fetched projects for userId=${userId}:`, { error, count })
+  return { data, error, totalCount: count ?? 0 }
 }
 
 type GetPublicProjectsOptionsT = {
@@ -114,7 +134,6 @@ const DEFAULT_GET_PUBLIC_PROJECTS_OPTIONS: GetPublicProjectsOptionsT = {
 
 export const getPublicProjects = async (options: GetPublicProjectsOptionsT) => {
   const finalOptions = { ...DEFAULT_GET_PUBLIC_PROJECTS_OPTIONS, ...options }
-  const supabase = createSupabaseClient()
 
   let query = supabase
     .from('all_projects')
@@ -145,6 +164,7 @@ export const getPublicProjects = async (options: GetPublicProjectsOptionsT) => {
 
   if (Array.isArray(finalOptions.chordSymbols) && finalOptions.chordSymbols!.length > 0) {
     const isMatchAll = finalOptions.chordMatchMode === 'all'
+
     if (isMatchAll) {
       query = query.contains('chordSymbols', finalOptions.chordSymbols)
     }
@@ -164,15 +184,19 @@ export const getPublicProjects = async (options: GetPublicProjectsOptionsT) => {
   const result = await query
   const data = result.data
   const error = result.error
+
   warnWhen(error, `Error fetching public projects: ${error?.message}`)
+  warnWhen(!data, `No public projects found with the given filters.`)
 
   const countQuery = supabase
     .from('all_projects')
     .select('id', { count: 'exact', head: true })
     .eq('isPublic', true)
+
   const countResult = await countQuery
   const totalCount = countResult.count ?? 0
 
+  console.log(`getPublicProjects | got ${totalCount}`)
   return { data, error, totalCount }
 }
 
@@ -190,7 +214,7 @@ const DEFAULT_GET_PUBLIC_USERS_OPTIONS: GetPublicUsersOptionsT = {
 
 export const getPublicUsers = async (options: GetPublicUsersOptionsT) => {
   const finalOptions = { ...DEFAULT_GET_PUBLIC_USERS_OPTIONS, ...options }
-  const supabase = createSupabaseClient()
+
 
   let query = supabase
     .from('all_users')
@@ -213,7 +237,7 @@ export const getPublicUsers = async (options: GetPublicUsersOptionsT) => {
 }
 
 export const getUserByUserName = async (userName: string) => {
-  const supabase = createSupabaseClient()
+
 
   const result = await supabase
     .from('all_users')
@@ -242,7 +266,7 @@ type UpdateUserProfileArgsT = {
 }
 
 export const updateUserProfile = async (args: UpdateUserProfileArgsT) => {
-  const supabase = createSupabaseClient()
+
 
   const updateData: Partial<UserT> = {}
   if (args.userName !== undefined) updateData.userName = args.userName
@@ -260,7 +284,7 @@ export const updateUserProfile = async (args: UpdateUserProfileArgsT) => {
 }
 
 export const getPublicProjectsByUserName = async (userName: string) => {
-  const supabase = createSupabaseClient()
+
 
   const { data, error } = await supabase
     .from('all_projects')

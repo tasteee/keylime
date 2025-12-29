@@ -4,9 +4,9 @@
 	import { Label } from '$lib/components/ui/label'
 	import { goto } from '$app/navigation'
 	import { page } from '$app/stores'
-	import { createSupabaseClient } from '$lib/supabase/client'
 	import { fade } from 'svelte/transition'
 	import { onMount } from 'svelte'
+	import { supabase } from '$lib/supabase/client'
 
 	let password = $state('')
 	let confirmPassword = $state('')
@@ -37,7 +37,6 @@
 
 		isSubmitting = true
 
-		const supabase = createSupabaseClient()
 		const { error: updateError } = await supabase.auth.updateUser({
 			password: password
 		})

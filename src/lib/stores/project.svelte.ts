@@ -4,8 +4,8 @@ import { getProjectById, getUserById } from "$lib/modules/database"
 import { createNewProjectData, getFreshPatternSignalRows } from "$lib/modules/projects"
 import { asCleanAsync, cleanAsync, type CleanAsyncReturnT } from "$lib/modules/promises"
 import { type TheAwaitedReturnT } from "$lib/modules/the-awaited"
-import { createSupabaseClient } from '$lib/supabase/client'
 import { authStore } from './auth.svelte'
+import { supabase } from "$lib/supabase/client"
 
 const TOTAL_UNITS = 64
 const PATTERN_MIN_ZOOM = 16
@@ -322,7 +322,7 @@ class ProjectStore {
 
   save = cleanAsync<{ didSucceed: boolean }>(async () => {
     if (!authStore.authUser) throw new Error('User must be authenticated to save project')
-    const supabase = createSupabaseClient()
+
     const projectData = this.getProjectDocumentData()
 
     const { error } = await supabase
@@ -340,7 +340,7 @@ class ProjectStore {
 
   saveClone = cleanAsync<{ didSucceed: boolean, newProjectId: string }>(async () => {
     if (!authStore.authUser) throw new Error('User must be authenticated to save project')
-    const supabase = createSupabaseClient()
+
     const newProjectId = crypto.randomUUID()
     const clonedTitle = `${this.title} (Clone)`
 
@@ -422,7 +422,7 @@ class ProjectStore {
       throw new Error('User must be authenticated to delete project')
     }
 
-    const supabase = createSupabaseClient()
+
 
     const { error } = await supabase
       .from('all_projects')

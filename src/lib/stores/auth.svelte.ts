@@ -3,8 +3,8 @@ import { goto, invalidateAll } from '$app/navigation'
 import { getUserById, updateUserProfile, checkUsernameAvailable } from '$lib/modules/database'
 import { asCleanAsync, cleanAsync } from '$lib/modules/promises'
 import { warnWhen } from '$lib/modules/warnWhen'
-import { createSupabaseClient } from '$lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import { supabase } from "$lib/supabase/client"
 
 type AuthOptionsT = {
   email: string
@@ -84,7 +84,7 @@ class AuthStore {
 
   initialize = async () => {
     console.log('[auth.store] Initializing auth store')
-    const supabase = createSupabaseClient()
+
     const userResponse = await supabase.auth.getUser()
     const initialUser = userResponse.data.user
 
@@ -110,7 +110,7 @@ class AuthStore {
       return
     }
 
-    const supabase = createSupabaseClient()
+
     const userResponse = await supabase.auth.getUser()
     const authenticatedUser = userResponse.data.user
     console.log('[auth.store] Updated auth user:', { userId: authenticatedUser?.id, email: authenticatedUser?.email })
@@ -124,7 +124,7 @@ class AuthStore {
   signUp = async (args: AuthOptionsT): Promise<AuthResultT> => {
     console.log('[auth.store] signUp called for:', args.email)
     this.error = null
-    const supabase = createSupabaseClient()
+
 
     const signUpResponse = await supabase.auth.signUp({
       email: args.email,
@@ -198,7 +198,7 @@ class AuthStore {
   }
 
   createUserProfile = async (args: CreateUserProfileArgsT): Promise<AuthResultT> => {
-    const supabase = createSupabaseClient()
+
 
     const insertResponse = await supabase.from('all_users').insert([{
       id: args.userId,
@@ -219,7 +219,7 @@ class AuthStore {
     console.log('[auth.store] signIn called for:', args.email)
     console.log('[auth.store] Current authUser before signIn:', { userId: this.authUser?.id })
     this.error = null
-    const supabase = createSupabaseClient()
+
     console.log('[auth.store] Cookies before signIn:', document.cookie)
 
     const signInResponse = await supabase.auth.signInWithPassword({
@@ -259,7 +259,7 @@ class AuthStore {
 
   signOut = cleanAsync(async () => {
     this.error = null
-    const supabase = createSupabaseClient()
+
     console.log('[auth.store] signOut')
     console.log('[auth.store] Cookies before signOut:', document.cookie)
     const signOutResponse = await supabase.auth.signOut()
@@ -280,7 +280,7 @@ class AuthStore {
 
   resetPassword = async (args: ResetPasswordArgsT): Promise<AuthResultT> => {
     this.error = null
-    const supabase = createSupabaseClient()
+
     const resetUrl = `${window.location.origin}/auth/reset-password`
 
     const resetResponse = await supabase.auth.resetPasswordForEmail(args.email, {
@@ -299,7 +299,7 @@ class AuthStore {
 
   updatePassword = async (args: UpdatePasswordArgsT): Promise<AuthResultT> => {
     this.error = null
-    const supabase = createSupabaseClient()
+
 
     const updateResponse = await supabase.auth.updateUser({
       password: args.newPassword
@@ -325,7 +325,7 @@ class AuthStore {
       return { success: false, error: errorMessage }
     }
 
-    const supabase = createSupabaseClient()
+
 
     const hasEmailUpdate = args.email && args.email !== this.authUser?.email
     if (hasEmailUpdate) {
