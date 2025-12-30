@@ -44,6 +44,7 @@
 	}
 
 	const context = getContext<ProjectEditorContextT>('projectEditor')
+	const playbackContext = getContext<PlaybackContextT>('playback')
 
 	let signalGridBox: HTMLDivElement
 	let selectedSignalId: string | null = $state(null)
@@ -64,6 +65,8 @@
 	let currentlyPlayingNote: string | null = $state(null)
 	let isMouseDownOnLabel = $state(false)
 	let currentLabelNote: string | null = $state(null)
+	let cursorElement: HTMLElement | null = $state(null)
+	let animationFrameId: number
 
 	type SignalRowKeyT = keyof typeof SIGNAL_ROWS
 
@@ -639,6 +642,35 @@
 	onMount(() => {
 		signalGridBox.scrollTop = 342.5
 	})
+
+	const updateCursor = () => {
+		if (!playbackContext.state.isPlaying || !cursorElement) return
+
+		const now = performance.now()
+		const elapsedMs = now - playbackContext.state.loopStartTime
+		const bpm = context.state.project.bpm
+		const msPerBeat = 60000 / bpm
+		const currentBeat = elapsedMs / msPerBeat
+
+		const patternDurationBeats = patternActiveDurationBeats
+		if (patternDurationBeats === 0) return
+
+		const loopedBeat = currentBeat % patternDurationBeats
+		const cellsPerBeat = CELLS_PER_BEAT
+		const x = loopedBeat * cellsPerBeat * context.state.project.patternZoomLevel
+		cursorElement.style.transform = `translateX(${x}px)`
+
+		animationFrameId = requestAnimationFrame(updateCursor)
+	}
+
+	$effect(() => {
+		if (playbackContext.state.isPlaying) {
+			animationFrameId = requestAnimationFrame(updateCursor)
+		} else {
+			cancelAnimationFrame(animationFrameId)
+		}
+		return () => cancelAnimationFrame(animationFrameId)
+	})
 </script>
 
 <svelte:window onclick={handleClickOutside} onkeydown={handleKeyDown} />
@@ -694,6 +726,9 @@
 		</div>
 		<div class="signalGridRowsBox" onmousemove={handleMouseMove} onmouseup={handleMouseUp}>
 			<PatternTimingHeader cellWidth={context.state.project.patternZoomLevel} />
+			{#if playbackContext.state.isPlaying}
+				<div class="playbackCursor" bind:this={cursorElement}></div>
+			{/if}
 			{#each SIGNAL_IDS as label, index (label + index)}
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -903,5 +938,16 @@
 		z-index: 100;
 		cursor: not-allowed;
 		/* backdrop-filter: grayscale(50%); */
+	}
+
+	.playbackCursor {
+		position: absolute;
+		top: 32px; /* Below header */
+		bottom: 0;
+		width: 1px;
+		background-color: var(--n-09);
+		z-index: 105;
+		pointer-events: none;
+		will-change: transform;
 	}
 </style>
