@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "@fontsource-variable/saira": "^5.2.11",
+    "@fontsource/manrope": "^5.2.8",
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@iconify/svelte": "^5.0.2",
     "@node-rs/argon2": "^2.0.2",

@@ -10,6 +10,7 @@
 	import { goto } from '$app/navigation'
 	import { getContext } from 'svelte'
 	import { calculateStartTimes } from '$lib/helpers/progression'
+	import ConfirmDeleteDialog from './Dashboard/ConfirmDeleteDialog.svelte'
 
 	type ProjectCardPropsT = {
 		project: {
@@ -108,9 +109,7 @@
 	}
 
 	const handleConfirmDelete = async () => {
-		if (props.onDeleteProject) {
-			await props.onDeleteProject(props.project.id)
-		}
+		await props.onDeleteProject?.(props.project.id)
 		isDeleteDialogOpen = false
 	}
 
@@ -180,20 +179,18 @@
 	</Box>
 </Box>
 
-<Dialog.Root bind:open={isDeleteDialogOpen}>
-	<Dialog.Content>
-		<Dialog.Header>
-			<Dialog.Title>Delete Project</Dialog.Title>
-			<Dialog.Description>
-				Are you sure you want to delete "{props.project.title}"? This action cannot be undone.
-			</Dialog.Description>
-		</Dialog.Header>
-		<Dialog.Footer>
-			<Button onclick={handleCancelDelete} color="neutral" size="medium">Cancel</Button>
-			<Button onclick={handleConfirmDelete} color="danger" size="medium">Delete</Button>
-		</Dialog.Footer>
-	</Dialog.Content>
-</Dialog.Root>
+{#if isDeleteDialogOpen}
+	{#if isDeleteDialogOpen}
+		<ConfirmDeleteDialog
+			isOpen
+			projectTitle={props.project.title}
+			onConfirm={handleConfirmDelete}
+			onOpenChange={(open) => {
+				isDeleteDialogOpen = open
+			}}
+		/>
+	{/if}
+{/if}
 
 <style>
 	:global .userProjectCardContent {

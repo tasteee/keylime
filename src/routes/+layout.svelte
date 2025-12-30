@@ -1,4 +1,5 @@
 <script lang="ts">
+	import '../styles/variables.css'
 	import '@fontsource-variable/saira/wdth-italic.css'
 	import '../lib/styles/theme.css'
 	import '../lib/styles/global.css'

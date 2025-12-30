@@ -1,410 +1,230 @@
 :root {
-  --a-01: #fde8f4;
-  --a-02: #f9b9df;
-  --a-03: #f58ac9;
-  --a-04: #f05bb4;
-  --a-05: #d31385;
-  --a-06: #a40f67;
-  --a-07: #750a4a;
-  --a-08: #46062c;
-  --a: #ef4aac;
-  --accent-border: var(--a-03);
-  --accent-border: var(--neutral-separatorSubtle);
-  --accent-foreground: var(--colorWhite);
-  --accent-foreground: var(--neutral-textOnPrimary);
-  --accent: var(--a-05);
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
-  --background: var(--color-paper);
-  --background: var(--neutral-background);
-  --bar-bg: var(--neutral-background);
-  --bar-border: var(--border);
-  --bar-shadow: var(--shadow-s2);
-  --bg-app: var(--colorWhite);
-  --bg-element-active: var(--n-03);
-  --bg-element-hover: var(--n-02);
-  --bg-element: var(--n-01);
-  --bg-inset: rgba(0, 0, 0, 0.03);
-  --bg-panel-hover: var(--n-01);
-  --bg-panel: var(--n-00);
-  --border-danger: var(--d-02);
-  --border-default: var(--n-03);
-  --border-focus: var(--n-08);
-  --border-strong: var(--n-05);
-  --border-subtle: var(--n-02);
-  --border-thick: 1px solid var(--border);
-  --border: var(--neutral-separatorSubtle);
-  --bottombar-height: 60px;
-  --card-foreground: var(--neutral-text);
-  --card: var(--neutral-cardBackground);
-  --chord-bg: var(--neutral-cardBackground);
-  --chord-border: var(--border);
-  --chord-fg: var(--neutral-text);
-  --chord-hover-shadow: var(--shadow-s4);
-  --chord-radius: var(--radius);
-  --chord-selected-bg: var(--primary);
-  --chord-selected-border: var(--primary);
-  --chord-selected-fg: var(--primary-foreground);
-  --chord-selected-shadow: var(--shadow-hard-active);
-  --chord-shadow: var(--shadow-s2);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent-primary: #06885f;
-  --color-accent-primary: #667EEA;
-  --color-accent-secondary: #FF9A9E;
-  --color-accent: var(--accent);
-  --color-background: var(--background);
-  --color-bg-app: #F2F3F6;
-  --color-bg-app: var(--n-01);
-  --color-border: var(--border);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-destructive: var(--destructive);
-  --color-foreground: var(--foreground);
-  --color-gray-100: #e0e2df;
-  --color-gray-100: #e6e6e6;
-  --color-gray-200: #c7c9c6;
-  --color-gray-200: #cdcdcd;
-  --color-gray-300: #aeb0ad;
-  --color-gray-300: #b5b5b5;
-  --color-gray-400: #969895;
-  --color-gray-400: #9e9e9e;
-  --color-gray-50: #fafcf9;
-  --color-gray-50: #ffffff;
-  --color-gray-500: #7f817e;
-  --color-gray-500: #878787;
-  --color-gray-600: #686a67;
-  --color-gray-600: #707070;
-  --color-gray-700: #535552;
-  --color-gray-700: #5a5a5a;
-  --color-gray-800: #3e403d;
-  --color-gray-800: #454545;
-  --color-gray-900: #2a2c29;
-  --color-gray-900: #313131;
-  --color-gray-950: #181917;
-  --color-gray-950: #1e1e1e;
-  --color-ink: var(--neutral-text);
-  --color-input: var(--input);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-panel-bg: var(--n-01);
-  --color-paper: var(--neutral-background);
-  --color-pastel-1: #f9b598;
-  --color-pastel-2: #ffb3c3;
-  --color-pastel-3: #e8beed;
-  --color-pastel-4: #bbcfff;
-  --color-pastel-5: #98dcf9;
-  --color-pop-pink: var(--primary-action);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-ring: var(--ring);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-shade-100: #dfe2e1;
-  --color-shade-200: #c6c9c8;
-  --color-shade-300: #adb0af;
-  --color-shade-400: #959897;
-  --color-shade-50: #f9fcfb;
-  --color-shade-500: #7e8180;
-  --color-shade-600: #676a69;
-  --color-shade-700: #525554;
-  --color-shade-800: #3d403f;
-  --color-shade-900: #292c2b;
-  --color-shade-950: #171919;
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar: var(--sidebar);
-  --color-stipple: var(--neutral-backgroundSubtle);
-  --color-surface-base: #F7F8FA;
-  --color-surface-base: var(--n-00);
-  --color-surface-dim: #E6E8EC;
-  --color-surface-dim: var(--n-02);
-  --color-text-primary: #1A1C20;
-  --color-text-primary: var(--n-09);
-  --color-text-secondary: #646872;
-  --color-text-secondary: var(--n-06);
-  --color-text-tertiary: #A0A3AD;
-  --color-text-tertiary: var(--n-04);
-  --color-vibrant-1-0: #fde8f4;
-  --color-vibrant-1-1: #f9b9df;
-  --color-vibrant-1-2: #f58ac9;
-  --color-vibrant-1-3: #f05bb4;
-  --color-vibrant-1-4: #d31385;
-  --color-vibrant-1-5: #a40f67;
-  --color-vibrant-1-6: #750a4a;
-  --color-vibrant-1-7: #46062c;
-  --color-vibrant-1: #ef4aac;
-  --color-vibrant-10: #00B8B7;
-  --color-vibrant-11: #00AFFF;
-  --color-vibrant-2: #ef4a59;
-  --color-vibrant-3: #ef8d4a;
-  --color-vibrant-4: #efe04a;
-  --color-vibrant-5: #acef4a;
-  --color-vibrant-6: #DF8FFF;
-  --color-vibrant-7: #FF6E88;
-  --color-vibrant-8: #D1972D;
-  --color-vibrant-9: #59B74D;
-  --colorBlack: #1c1b1f;
-  --colorGreen1: #E6F6F0;
-  --colorGreen2: #BFF0DA;
-  --colorGreen3: #80E6BA;
-  --colorGreen4: #34D399;
-  --colorGreen5: #06885f;
-  --colorGreen7: #06885f;
-  --colorGreen8: #054E3C;
-  --colorWhite: #ffffff;
-  --d-00: #FFF1F2;
-  --d-01: #FFE4E6;
-  --d-02: #FECDD3;
-  --d-03: #FDA4AF;
-  --d-04: #F43F5E;
-  --d-05: #E11D48;
-  --d-06: #BE123C;
-  --d-07: #9F1239;
-  --d-08: #881337;
-  --danger-action: #D20038;
-  --danger-actionActive: #BB0032;
-  --danger-actionHover: #E8083E;
-  --danger-background: #FF867E;
-  --danger-icon: #E8083E;
-  --danger-text: #BB0032;
-  --destructive-foreground: var(--neutral-textOnPrimary);
-  --destructive: var(--danger-action);
-  --disabled-button-bg: #9ca3af;
-  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --flows-basicsV2-banner-maxWidth: 320px;
-  --flows-basicsV2-banner-minWidth: 200px;
-  --flows-basicsV2-banner-padding: var(--flows-basicsV2-size-xl);
-  --flows-basicsV2-banner-screenEdgePadding: var(--flows-basicsV2-size-xl);
-  --flows-basicsV2-base-font-size: 14px;
-  --flows-basicsV2-base-line-height: 20px;
-  --flows-basicsV2-bg-default: #ffffff;
-  --flows-basicsV2-bg-hover: #f0f0f0;
-  --flows-basicsV2-bg-overlay: rgba(0, 0, 0, 0.6);
-  --flows-basicsV2-bg-primary-hover: #6350ff;
-  --flows-basicsV2-bg-primary: #573cfa;
-  --flows-basicsV2-bg-strong: #eaeaea;
-  --flows-basicsV2-bg-subtle: #fafafa;
-  --flows-basicsV2-border-primary: var(--flows-basicsV2-borderWidth) solid #573cfa;
-  --flows-basicsV2-border-strong-hover: var(--flows-basicsV2-borderWidth) solid #bababa;
-  --flows-basicsV2-border-strong: var(--flows-basicsV2-borderWidth) solid #ccc;
-  --flows-basicsV2-border: var(--flows-basicsV2-borderWidth) solid #d6d6d6;
-  --flows-basicsV2-borderRadius-l: 12px;
-  --flows-basicsV2-borderRadius-m: 8px;
-  --flows-basicsV2-borderRadius-xl: 16px;
-  --flows-basicsV2-borderRadius-xs: 3px;
-  --flows-basicsV2-borderWidth: 1px;
-  --flows-basicsV2-button-font-size: 15px;
-  --flows-basicsV2-button-line-height: 24px;
-  --flows-basicsV2-fg-default: #1a1a1a;
-  --flows-basicsV2-fg-onPrimary: #ffffff;
-  --flows-basicsV2-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-  --flows-basicsV2-modal-button-max-width: 600px;
-  --flows-basicsV2-modal-maxWidth: 640px;
-  --flows-basicsV2-modal-minWidth: 320px;
-  --flows-basicsV2-modal-overlayBackground: var(--flows-basicsV2-bg-overlay);
-  --flows-basicsV2-modal-padding: var(--flows-basicsV2-size-xxl);
-  --flows-basicsV2-modal-size-medium: 480px;
-  --flows-basicsV2-modal-size-small: 420px;
-  --flows-basicsV2-primary-button-gradient: linear-gradient(#ffffff14, #fff0);
-  --flows-basicsV2-primary-button-shadow: inset 0 1px #ffffff1f, 0 1px 2px #0a0d120d;
-  --flows-basicsV2-progress-dots-gap: 6px;
-  --flows-basicsV2-progress-dots-size: 10px;
-  --flows-basicsV2-secondary-button-shadow: inset 0 -2px 0 0 #fafafa, 0 1px 2px 0 #0d0d0d0d;
-  --flows-basicsV2-shadow-large: 0px 10px 48px rgba(0, 0, 0, 0.1), 0px 4px 24px rgba(0, 0, 0, 0.12), 0px 0px 1px rgba(0, 0, 0, 0.05);
-  --flows-basicsV2-shadow: 0px 6px 18px rgba(0, 0, 0, 0.15), 0px 3px 8px rgba(0, 0, 0, 0.03), 0px 0px 1px rgba(0, 0, 0, 0.05);
-  --flows-basicsV2-size-l: 16px;
-  --flows-basicsV2-size-m: 12px;
-  --flows-basicsV2-size-s: 8px;
-  --flows-basicsV2-size-xl: 20px;
-  --flows-basicsV2-size-xs: 2px;
-  --flows-basicsV2-size-xxl: 24px;
-  --flows-basicsV2-title-font-size: 16px;
-  --flows-basicsV2-title-font-weight: 600;
-  --flows-basicsV2-title-line-height: 24px;
-  --flows-basicsV2-tooltip-maxWidth: 320px;
-  --flows-basicsV2-tooltip-minWidth: 200px;
-  --flows-basicsV2-tooltip-overlayBackground: var(--flows-basicsV2-bg-overlay);
-  --flows-basicsV2-tooltip-overlayBorderRadius: var(--flows-basicsV2-borderRadius-m);
-  --flows-basicsV2-tooltip-overlayPadding: 4px;
-  --flows-basicsV2-tooltip-padding: var(--flows-basicsV2-size-xl);
-  --flows-basicsV2-zIndex: 1500;
-  --font-body: "Plus Jakarta Sans", sans-serif;
-  --font-display: "Plus Jakarta Sans", sans-serif;
-  --font-display: var(--stackTextFont);
-  --font-mono: 'TikTok Sans', sans-serif;
-  --font-mono: "Geologica", monospace;
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-sans: var(--stackTextFont);
-  --font-size-2xl: 1.953rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.25rem;
-  --font-size-sm: 0.875rem;
-  --font-size-xl: 1.563rem;
-  --font-size-xs: 0.75rem;
-  --foreground: var(--color-ink);
-  --foreground: var(--neutral-text);
-  --gradient-active: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
-  --gradient-blue: linear-gradient(70deg, #1D163A -0.25%, #5143EB 49.07%, #8C66F8 100%);
-  --gradient-glass: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 100%);
-  --gradient-hero: linear-gradient(240deg, #5143EB 0%, #8C66F8 20%, #FF4D51 60%, #F27B1E 100%);
-  --gradient-orange: linear-gradient(70deg, #F7BC0D -0.25%, #F27B1E 49.67%, #FF4D51 100%);
-  --gradient-purple: linear-gradient(70deg, #FF4D51 -0.25%, #CF3DD2 49.07%, #8C66F8 100%);
-  --gradient-violet: linear-gradient(70deg, #CF3DD2 -0.25%, #FF4D51 49.26%, #F27B1E 100%);
-  --grays1000: #0c0d0d;
-  --grays200: #d8dada;
-  --grays300: #bdc1c1;
-  --grays400: #a3a9a9;
-  --grays50: #f2f3f3;
-  --grays500: #899090;
-  --grays600: #6f7676;
-  --grays700: #565c5c;
-  --grays800: #3e4242;
-  --grays900: #252727;
-  --input: var(--neutral-control);
-  --logoFont: 'Saira Variable', sans-serif;
-  --muted-foreground: var(--neutral-textMuted);
-  --muted: var(--neutral-backgroundSubtle);
-  --n-00: #F8F9FC;
-  --n-01: #F2F3F6;
-  --n-02: #E2E5E9;
-  --n-03: #D1D5DB;
-  --n-04: #9DA3AE;
-  --n-05: #6C7381;
-  --n-06: #4D5562;
-  --n-07: #394150;
-  --n-08: #202936;
-  --n-09: #111927;
-  --n-10: #030813;
-  --n-11: #000000;
-  --n-alpha-1: rgba(0, 0, 0, 0.04);
-  --n-alpha-2: rgba(0, 0, 0, 0.08);
-  --n-alpha-3: rgba(0, 0, 0, 0.12);
-  --n-alpha-4: rgba(0, 0, 0, 0.20);
-  --n-alpha-5: rgba(0, 0, 0, 0.40);
-  --neutral-actionSecondary: #f1eff7;
-  --neutral-actionSecondaryActive: #d5d3dc;
-  --neutral-actionSecondaryHover: #e3e1e9;
-  --neutral-background: #ffffff;
-  --neutral-backgroundLight: #f8f7fe;
-  --neutral-backgroundStrong: #d5d3dc;
-  --neutral-backgroundSubtle: #f1eff7;
-  --neutral-cardBackground: #ffffff;
-  --neutral-cardBackgroundStrong: #ffffff;
-  --neutral-codeBackground: #1c1b1f;
-  --neutral-control: #d5d3dc;
-  --neutral-darkActive: #1c1b1f5c;
-  --neutral-darkHover: #1c1b1f29;
-  --neutral-disabled: #e3e1e9;
-  --neutral-hover: #f1eff7;
-  --neutral-iconDark: #1c1b1fd9;
-  --neutral-iconDarkDisabled: #1c1b1f66;
-  --neutral-iconDefault: #605d6b;
-  --neutral-iconDisabled: #acaab5;
-  --neutral-iconHover: #312f37;
-  --neutral-iconLight: #ffffffd9;
-  --neutral-iconLightDisabled: #ffffff66;
-  --neutral-lightActive: #ffffff5c;
-  --neutral-lightHover: #ffffff29;
-  --neutral-overlay: #1c1b1fa6;
-  --neutral-scrollbar: #928f9d;
-  --neutral-separatorSubtle: #e3e1e9;
-  --neutral-shortcutBackground: #53505e;
-  --neutral-text: #1c1b1f;
-  --neutral-textDisabled: #928f9d;
-  --neutral-textMuted: #312f37;
-  --neutral-textOnDark: #ffffff;
-  --neutral-textOnLight: #1c1b1f;
-  --neutral-textOnPrimary: #ffffff;
-  --neutral-textSubtle: #6c6877;
-  --neutral-thumb: #e3e1e9;
-  --neutral-tooltipBackground: #1c1b1f;
-  --neutral-tooltipBorder: #484551;
-  --neutral-transparentBackground: #ffffffd9;
-  --popover-foreground: var(--neutral-text);
-  --popover: var(--neutral-cardBackground);
-  --primary-action: #6b6bb6;
-  --primary-actionActive: #573CFA;
-  --primary-actionHover: #6350FF;
-  --primary-background: #6C5EFA;
-  --primary-backgroundSubtle: #DDE1FF;
-  --primary-foreground: var(--neutral-textOnPrimary);
-  --primary-icon: #6C5EFA;
-  --primary-text: #573CFA;
-  --primary-textOnDark: #7989FE;
-  --primary: var(--primary-action);
-  --progression-height: 200px;
-  --radius-full: 9999px;
-  --radius-lg: 12px;
-  --radius-lg: 24px;
-  --radius-lg: var(--radius);
-  --radius-md: 16px;
-  --radius-md: 8px;
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-md: calc(var(--radius) - 4px);
-  --radius-pill: 9999px;
-  --radius-sm: 6px;
-  --radius-sm: 8px;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-sm: calc(var(--radius) - 8px);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-xs: 4px;
+  /* -------------------------------------------------------------------------- */
+  /*                                 PRIMITIVES                                 */
+  /* -------------------------------------------------------------------------- */
+
+  /* --- Brand Scale (Pink/Magenta) --- */
+  /* Base: #d31385 (--a-05) */
+  --brand-50: #fdf2f9;
+  --brand-100: #fbe8f4;
+  --brand-200: #f7d0e8;
+  --brand-300: #f0a8d3;
+  --brand-400: #e672b6;
+  --brand-500: #d31385;
+  /* Primary Brand Color */
+  --brand-600: #b00f6e;
+  --brand-700: #8f0c59;
+  --brand-800: #6e0945;
+  --brand-900: #500632;
+  --brand-950: #30031e;
+
+  /* Legacy Brand Aliases (to maintain compatibility) */
+  --a-01: var(--brand-100);
+  --a-02: var(--brand-200);
+  --a-03: var(--brand-300);
+  --a-04: var(--brand-400);
+  --a-05: var(--brand-500);
+  --a-06: var(--brand-600);
+  --a-07: var(--brand-700);
+  --a-08: var(--brand-800);
+  --a: var(--brand-500);
+
+  /* --- Neutral Scale (Zinc) --- */
+  --gray-0: #ffffff;
+  --gray-50: #fafafa;
+  --gray-100: #f4f4f5;
+  --gray-200: #e4e4e7;
+  --gray-300: #d4d4d8;
+  --gray-400: #a1a1aa;
+  --gray-500: #71717a;
+  --gray-600: #52525b;
+  --gray-700: #3f3f46;
+  --gray-800: #27272a;
+  --gray-900: #18181b;
+  --gray-950: #09090b;
+  --gray-1000: #000000;
+
+  /* Legacy Neutral Aliases */
+  --n-00: var(--gray-50);
+  --n-01: var(--gray-100);
+  --n-02: var(--gray-200);
+  --n-03: var(--gray-300);
+  --n-04: var(--gray-400);
+  --n-05: var(--gray-500);
+  --n-06: var(--gray-600);
+  --n-07: var(--gray-700);
+  --n-08: var(--gray-800);
+  --n-09: var(--gray-900);
+  --n-10: var(--gray-950);
+  --n-11: var(--gray-1000);
+
+  /* --- Functional Colors --- */
+  --red-50: #fef2f2;
+  --red-100: #fee2e2;
+  --red-500: #ef4444;
+  --red-600: #dc2626;
+  --red-700: #b91c1c;
+
+  --green-50: #f0fdf4;
+  --green-500: #22c55e;
+  --green-600: #16a34a;
+
+  --blue-50: #eff6ff;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+
+  /* -------------------------------------------------------------------------- */
+  /*                                  SEMANTIC                                  */
+  /* -------------------------------------------------------------------------- */
+
+  /* --- Backgrounds --- */
+  --bg-app: var(--gray-50);
+  --bg-panel: var(--gray-0);
+  --bg-card: var(--gray-0);
+  --bg-popover: var(--gray-0);
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+  --bg-muted: var(--gray-100);
+  --bg-accent: var(--brand-50);
+  --bg-destructive: var(--red-500);
+
+  /* --- Foreground / Text --- */
+  --fg-primary: var(--gray-900);
+  --fg-secondary: var(--gray-600);
+  --fg-tertiary: var(--gray-400);
+  --fg-inverse: var(--gray-0);
+  --fg-brand: var(--brand-600);
+  --fg-danger: var(--red-600);
+  --fg-success: var(--green-600);
+
+  /* --- Borders --- */
+  --border-subtle: var(--gray-200);
+  --border-default: var(--gray-300);
+  --border-strong: var(--gray-400);
+  --border-interactive: var(--brand-500);
+  --border-danger: var(--red-500);
+
+  /* --- Shadcn UI Mappings --- */
+  --background: var(--bg-app);
+  --foreground: var(--fg-primary);
+
+  --card: var(--bg-card);
+  --card-foreground: var(--fg-primary);
+
+  --popover: var(--bg-popover);
+  --popover-foreground: var(--fg-primary);
+
+  --primary: var(--brand-500);
+  --primary-foreground: var(--gray-0);
+
+  --secondary: var(--gray-100);
+  --secondary-foreground: var(--gray-900);
+
+  --muted: var(--bg-muted);
+  --muted-foreground: var(--fg-secondary);
+
+  --accent: var(--bg-accent);
+  --accent-foreground: var(--brand-900);
+
+  --destructive: var(--bg-destructive);
+  --destructive-foreground: var(--gray-0);
+
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --ring: var(--brand-500);
+
   --radius: 0.5rem;
-  --ring-color: var(--n-03);
-  --ring-offset: 2px;
-  --ring-width: 2px;
-  --ring: var(--primary-action);
-  --secondary-foreground: var(--neutral-text);
-  --secondary-icon: #FB8D1A;
-  --secondary-text: #C45300;
-  --secondary: var(--neutral-actionSecondary);
-  --shadow-color: 220 3% 15%;
-  --shadow-float-lg:
-    --shadow-hard-active: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
-  --shadow-hard-hover: var(--shadow-s4);
-  --shadow-hard: var(--shadow-s2);
-  --shadow-inner-md: inset 0px 2px 4px rgba(0, 0, 0, 0.06), inset 0px 1px 1px rgba(255, 255, 255, 0.8);
-  --shadow-inner-sm: inset 0px 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-inner-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
-  --shadow-inset-ring: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-  --shadow-lg:
-    --shadow-md: --shadow-s1: 0px 0px 1px rgba(28, 26, 39, 0.24);
-  --shadow-s2: 0px 1px 2px rgba(28, 26, 39, 0.12), 0px 0px 1px rgba(28, 26, 39, 0.16);
-  --shadow-s3: 0px 3px 4px rgba(28, 26, 39, 0.06), 0px 1px 2px rgba(28, 26, 39, 0.08), 0px 0px 1px rgba(28, 26, 39, 0.16);
-  --shadow-s4: 0px 6px 8px rgba(28, 26, 39, 0.08), 0px 3px 4px rgba(28, 26, 39, 0.1), 0px 0px 1px rgba(28, 26, 39, 0.16);
-  --shadow-s5: 0px 12px 16px rgba(28, 26, 39, 0.08), 0px 8px 12px rgba(28, 26, 39, 0.12), 0px 0px 1px rgba(28, 26, 39, 0.16);
-  --shadow-s6: 0px 16px 24px rgba(28, 26, 39, 0.08), 0px 10px 16px rgba(28, 26, 39, 0.12), 0px 0px 1px rgba(28, 26, 39, 0.16);
-  --shadow-sm:
-    --shadow-surface-md: --shadow-surface-sm: --shadow-web: 16px 32px 32px rgba(18, 16, 21, 0.02), 8px 16px 16px rgba(18, 16, 21, 0.02), 4px 8px 8px rgba(18, 16, 21, 0.02), 2px 4px 4px rgba(18, 16, 21, 0.02), 1px 2px 2px rgba(18, 16, 21, 0.02);
-  --shadow-xs: 0px 1px 2px hsl(var(--shadow-color) / 0.05);
-  --stackTextFont: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  --success-action: #007B45;
-  --success-actionActive: #006D3E;
-  --success-actionHover: #02864A;
-  --success-icon: #02864A;
-  --success-text: #006D3E;
-  --timeline-bg: var(--neutral-backgroundSubtle);
-  --timeline-grid: var(--neutral-separatorSubtle);
-  --timeline-marker: var(--primary);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-full: 9999px;
+
+  /* -------------------------------------------------------------------------- */
+  /*                                  SHADOWS                                   */
+  /* -------------------------------------------------------------------------- */
+
+  --shadow-color: 240 5% 10%;
+  /* Zinc-ish shadow color */
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+  /* Legacy Shadow Mappings */
+  --shadow-s1: var(--shadow-xs);
+  --shadow-s2: var(--shadow-sm);
+  --shadow-s4: var(--shadow-md);
+  --shadow-hard-active: var(--shadow-inner);
+
+  /* -------------------------------------------------------------------------- */
+  /*                                APP SPECIFIC                                */
+  /* -------------------------------------------------------------------------- */
+
+  /* Layout & Sequencer */
+  --barWidth: 240px;
+  --beatWidth: 60px;
+  --beatsPerBar: 4;
+  --cellWidth: 30px;
+  --barCount: 100;
+
   --topbar-height: 64px;
-  --txt-danger: var(--d-07);
-  --txt-disabled: var(--n-04);
-  --txt-heading: var(--n-10);
-  --txt-inverse: var(--colorWhite);
-  --txt-primary: var(--n-08);
-  --txt-secondary: var(--n-06);
-  --txt-tertiary: var(--n-05);
+  --bottombar-height: 60px;
+
+  /* Fonts */
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Geologica", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-display: var(--font-sans);
+
+  --logoFont: 'Saira Variable', sans-serif;
+
+  /* Charts */
+  --chart-1: var(--brand-500);
+  --chart-2: var(--blue-500);
+  --chart-3: var(--green-500);
+  --chart-4: var(--red-500);
+  --chart-5: var(--gray-500);
+
+  /* Sidebar */
+  --sidebar: var(--bg-panel);
+  --sidebar-foreground: var(--fg-primary);
+  --sidebar-primary: var(--brand-500);
+  --sidebar-primary-foreground: var(--gray-0);
+  --sidebar-accent: var(--bg-accent);
+  --sidebar-accent-foreground: var(--fg-brand);
+  --sidebar-border: var(--border-subtle);
+  --sidebar-ring: var(--brand-500);
+}
+
+.dark {
+  /* --- Dark Mode Primitives --- */
+
+  /* --- Dark Mode Semantic --- */
+  --bg-app: var(--gray-950);
+  --bg-panel: var(--gray-900);
+  --bg-card: var(--gray-900);
+  --bg-popover: var(--gray-900);
+  --bg-muted: var(--gray-800);
+  --bg-accent: var(--brand-900);
+  --bg-destructive: var(--red-900);
+
+  --fg-primary: var(--gray-50);
+  --fg-secondary: var(--gray-400);
+  --fg-tertiary: var(--gray-500);
+  --fg-inverse: var(--gray-900);
+  --fg-brand: var(--brand-400);
+
+  --border-subtle: var(--gray-800);
+  --border-default: var(--gray-700);
+  --border-strong: var(--gray-600);
+  --border-interactive: var(--brand-600);
+
+  /* Shadcn Dark Mode Overrides */
+  --primary-foreground: var(--gray-0);
+  --secondary: var(--gray-800);
+  --secondary-foreground: var(--gray-50);
+  --muted-foreground: var(--gray-400);
+  --accent-foreground: var(--brand-100);
+  --destructive-foreground: var(--gray-50);
 }

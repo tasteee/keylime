@@ -111,18 +111,9 @@
 		goto(`/project/${project.id}`)
 	}
 
-	const handleDeleteProject = (event: Event, id: string, title: string) => {
-		event.stopPropagation()
-		projectToDelete = { id, title }
-		isDeleteDialogOpen = true
-	}
-
-	const handleConfirmDelete = async () => {
-		if (projectToDelete) {
-			await deleteProjectById(projectToDelete.id)
-			await loadUserProjects()
-			projectToDelete = null
-		}
+	const handleDeleteProject = async (id: string) => {
+		await deleteProjectById(id)
+		await loadUserProjects()
 	}
 
 	const handleFilterSubmit = (options: typeof activeFilters) => {
@@ -236,6 +227,7 @@
 					daysAgo={daysAgo(project.updatedAt)}
 					onOpenProject={handleOpenProject}
 					onCloneProject={handleCloneProject}
+					onDeleteProject={handleDeleteProject}
 				/>
 			{/each}
 		</div>
@@ -275,18 +267,6 @@
 		{/if}
 	</main>
 </div>
-
-<ConfirmDeleteDialog
-	isOpen={isDeleteDialogOpen}
-	projectTitle={projectToDelete?.title ?? ''}
-	onConfirm={handleConfirmDelete}
-	onOpenChange={(open) => {
-		isDeleteDialogOpen = open
-		if (!open) {
-			projectToDelete = null
-		}
-	}}
-/>
 
 <style>
 	.dashboard {
