@@ -4,7 +4,8 @@
 	import { Input } from '$lib/components/ui/input'
 	import { Label } from '$lib/components/ui/label'
 	import Box from './ui/box.svelte'
-	import { authStore } from '$lib/stores/auth.svelte'
+	import { updateUserSettings } from '$lib/database/auth'
+	import { useActiveUser, useAuthUser } from '$lib/helpers/useActiveUser.svelte'
 	import { X } from 'phosphor-svelte'
 
 	type DialogUserSettingsPropsT = {
@@ -14,10 +15,13 @@
 
 	let props: DialogUserSettingsPropsT = $props()
 
-	let userName = $state(authStore.userProfile?.userName || '')
-	let email = $state(authStore.authUser?.email || '')
-	let bio = $state(authStore.userProfile?.bio || '')
-	let avatarUrl = $state(authStore.userProfile?.avatarUrl || '')
+	const activeUser = useActiveUser()
+	const authUser = useAuthUser()
+
+	let userName = $state(activeUser?.userName || '')
+	let email = $state(authUser?.email || '')
+	let bio = $state(activeUser?.bio || '')
+	let avatarUrl = $state(activeUser?.avatarUrl || '')
 	let newPassword = $state('')
 	let confirmPassword = $state('')
 	let errorMessage = $state<string | null>(null)
@@ -27,10 +31,10 @@
 	$effect(() => {
 		const isDialogOpen = props.isOpen
 		if (!isDialogOpen) return
-		userName = authStore.userProfile?.userName || ''
-		email = authStore.authUser?.email || ''
-		bio = authStore.userProfile?.bio || ''
-		avatarUrl = authStore.userProfile?.avatarUrl || ''
+		userName = activeUser?.userName || ''
+		email = authUser?.email || ''
+		bio = activeUser?.bio || ''
+		avatarUrl = activeUser?.avatarUrl || ''
 		newPassword = ''
 		confirmPassword = ''
 		errorMessage = null
@@ -59,7 +63,7 @@
 
 		isSubmitting = true
 
-		const updateResult = await authStore.updateUserSettings({
+		const updateResult = await updateUserSettings({
 			userName,
 			email,
 			bio,

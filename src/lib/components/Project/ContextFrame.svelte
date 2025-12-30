@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createNewProjectData, loadProject, saveProject } from '$lib/modules/projects'
-	import { authStore } from '$lib/stores/auth.svelte'
+	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
 	import { getFreshPatternSignalRows } from '$lib/modules/projects'
 	import { getContext, onMount, setContext } from 'svelte'
 	import { browser } from '$app/environment'
@@ -14,6 +14,7 @@
 	}
 
 	const props: PropsT = $props()
+	const activeUser = useActiveUser()
 
 	type GridChordModifiersT = {
 		octaveOffset: number
@@ -378,25 +379,35 @@
 	}
 
 	const save = async (): Promise<{ didSucceed: boolean }> => {
-		if (!authStore.authUser) throw new Error('User must be authenticated to save project')
+		console.log('ContextFrame save() called')
+		console.log('activeUser:', activeUser)
+
+		if (!activeUser) throw new Error('User must be authenticated to save project')
+
 		editorState.isSaving = true
 
 		try {
 			// Parse the clean snapshot to check the original owner
 			const cleanProject = JSON.parse(editorState.cleanProjectSnapshot) as Partial<ProjectT>
-			const isOtherUsersProject = cleanProject.userId && cleanProject.userId !== authStore.authUser.id
+			const isOtherUsersProject = cleanProject.userId && cleanProject.userId !== activeUser.id
+
+			console.log('cleanProject userId:', cleanProject.userId)
+			console.log('current activeUser id:', activeUser.id)
+			console.log('isOtherUsersProject:', isOtherUsersProject)
 
 			// If this is another user's project, create a new one (clone)
 			if (isOtherUsersProject) {
+				console.log('Saving as clone (other user project)')
 				const newProjectId = crypto.randomUUID()
 				const projectToSave = {
 					...editorState.project,
 					id: newProjectId,
-					userId: authStore.authUser.id,
+					userId: activeUser.id,
 					createdAt: new Date(),
 					updatedAt: new Date()
 				}
 
+				console.log('About to call saveProject() for clone')
 				const supabaseSaveResult = await saveProject(projectToSave)
 
 				if (supabaseSaveResult.error) {
@@ -414,14 +425,17 @@
 			}
 
 			// Otherwise, update the existing project
+			console.log('Saving as regular update (own project)')
 			const projectToSave = {
 				...editorState.project,
-				userId: authStore.authUser.id,
+				userId: activeUser.id,
 				updatedAt: new Date()
 			}
 
+			console.log('About to call saveProject() for update')
 			const supabaseSaveResult = await saveProject(projectToSave)
 
+			console.log('saveProject() returned, checking result')
 			if (supabaseSaveResult.error) {
 				throw new Error(`Failed to save project: ${supabaseSaveResult.error.message}`)
 			}
@@ -444,7 +458,7 @@
 	}
 
 	const saveClone = async (): Promise<{ didSucceed: boolean; newProjectId: string }> => {
-		if (!authStore.authUser) throw new Error('User must be authenticated to save clone')
+		if (!activeUser) throw new Error('User must be authenticated to save clone')
 
 		editorState.isSaving = true
 
@@ -456,7 +470,7 @@
 				...editorState.project,
 				id: newProjectId,
 				title: clonedTitle,
-				userId: authStore.authUser.id,
+				userId: activeUser.id,
 				createdAt: new Date(),
 				updatedAt: new Date()
 			}
@@ -513,7 +527,7 @@
 		editorState.isLoading = false
 
 		// If this project belongs to another user, mark it as a clone
-		const isOtherUsersProject = authStore.authUser && loadedProject.userId !== authStore.authUser.id
+		const isOtherUsersProject = activeUser && loadedProject.userId !== activeUser.id
 		if (isOtherUsersProject) {
 			const clonedTitle = `${loadedProject.title} (Clone)`
 			editorState.project = { ...loadedProject, title: clonedTitle }
@@ -523,7 +537,7 @@
 		const hasProgressionItems = loadedProject.progressionChords.length > 0
 		editorState.selectedProgressionItemId = hasProgressionItems ? loadedProject.progressionChords[0].id : null
 
-		console.log('current auth stuff', authStore.authUser)
+		console.log('current auth stuff', activeUser)
 		console.log('Loaded project:', { projectData, loadedProject, stateProject: editorState.project })
 	}
 

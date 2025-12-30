@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Avatar from '$lib/components/ui/avatar'
 	import Icon from '@iconify/svelte'
-	import { authStore } from '$lib/stores/auth.svelte'
+	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
 	import Badge from '$lib/components/ui/badge/badge.svelte'
 	import Box from '$lib/components/ui/box.svelte'
 	import Button from '$lib/components/ui/button/button.svelte'
@@ -39,10 +39,11 @@
 
 	const props: ProjectCardPropsT = $props()
 	const playbackContext = getContext<PlaybackContextT>('playback')
+	const activeUser = useActiveUser()
 
 	let isDeleteDialogOpen = $state(false)
 
-	const isOwnedByCurrentUser = $derived(props.project.userId === authStore.authUser?.id)
+	const isOwnedByCurrentUser = $derived(props.project.userId === activeUser?.id)
 	const isPlayingThisProject = $derived(
 		playbackContext.state.isPlaying && playbackContext.state.currentProjectId === props.project.id
 	)
@@ -59,7 +60,7 @@
 
 	const handleUserClick = (event: MouseEvent) => {
 		event.stopPropagation()
-		const userName = authStore.userProfile?.userName
+		const userName = activeUser?.userName
 		if (userName) goto(`/users/${userName}`)
 	}
 
@@ -112,10 +113,6 @@
 		await props.onDeleteProject?.(props.project.id)
 		isDeleteDialogOpen = false
 	}
-
-	const handleCancelDelete = () => {
-		isDeleteDialogOpen = false
-	}
 </script>
 
 <Box class="userProjectCard" role="button" tabIndex={0} onclick={handleClick} onkeydown={handleKeyDown}>
@@ -133,7 +130,7 @@
 		<Box align="center" gap="12px">
 			<Avatar.Root class="userProjectCardAvatar size-8" onclick={handleUserClick}>
 				<Avatar.Fallback class="logoFont">
-					{authStore.userProfile?.userName?.slice(0, 2).toUpperCase() || 'U'}
+					{activeUser?.userName?.slice(0, 2).toUpperCase() || 'U'}
 				</Avatar.Fallback>
 			</Avatar.Root>
 			<h3 class="projectTitle">{props.project.title}</h3>

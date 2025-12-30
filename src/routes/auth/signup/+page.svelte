@@ -4,7 +4,7 @@
 	import { Label } from '$lib/components/ui/label'
 	import Box from '$lib/components/ui/box.svelte'
 	import Divider from '$lib/components/ui/divider.svelte'
-	import { authStore } from '$lib/stores/auth.svelte'
+	import { signup } from '$lib/database/auth'
 
 	let email = $state('')
 	let password = $state('')
@@ -29,7 +29,7 @@
 		}
 
 		isSubmitting = true
-		const signUpResult = await authStore.signUp({ email, password })
+		const signUpResult = await signup({ email, password })
 		const hasSignUpError = !signUpResult.success
 
 		if (hasSignUpError) {

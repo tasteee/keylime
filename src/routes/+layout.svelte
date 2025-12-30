@@ -15,8 +15,12 @@
 	import DialogChordModifier from '$lib/components/Project/DialogChordModifier.svelte'
 	import PlaybackContextFrame from '$lib/components/PlaybackContextFrame.svelte'
 	import BottomBar from '$lib/components/Project/BottomBar.svelte'
+	import { setContext } from 'svelte'
 
 	let { children, data } = $props()
+
+	setContext('activeUser', () => data.activeUser)
+	setContext('authUser', () => data.authUser)
 
 	OverlayScrollbars.plugin(ClickScrollPlugin)
 

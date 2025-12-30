@@ -2,7 +2,7 @@
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
 	import { goto } from '$app/navigation'
-	import { authStore } from '$lib/stores/auth.svelte'
+	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
 	import { fade } from 'svelte/transition'
 	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
 	import { cloneProjectById } from '$lib/modules/database'
@@ -24,6 +24,7 @@
 	}
 
 	const props: UserProfilePagePropsT = $props()
+	const activeUser = useActiveUser()
 
 	let userProfile = $state<UserT | null>(null)
 	let projects = $state<ProjectT[]>([])
@@ -91,8 +92,8 @@
 	}
 
 	const handleCloneProject = async (projectId: string) => {
-		if (!authStore.authUser) return
-		const result = await cloneProjectById(projectId, authStore.authUser.id)
+		if (!activeUser) return
+		const result = await cloneProjectById(projectId, activeUser.id)
 		if (result.data) {
 			goto(`/project/${result.data.id}`)
 		}
@@ -178,7 +179,7 @@
 	}
 
 	const isOwnProfile = $derived.by(() => {
-		return authStore.userProfile?.userName === userProfile?.userName
+		return activeUser?.userName === userProfile?.userName
 	})
 </script>
 

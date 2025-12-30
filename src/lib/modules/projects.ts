@@ -57,19 +57,24 @@ export const createClonedProjectData = (userId: string, overrides: Partial<Proje
 // overwrite or create a new project in the database.
 export const saveProject = async (project: ProjectT): Promise<any> => {
   console.log('saveProject called for project:', project)
-
   console.log('About to call supabase upsert...')
 
   try {
+    console.log('Supabase client exists:', !!supabase)
+    console.log('Calling upsert now...')
+
     const supabaseSaveResult = await supabase
       .from('all_projects')
       .upsert(project as any)
       .select()
 
-    console.log('supabase save result:', supabaseSaveResult)
+    console.log('Upsert completed, result:', supabaseSaveResult)
+    console.log('Result data:', supabaseSaveResult.data)
+    console.log('Result error:', supabaseSaveResult.error)
+
     return supabaseSaveResult
   } catch (error) {
-    console.error('Error in saveProject:', error)
+    console.error('Error in saveProject catch block:', error)
     throw error
   }
 }

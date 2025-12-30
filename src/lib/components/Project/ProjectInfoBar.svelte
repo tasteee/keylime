@@ -33,11 +33,13 @@
 		isSaving = true
 
 		try {
+			console.log('About to call projectEditor.save()')
 			const saveResult = await projectEditor.save()
 			console.log('project bar save success', saveResult)
 		} catch (error) {
 			console.error('project bar save failed', error)
 		} finally {
+			console.log('project bar save finally block')
 			isSaving = false
 		}
 	}

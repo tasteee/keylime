@@ -3,13 +3,15 @@
 	import Divider from './ui/divider.svelte'
 	import { OrangeSlice, SignOut } from 'phosphor-svelte'
 	import { goto } from '$app/navigation'
-	import { authStore } from '$lib/stores/auth.svelte'
+	import { logout } from '$lib/database/auth'
+	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
 	import * as Avatar from '$lib/components/ui/avatar'
 	import Box from './ui/box.svelte'
 	import DialogUserSettings from './DialogUserSettings.svelte'
 
 	let props = $props()
 
+	const activeUser = useActiveUser()
 	let isSettingsDialogOpen = $state(false)
 
 	const goToDashboard = () => {
@@ -19,7 +21,7 @@
 
 	const handleLogout = async () => {
 		console.log('[TopBar] handleLogout called')
-		await authStore.signOut()
+		await logout()
 	}
 
 	const openUserSettings = () => {
@@ -55,7 +57,7 @@
 			<div onclick={openUserSettings} class="avatarButton">
 				<Avatar.Root class="size-6">
 					<Avatar.Fallback class="logoFont">
-						{authStore.userProfile?.userName?.slice(0, 2).toUpperCase() || 'U'}
+						{activeUser?.userName?.slice(0, 2).toUpperCase() || 'U'}
 					</Avatar.Fallback>
 				</Avatar.Root>
 			</div>

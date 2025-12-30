@@ -4,7 +4,7 @@
 	import { Label } from '$lib/components/ui/label'
 	import Box from '$lib/components/ui/box.svelte'
 	import Divider from '$lib/components/ui/divider.svelte'
-	import { authStore } from '$lib/stores/auth.svelte'
+	import { login } from '$lib/database/auth'
 	import { goto } from '$app/navigation'
 
 	let email = $state('')
@@ -17,7 +17,7 @@
 		console.log('[login] Form submitted')
 		errorMessage = null
 		isSubmitting = true
-		const result = await authStore.signIn({ email, password })
+		const result = await login({ email, password })
 		console.log('[login] Sign in result:', result)
 		const hasError = !result.success
 

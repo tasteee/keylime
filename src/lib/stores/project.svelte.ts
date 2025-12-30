@@ -4,7 +4,6 @@ import { getProjectById, getUserById } from "$lib/modules/database"
 import { createNewProjectData, getFreshPatternSignalRows } from "$lib/modules/projects"
 import { asCleanAsync, cleanAsync, type CleanAsyncReturnT } from "$lib/modules/promises"
 import { type TheAwaitedReturnT } from "$lib/modules/the-awaited"
-import { authStore } from './auth.svelte'
 import { supabase } from "$lib/supabase/client"
 
 const TOTAL_UNITS = 64
@@ -272,9 +271,8 @@ class ProjectStore {
   // Generate the current project data with keys in alphabetical order.
   // This is the single source of truth for serialization.
   private generateProjectData = (): ProjectT => {
-    const userId = authStore.authUser?.id
-    if (!userId) throw new Error('User must be authenticated to generate project data')
-    const data = createNewProjectData(userId,)
+    if (!this.userId) throw new Error('User ID must be set to generate project data')
+    const data = createNewProjectData(this.userId,)
     return {
       bpm: this.bpm,
       chordSymbols: this.chordSymbols,
@@ -292,6 +290,7 @@ class ProjectStore {
       patternSignals: this.patternSignals,
       patternZoomLevel: this.patternZoomLevel,
       progressionChords: this.baseProgressionItems,
+      progressionDurationBars: this.patternDurationBars,
       progressionZoomLevel: this.progressionZoomLevel,
       scale: this.scale,
       title: this.title,
@@ -321,7 +320,7 @@ class ProjectStore {
   }
 
   save = cleanAsync<{ didSucceed: boolean }>(async () => {
-    if (!authStore.authUser) throw new Error('User must be authenticated to save project')
+    if (!this.userId) throw new Error('User ID must be set to save project')
 
     const projectData = this.getProjectDocumentData()
 
@@ -339,7 +338,7 @@ class ProjectStore {
   })
 
   saveClone = cleanAsync<{ didSucceed: boolean, newProjectId: string }>(async () => {
-    if (!authStore.authUser) throw new Error('User must be authenticated to save project')
+    if (!this.userId) throw new Error('User ID must be set to save project')
 
     const newProjectId = crypto.randomUUID()
     const clonedTitle = `${this.title} (Clone)`
@@ -347,7 +346,7 @@ class ProjectStore {
     const projectData = this.getProjectDocumentData()
     projectData.id = newProjectId
     projectData.title = clonedTitle
-    projectData.userId = authStore.authUser.id
+    projectData.userId = this.userId
     projectData.createdAt = new Date()
     projectData.updatedAt = new Date()
 
@@ -418,8 +417,8 @@ class ProjectStore {
   }
 
   delete = async () => {
-    if (!authStore.authUser) {
-      throw new Error('User must be authenticated to delete project')
+    if (!this.userId) {
+      throw new Error('User ID must be set to delete project')
     }
 
 

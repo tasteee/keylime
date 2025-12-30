@@ -9,7 +9,7 @@
 	import Box from '$lib/components/ui/box.svelte'
 	import ProjectCard from '$lib/components/ProjectCard.svelte'
 	import ProjectsBrowserBar from '$lib/components/ProjectsBrowserBar.svelte'
-	import { authStore } from '$lib/stores/auth.svelte'
+	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
 
 	type ProjectResultT = ProjectT & {
 		userName: string
@@ -23,6 +23,7 @@
 	}
 
 	const props: PropsT = $props()
+	const activeUser = useActiveUser()
 
 	let projects = $state<ProjectResultT[]>(props.data.projects)
 	let isLoading = $state(false)
@@ -96,8 +97,8 @@
 	}
 
 	const handleCloneProject = async (projectId: string) => {
-		if (!authStore.authUser) return
-		const result = await cloneProjectById(projectId, authStore.authUser.id)
+		if (!activeUser) return
+		const result = await cloneProjectById(projectId, activeUser.id)
 		if (result.data) {
 			goto(`/project/${result.data.id}`)
 		}

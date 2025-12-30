@@ -1,8 +1,15 @@
 import type { LayoutServerLoad } from './$types'
+import { getUserById } from '$lib/modules/database'
 
 export const load: LayoutServerLoad = async (event) => {
-  const user = event.locals.user
-  const isAuthenticated = !!user
+  const authUser = event.locals.user
+  const isAuthenticated = !!authUser
 
-  return { isAuthenticated, user }
+  let activeUser: UserT | null = null
+  if (authUser) {
+    const userResult = await getUserById(authUser.id)
+    activeUser = userResult.user
+  }
+
+  return { isAuthenticated, authUser, activeUser }
 }

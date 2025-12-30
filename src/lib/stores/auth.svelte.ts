@@ -3,7 +3,7 @@ import { goto, invalidateAll } from '$app/navigation'
 import { getUserById, updateUserProfile, checkUsernameAvailable } from '$lib/modules/database'
 import { asCleanAsync, cleanAsync } from '$lib/modules/promises'
 import { warnWhen } from '$lib/modules/warnWhen'
-import type { User } from '@supabase/supabase-js'
+import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from "$lib/supabase/client"
 
 type AuthOptionsT = {
@@ -37,6 +37,11 @@ type AuthResultT = {
   success: boolean
   error?: string
   user?: User
+}
+
+type SyncServerSessionArgsT = {
+  event: string
+  session: Session | null
 }
 
 class AuthStore {
@@ -100,8 +105,10 @@ class AuthStore {
     supabase.auth.onAuthStateChange(this.handleAuthStateChange)
   }
 
-  handleAuthStateChange = async (event: string, session: any) => {
+  handleAuthStateChange = async (event: string, session: Session | null) => {
     console.log('[auth.store] Auth state changed:', { event, userId: session?.user?.id })
+
+    await this.syncServerSession({ event, session })
 
     if (event === 'SIGNED_OUT') {
       console.log('[auth.store] Handling SIGNED_OUT event')
@@ -119,6 +126,26 @@ class AuthStore {
     if (hasAuthenticatedUser) return await this.loadUserProfile()
     console.log('[auth.store] Clearing user profile (no authenticated user)')
     this.userProfile = null
+  }
+
+  syncServerSession = async (args: SyncServerSessionArgsT) => {
+    if (!browser) return
+
+    try {
+      await fetch('/auth/callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          event: args.event,
+          session: args.session
+        })
+      })
+    } catch (error) {
+      console.error('[auth.store] Failed to sync server session', error)
+    }
   }
 
   signUp = async (args: AuthOptionsT): Promise<AuthResultT> => {

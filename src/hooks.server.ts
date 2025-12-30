@@ -58,6 +58,11 @@ export const handle: Handle = async ({ event, resolve }) => {
     redirect(303, '/dashboard');
   }
 
+  if (!isAuthenticated && isRootRoute) {
+    console.log('[hooks.server] Redirecting unauthenticated user from / to /auth/login');
+    redirect(303, '/auth/login');
+  }
+
   // Protect dashboard routes - require authentication
   if (!isAuthenticated && (isDashboardRoute || isUsersRoute || isProjectsPublicRoute || isProjectRoute)) {
     console.log('[hooks.server] Redirecting unauthenticated user from protected route to /auth/login');

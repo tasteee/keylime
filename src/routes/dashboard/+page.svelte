@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import { authStore } from '$lib/stores/auth.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
 	import { fade } from 'svelte/transition'
@@ -71,23 +70,18 @@
 
 	// Redirect if not authenticated
 	$effect(() => {
-		console.log('[dashboard] Auth check effect:', {
-			browser,
-			isLoading: authStore.isLoading,
-			hasAuthUser: !!authStore.authUser,
-			userId: authStore.authUser?.id
-		})
-		if (browser && !authStore.isLoading && !authStore.authUser) {
-			console.log('[dashboard] No auth user, redirecting to /auth/login')
+		const isAuthenticated = !!props.data.activeUser
+		if (browser && !isAuthenticated) {
+			console.log('[dashboard] No active user, redirecting to /auth/login')
 			goto('/auth/login')
 		}
 	})
 
 	const loadUserProjects = async (limit: number = 20, offset: number = 0) => {
-		if (!authStore.authUser) return
+		if (!props.data.activeUser) return
 		isLoadingUserProjects = true
 
-		const results = await getProjectsByUserId(authStore.authUser.id, limit, offset)
+		const results = await getProjectsByUserId(props.data.activeUser.id, limit, offset)
 		const projects = (results.data || []) as ProjectT[]
 
 		if (results.error) {
@@ -102,6 +96,7 @@
 	}
 
 	const handleCreateProject = async () => {
+		if (!props.data.activeUser) return
 		const userId = props.data.activeUser.id
 		const newProjectData = createNewProjectData(userId)
 		const result = await addProject(newProjectData)
@@ -186,8 +181,8 @@
 	}
 
 	const handleCloneProject = async (projectId: string) => {
-		if (!authStore.authUser) return
-		const result = await cloneProjectById(projectId, authStore.authUser.id)
+		if (!props.data.activeUser) return
+		const result = await cloneProjectById(projectId, props.data.activeUser.id)
 		if (result.data) {
 			await loadUserProjects()
 			goto(`/project/${result.data.id}`)
