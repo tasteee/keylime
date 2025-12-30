@@ -1,25 +1,25 @@
 class MainStore {
-  isInputFocused = $state(false);
-  private focusTimeoutId: ReturnType<typeof setTimeout> | null = null;
+	isInputFocused = $state(false)
+	private focusTimeoutId: ReturnType<typeof setTimeout> | null = null
 
-  setInputFocused = () => {
-    if (this.focusTimeoutId) clearTimeout(this.focusTimeoutId);
+	setInputFocused = () => {
+		if (this.focusTimeoutId) clearTimeout(this.focusTimeoutId)
 
-    this.focusTimeoutId = setTimeout(() => {
-      this.isInputFocused = true;
-      this.focusTimeoutId = null;
-    }, 35);
-  };
+		this.focusTimeoutId = setTimeout(() => {
+			this.isInputFocused = true
+			this.focusTimeoutId = null
+		}, 35)
+	}
 
-  setInputBlurred = () => {
-    if (this.focusTimeoutId) {
-      clearTimeout(this.focusTimeoutId);
-      this.focusTimeoutId = null;
-    }
+	setInputBlurred = () => {
+		if (this.focusTimeoutId) {
+			clearTimeout(this.focusTimeoutId)
+			this.focusTimeoutId = null
+		}
 
-    this.isInputFocused = false;
-  };
+		this.isInputFocused = false
+	}
 }
 
-const mainStore = new MainStore();
-export default mainStore;
+const mainStore = new MainStore()
+export default mainStore

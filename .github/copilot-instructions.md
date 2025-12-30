@@ -227,7 +227,7 @@ if (!!abc) return doThis()
 
 // BAD: USING BLOCKS FOR ONE STATEMENT CONDITIONS
 if (foo) {
-  return bar
+	return bar
 }
 ```
 
@@ -235,11 +235,15 @@ if (foo) {
 
 ```css
 /* GOOD */
-.myAwesomeClass {}
+.myAwesomeClass {
+}
 /* BAD */
-.my_awesome-class {}
-.my-awesome-class {}
-.myawesomeclass {}
+.my_awesome-class {
+}
+.my-awesome-class {
+}
+.myawesomeclass {
+}
 ```
 
 ## 🛑 ABSOLUTELY NEVER USE DESTRUCTURING FOR PROPS OR FUNCTION ARGUMENTS. 🛑

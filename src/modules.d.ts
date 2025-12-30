@@ -1,1 +1,1 @@
-declare module 'array-range';
+declare module 'array-range'

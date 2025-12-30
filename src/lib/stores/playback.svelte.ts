@@ -8,328 +8,329 @@ import { chordToNotes } from '$lib/helpers/chordToNotes'
 type PlayArgsT = { note: string }
 
 type PerformProjectArgsT = {
-  id: string
-  bpm: number
-  octave: string
-  progressionChords: ProgressionItemT[]
-  patternSignals: SignalT[]
-  patternSignalRows: SignalRowsT
-  patternDurationBars: number
-  minVelocity: number
-  maxVelocity: number
+	id: string
+	bpm: number
+	octave: string
+	progressionChords: ProgressionItemT[]
+	patternSignals: SignalT[]
+	patternSignalRows: SignalRowsT
+	patternDurationBars: number
+	minVelocity: number
+	maxVelocity: number
 }
 
 const getRandomBetween = (args: { min: number; max: number }) => {
-  return Math.floor(Math.random() * (args.max - args.min + 1)) + args.min
+	return Math.floor(Math.random() * (args.max - args.min + 1)) + args.min
 }
 
 const getMidiOutput = () => {
-  if (output.type !== 'MIDI') return null
+	if (output.type !== 'MIDI') return null
 
-  if (!output.midiChannel) {
-    console.log('No MIDI channel set, returning null')
-    return null
-  }
-  const midiOutput = WebMidi.getOutputByName(output.midiDeviceName)
-  if (!midiOutput) {
-    console.log('MIDI output device not found:', output.midiDeviceName)
-    return null
-  }
-  const channelNumber = output.midiChannel === 'All' ? 1 : parseInt(output.midiChannel, 10)
-  console.log('MIDI output found:', { device: midiOutput.name, channel: channelNumber })
-  return midiOutput.channels[channelNumber]
+	if (!output.midiChannel) {
+		console.log('No MIDI channel set, returning null')
+		return null
+	}
+	const midiOutput = WebMidi.getOutputByName(output.midiDeviceName)
+	if (!midiOutput) {
+		console.log('MIDI output device not found:', output.midiDeviceName)
+		return null
+	}
+	const channelNumber = output.midiChannel === 'All' ? 1 : parseInt(output.midiChannel, 10)
+	console.log('MIDI output found:', { device: midiOutput.name, channel: channelNumber })
+	return midiOutput.channels[channelNumber]
 }
 
 const transposeNote = (args: { note: string; semitones: number }) => {
-  const midiNumber = Note.midi(args.note)
-  if (midiNumber === null) return args.note
-  const transposedMidi = midiNumber + args.semitones
-  const transposedNote = Note.fromMidiSharps(transposedMidi)
-  return transposedNote
+	const midiNumber = Note.midi(args.note)
+	if (midiNumber === null) return args.note
+	const transposedMidi = midiNumber + args.semitones
+	const transposedNote = Note.fromMidiSharps(transposedMidi)
+	return transposedNote
 }
 
-// stopAll, stopNote, stopChord, playNote, playChord, 
+// stopAll, stopNote, stopChord, playNote, playChord,
 // updatePerformancePlayback, beginPerformancePlayback, stopPerformancePlayback
 
 const getProgressionTotalDuration = (progressionItems: ProgressionItemT[]): number => {
-  if (!progressionItems.length) return 0
-  return progressionItems.reduce((total, item) => total + item.durationBeats, 0)
+	if (!progressionItems.length) return 0
+	return progressionItems.reduce((total, item) => total + item.durationBeats, 0)
 }
 
 class PlaybackStore {
-  context = $state(null) as unknown as AudioContext
-  piano = $state(null) as unknown as SplendidGrandPiano
-  activeChords = $state(new Set()) as Set<string>
-  currentlyPlayingChordId = $state(null) as string | null
-  currentlyPlayingChordNotes = $state(new Set()) as Set<string>
-  isLoading = $state(false)
-  isLoaded = $state(false)
-  isPlaying = $state(false)
-  currentProjectId = $state<string | null>(null)
-  loopStartTime = $state(0)
-  scheduledNotes = $state(new Map()) as Map<string, ReturnType<typeof setTimeout>>
-  activeNoteInstances = $state(new Map()) as Map<string, Set<string>>
+	context = $state(null) as unknown as AudioContext
+	piano = $state(null) as unknown as SplendidGrandPiano
+	activeChords = $state(new Set()) as Set<string>
+	currentlyPlayingChordId = $state(null) as string | null
+	currentlyPlayingChordNotes = $state(new Set()) as Set<string>
+	isLoading = $state(false)
+	isLoaded = $state(false)
+	isPlaying = $state(false)
+	currentProjectId = $state<string | null>(null)
+	loopStartTime = $state(0)
+	scheduledNotes = $state(new Map()) as Map<string, ReturnType<typeof setTimeout>>
+	activeNoteInstances = $state(new Map()) as Map<string, Set<string>>
 
-  // In-memory performance data
-  currentPerformance = $state<PerformanceNoteT[]>([])
-  currentBpm = $state(120)
-  currentOctave = $state('3')
-  currentProgressionDuration = $state(0)
+	// In-memory performance data
+	currentPerformance = $state<PerformanceNoteT[]>([])
+	currentBpm = $state(120)
+	currentOctave = $state('3')
+	currentProgressionDuration = $state(0)
 
-  load = async () => {
-    console.log('PlaybackStore: load called', { isLoaded: this.isLoaded, isLoading: this.isLoading })
-    if (this.isLoaded) return
-    if (this.isLoading) return
-    this.isLoading = true
-    console.log('Loading project...')
-    if (this.context) await this.context.resume()
-    if (!this.context) this.context = new AudioContext()
-    const pianoInstance = await new SplendidGrandPiano(this.context).load
-    this.piano = pianoInstance
-    this.piano.output.setVolume(output.volume)
-    this.isLoaded = true
-    this.isLoading = false
-  }
+	load = async () => {
+		console.log('PlaybackStore: load called', { isLoaded: this.isLoaded, isLoading: this.isLoading })
+		if (this.isLoaded) return
+		if (this.isLoading) return
+		this.isLoading = true
+		console.log('Loading project...')
+		if (this.context) await this.context.resume()
+		if (!this.context) this.context = new AudioContext()
+		const pianoInstance = await new SplendidGrandPiano(this.context).load
+		this.piano = pianoInstance
+		this.piano.output.setVolume(output.volume)
+		this.isLoaded = true
+		this.isLoading = false
+	}
 
-  playNote = async (args: PlayArgsT) => {
-    if (!this.isLoaded) await this.load()
-    this.activeChords.add(args.note)
-    const midiOutput = getMidiOutput()
-    const velocity = getRandomBetween({ min: output.minVelocity, max: output.maxVelocity })
-    if (!midiOutput) {
-      this.piano.start({ note: args.note, velocity })
-    } else {
-      midiOutput.playNote(args.note, { attack: velocity / 127 })
-    }
-  }
+	playNote = async (args: PlayArgsT) => {
+		if (!this.isLoaded) await this.load()
+		this.activeChords.add(args.note)
+		const midiOutput = getMidiOutput()
+		const velocity = getRandomBetween({ min: output.minVelocity, max: output.maxVelocity })
+		if (!midiOutput) {
+			this.piano.start({ note: args.note, velocity })
+		} else {
+			midiOutput.playNote(args.note, { attack: velocity / 127 })
+		}
+	}
 
-  playChord = async (chord: ChordT, octave: string, durationMs: number = 500) => {
-    // Stop only the previously playing chord notes, not the performance playback
-    this.currentlyPlayingChordNotes.forEach((note) => {
-      this.stopNote({ note })
-    })
-    this.currentlyPlayingChordNotes.clear()
+	playChord = async (chord: ChordT, octave: string, durationMs: number = 500) => {
+		// Stop only the previously playing chord notes, not the performance playback
+		this.currentlyPlayingChordNotes.forEach((note) => {
+			this.stopNote({ note })
+		})
+		this.currentlyPlayingChordNotes.clear()
 
-    // Track currently playing chord
-    this.currentlyPlayingChordId = chord.id
+		// Track currently playing chord
+		this.currentlyPlayingChordId = chord.id
 
-    // Derive notes from chord at play time
-    const notes = chordToNotes({ chord, rootOctave: octave })
+		// Derive notes from chord at play time
+		const notes = chordToNotes({ chord, rootOctave: octave })
 
-    // Play notes with slight delay for arpeggio effect
-    notes.forEach((note, index) => {
-      setTimeout(() => {
-        this.playNote({ note })
-        this.currentlyPlayingChordNotes.add(note)
-      }, index * 11)
-    })
+		// Play notes with slight delay for arpeggio effect
+		notes.forEach((note, index) => {
+			setTimeout(() => {
+				this.playNote({ note })
+				this.currentlyPlayingChordNotes.add(note)
+			}, index * 11)
+		})
 
-    // Auto-stop after duration
-    setTimeout(() => {
-      notes.forEach((note) => {
-        this.stopNote({ note })
-        this.currentlyPlayingChordNotes.delete(note)
-      })
-      this.currentlyPlayingChordId = null
-    }, durationMs)
-  }
+		// Auto-stop after duration
+		setTimeout(() => {
+			notes.forEach((note) => {
+				this.stopNote({ note })
+				this.currentlyPlayingChordNotes.delete(note)
+			})
+			this.currentlyPlayingChordId = null
+		}, durationMs)
+	}
 
-  stopNote = (args: PlayArgsT) => {
-    const isActive = this.activeChords.has(args.note)
-    const midiOutput = getMidiOutput()
-    if (!isActive) return
-    if (midiOutput) midiOutput.stopNote(args.note)
-    if (!midiOutput) this.piano.stop({ stopId: args.note })
-    this.activeChords.delete(args.note)
-  }
+	stopNote = (args: PlayArgsT) => {
+		const isActive = this.activeChords.has(args.note)
+		const midiOutput = getMidiOutput()
+		if (!isActive) return
+		if (midiOutput) midiOutput.stopNote(args.note)
+		if (!midiOutput) this.piano.stop({ stopId: args.note })
+		this.activeChords.delete(args.note)
+	}
 
-  // Convert project settings and pattern to in-memory MIDI performance and begin playback
-  perform = async (project: PerformProjectArgsT) => {
-    const isNotLoaded = !this.isLoaded
-    if (isNotLoaded) await this.load()
+	// Convert project settings and pattern to in-memory MIDI performance and begin playback
+	perform = async (project: PerformProjectArgsT) => {
+		const isNotLoaded = !this.isLoaded
+		if (isNotLoaded) await this.load()
 
-    // If different project, stop current playback first
-    const isDifferentProject = this.currentProjectId !== null && this.currentProjectId !== project.id
-    if (isDifferentProject) this.stop()
+		// If different project, stop current playback first
+		const isDifferentProject = this.currentProjectId !== null && this.currentProjectId !== project.id
+		if (isDifferentProject) this.stop()
 
-    this.currentProjectId = project.id
+		this.currentProjectId = project.id
 
-    // Log what we received
-    // console.log('=== PERFORM CALLED ===')
-    // console.log('Project ID:', project.id)
-    // console.log('Progression Chords:', project.progressionChords)
-    // console.log('Pattern Signals:', project.patternSignals)
-    // console.log('Pattern Duration Bars:', project.patternDurationBars)
-    // console.log('======================')
+		// Log what we received
+		// console.log('=== PERFORM CALLED ===')
+		// console.log('Project ID:', project.id)
+		// console.log('Progression Chords:', project.progressionChords)
+		// console.log('Pattern Signals:', project.patternSignals)
+		// console.log('Pattern Duration Bars:', project.patternDurationBars)
+		// console.log('======================')
 
-    // Generate performance from project data
-    const patternLengthBeats = project.patternDurationBars * 4
-    const progressionLengthBeats = getProgressionTotalDuration(project.progressionChords)
+		// Generate performance from project data
+		const patternLengthBeats = project.patternDurationBars * 4
+		const progressionLengthBeats = getProgressionTotalDuration(project.progressionChords)
 
-    this.currentPerformance = generatePerformance({
-      chords: project.progressionChords,
-      signals: project.patternSignals,
-      signalRows: project.patternSignalRows,
-      patternLengthBeats,
-      progressionLengthBeats,
-      octave: project.octave,
-      minVelocity: project.minVelocity,
-      maxVelocity: project.maxVelocity
-    })
+		this.currentPerformance = generatePerformance({
+			chords: project.progressionChords,
+			signals: project.patternSignals,
+			signalRows: project.patternSignalRows,
+			patternLengthBeats,
+			progressionLengthBeats,
+			octave: project.octave,
+			minVelocity: project.minVelocity,
+			maxVelocity: project.maxVelocity
+		})
 
-    this.currentBpm = project.bpm
-    this.currentOctave = project.octave
-    this.currentProgressionDuration = progressionLengthBeats
+		this.currentBpm = project.bpm
+		this.currentOctave = project.octave
+		this.currentProgressionDuration = progressionLengthBeats
 
-    // Log the full generated performance before playback
-    console.log('=== PERFORMANCE PLAYBACK START ===')
-    console.log('Performance notes:', this.currentPerformance.length)
-    console.log('Progression chords:', project.progressionChords.length)
-    console.log('Pattern signals:', project.patternSignals.length)
-    console.log('Performance Duration (beats):', this.currentProgressionDuration)
-    console.log('Pattern Duration (beats):', patternLengthBeats)
-    console.log('BPM:', this.currentBpm)
-    console.log('Expected repeats:', Math.ceil(this.currentProgressionDuration / patternLengthBeats))
-    console.log('===================================')
+		// Log the full generated performance before playback
+		console.log('=== PERFORMANCE PLAYBACK START ===')
+		console.log('Performance notes:', this.currentPerformance.length)
+		console.log('Progression chords:', project.progressionChords.length)
+		console.log('Pattern signals:', project.patternSignals.length)
+		console.log('Performance Duration (beats):', this.currentProgressionDuration)
+		console.log('Pattern Duration (beats):', patternLengthBeats)
+		console.log('BPM:', this.currentBpm)
+		console.log('Expected repeats:', Math.ceil(this.currentProgressionDuration / patternLengthBeats))
+		console.log('===================================')
 
-    this.isPlaying = true
-    this.runPlaybackLoop()
-  }
+		this.isPlaying = true
+		this.runPlaybackLoop()
+	}
 
-  // Update the in-memory performance without interrupting playback
-  update = (project: PerformProjectArgsT) => {
-    const isNotPlaying = !this.isPlaying
-    if (isNotPlaying) return
+	// Update the in-memory performance without interrupting playback
+	update = (project: PerformProjectArgsT) => {
+		const isNotPlaying = !this.isPlaying
+		if (isNotPlaying) return
 
-    const isSameProject = this.currentProjectId === project.id
-    if (!isSameProject) return
+		const isSameProject = this.currentProjectId === project.id
+		if (!isSameProject) return
 
-    // Generate new performance from updated project data
-    const patternLengthBeats = project.patternDurationBars * 4
-    const progressionLengthBeats = getProgressionTotalDuration(project.progressionChords)
+		// Generate new performance from updated project data
+		const patternLengthBeats = project.patternDurationBars * 4
+		const progressionLengthBeats = getProgressionTotalDuration(project.progressionChords)
 
-    this.currentPerformance = generatePerformance({
-      chords: project.progressionChords,
-      signals: project.patternSignals,
-      signalRows: project.patternSignalRows,
-      patternLengthBeats,
-      progressionLengthBeats,
-      octave: project.octave,
-      minVelocity: project.minVelocity,
-      maxVelocity: project.maxVelocity
-    })
+		this.currentPerformance = generatePerformance({
+			chords: project.progressionChords,
+			signals: project.patternSignals,
+			signalRows: project.patternSignalRows,
+			patternLengthBeats,
+			progressionLengthBeats,
+			octave: project.octave,
+			minVelocity: project.minVelocity,
+			maxVelocity: project.maxVelocity
+		})
 
-    this.currentBpm = project.bpm
-    this.currentOctave = project.octave
-    this.currentProgressionDuration = progressionLengthBeats
-  }
+		this.currentBpm = project.bpm
+		this.currentOctave = project.octave
+		this.currentProgressionDuration = progressionLengthBeats
+	}
 
-  // Stop playback and clear in-memory performance
-  stop = () => {
-    this.isPlaying = false
-    this.currentProjectId = null
-    this.currentPerformance = []
-    this.currentBpm = 120
-    this.currentOctave = '3'
-    this.currentProgressionDuration = 0
-    this.stopAllScheduledNotes()
-  }
+	// Stop playback and clear in-memory performance
+	stop = () => {
+		this.isPlaying = false
+		this.currentProjectId = null
+		this.currentPerformance = []
+		this.currentBpm = 120
+		this.currentOctave = '3'
+		this.currentProgressionDuration = 0
+		this.stopAllScheduledNotes()
+	}
 
-  // Legacy methods for backward compatibility
-  playPerformance = async () => {
-    console.warn('playPerformance is deprecated. Use perform(project) instead.')
-  }
+	// Legacy methods for backward compatibility
+	playPerformance = async () => {
+		console.warn('playPerformance is deprecated. Use perform(project) instead.')
+	}
 
-  pausePerformance = () => {
-    this.isPlaying = false
-    this.stopAllScheduledNotes()
-  }
+	pausePerformance = () => {
+		this.isPlaying = false
+		this.stopAllScheduledNotes()
+	}
 
-  stopPerformance = () => {
-    this.stop()
-  }
+	stopPerformance = () => {
+		this.stop()
+	}
 
-  togglePlayback = async () => {
-    console.warn('togglePlayback is deprecated. Use perform(project) or stop() instead.')
-  }
+	togglePlayback = async () => {
+		console.warn('togglePlayback is deprecated. Use perform(project) or stop() instead.')
+	}
 
-  stopAllScheduledNotes = () => {
-    this.scheduledNotes.forEach((timeoutId) => {
-      clearTimeout(timeoutId)
-    })
-    this.scheduledNotes.clear()
+	stopAllScheduledNotes = () => {
+		this.scheduledNotes.forEach((timeoutId) => {
+			clearTimeout(timeoutId)
+		})
+		this.scheduledNotes.clear()
 
-    const allActiveNotes = Array.from(this.activeChords)
-    allActiveNotes.forEach((note) => {
-      this.stopNote({ note })
-    })
+		const allActiveNotes = Array.from(this.activeChords)
+		allActiveNotes.forEach((note) => {
+			this.stopNote({ note })
+		})
 
-    this.activeNoteInstances.clear()
-  }
+		this.activeNoteInstances.clear()
+	}
 
-  runPlaybackLoop = () => {
-    if (!this.isPlaying) return
-    const hasNoPerformance = this.currentPerformance.length === 0
-    if (hasNoPerformance) return this.stop()
+	runPlaybackLoop = () => {
+		if (!this.isPlaying) return
+		const hasNoPerformance = this.currentPerformance.length === 0
+		if (hasNoPerformance) return this.stop()
 
-    // Convert beats to milliseconds for actual playback
-    const msPerBeat = 60000 / this.currentBpm
-    this.loopStartTime = performance.now()
+		// Convert beats to milliseconds for actual playback
+		const msPerBeat = 60000 / this.currentBpm
+		this.loopStartTime = performance.now()
 
-    this.currentPerformance.forEach((performanceNote) => {
-      // Convert beat-based timing to milliseconds
-      const noteStartMs = performanceNote.startTime * msPerBeat
-      const noteDurationMs = performanceNote.duration * msPerBeat
+		this.currentPerformance.forEach((performanceNote) => {
+			// Convert beat-based timing to milliseconds
+			const noteStartMs = performanceNote.startTime * msPerBeat
+			const noteDurationMs = performanceNote.duration * msPerBeat
 
-      const noteStartTimeoutId = setTimeout(() => {
-        if (!this.isPlaying) return
-        const midiOutput = getMidiOutput()
-        const velocity = performanceNote.velocity
-        const noteId = performanceNote.id
+			const noteStartTimeoutId = setTimeout(() => {
+				if (!this.isPlaying) return
+				const midiOutput = getMidiOutput()
+				const velocity = performanceNote.velocity
+				const noteId = performanceNote.id
 
-        // Track this note instance
-        if (!this.activeNoteInstances.has(performanceNote.note)) this.activeNoteInstances.set(performanceNote.note, new Set())
-        this.activeNoteInstances.get(performanceNote.note)!.add(noteId)
+				// Track this note instance
+				if (!this.activeNoteInstances.has(performanceNote.note))
+					this.activeNoteInstances.set(performanceNote.note, new Set())
+				this.activeNoteInstances.get(performanceNote.note)!.add(noteId)
 
-        if (!midiOutput) this.piano.start({ note: performanceNote.note, velocity, stopId: noteId })
-        else midiOutput.playNote(performanceNote.note, { attack: velocity / 127 })
-        this.activeChords.add(performanceNote.note)
+				if (!midiOutput) this.piano.start({ note: performanceNote.note, velocity, stopId: noteId })
+				else midiOutput.playNote(performanceNote.note, { attack: velocity / 127 })
+				this.activeChords.add(performanceNote.note)
 
-        const noteStopTimeoutId = setTimeout(() => {
-          // Stop this specific note instance
-          const noteInstances = this.activeNoteInstances.get(performanceNote.note)
-          if (noteInstances) {
-            noteInstances.delete(noteId)
-            if (noteInstances.size === 0) {
-              this.activeNoteInstances.delete(performanceNote.note)
-              this.activeChords.delete(performanceNote.note)
-            }
-          }
+				const noteStopTimeoutId = setTimeout(() => {
+					// Stop this specific note instance
+					const noteInstances = this.activeNoteInstances.get(performanceNote.note)
+					if (noteInstances) {
+						noteInstances.delete(noteId)
+						if (noteInstances.size === 0) {
+							this.activeNoteInstances.delete(performanceNote.note)
+							this.activeChords.delete(performanceNote.note)
+						}
+					}
 
-          if (midiOutput) {
-            midiOutput.stopNote(performanceNote.note)
-          } else {
-            this.piano.stop({ stopId: noteId })
-          }
-          this.scheduledNotes.delete(performanceNote.id + '-stop')
-        }, noteDurationMs)
+					if (midiOutput) {
+						midiOutput.stopNote(performanceNote.note)
+					} else {
+						this.piano.stop({ stopId: noteId })
+					}
+					this.scheduledNotes.delete(performanceNote.id + '-stop')
+				}, noteDurationMs)
 
-        this.scheduledNotes.set(performanceNote.id + '-stop', noteStopTimeoutId)
-        this.scheduledNotes.delete(performanceNote.id + '-start')
-      }, noteStartMs)
+				this.scheduledNotes.set(performanceNote.id + '-stop', noteStopTimeoutId)
+				this.scheduledNotes.delete(performanceNote.id + '-start')
+			}, noteStartMs)
 
-      this.scheduledNotes.set(performanceNote.id + '-start', noteStartTimeoutId)
-    })
+			this.scheduledNotes.set(performanceNote.id + '-start', noteStartTimeoutId)
+		})
 
-    // Convert performance duration from beats to milliseconds for looping
-    const loopDurationMs = this.currentProgressionDuration * msPerBeat
-    const loopTimeoutId = setTimeout(() => {
-      if (!this.isPlaying) return
-      this.runPlaybackLoop()
-    }, loopDurationMs)
+		// Convert performance duration from beats to milliseconds for looping
+		const loopDurationMs = this.currentProgressionDuration * msPerBeat
+		const loopTimeoutId = setTimeout(() => {
+			if (!this.isPlaying) return
+			this.runPlaybackLoop()
+		}, loopDurationMs)
 
-    this.scheduledNotes.set('loop', loopTimeoutId)
-  }
+		this.scheduledNotes.set('loop', loopTimeoutId)
+	}
 }
 
 const playbackStore = new PlaybackStore()

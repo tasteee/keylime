@@ -5,85 +5,85 @@
 @import '@fontsource/plus-jakarta-sans/700.css';
 
 :root {
-  /* ------------------------------ */
-  /* 🎨 PALETTE: "Soft Day" Theme   */
-  /* ------------------------------ */
+	/* ------------------------------ */
+	/* 🎨 PALETTE: "Soft Day" Theme   */
+	/* ------------------------------ */
 
-  /* Backgrounds */
-  --color-bg-app: #F2F3F6;
-  /* The canvas */
-  --color-surface-base: #F7F8FA;
-  /* Cards/Panels */
-  --color-surface-dim: #E6E8EC;
-  /* Pressed states / Track backgrounds */
+	/* Backgrounds */
+	--color-bg-app: #f2f3f6;
+	/* The canvas */
+	--color-surface-base: #f7f8fa;
+	/* Cards/Panels */
+	--color-surface-dim: #e6e8ec;
+	/* Pressed states / Track backgrounds */
 
-  /* Text */
-  --color-text-primary: #1A1C20;
-  --color-text-secondary: #646872;
-  --color-text-tertiary: #A0A3AD;
+	/* Text */
+	--color-text-primary: #1a1c20;
+	--color-text-secondary: #646872;
+	--color-text-tertiary: #a0a3ad;
 
-  /* Accents (Music Context) */
-  --color-accent-primary: #667EEA;
-  /* Primary Action / Playhead */
-  --color-accent-secondary: #FF9A9E;
-  /* Recording / Highlight */
+	/* Accents (Music Context) */
+	--color-accent-primary: #667eea;
+	/* Primary Action / Playhead */
+	--color-accent-secondary: #ff9a9e;
+	/* Recording / Highlight */
 
-  /* Gradients (For "Vibe") */
-  --gradient-glass: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 100%);
-  --gradient-active: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+	/* Gradients (For "Vibe") */
+	--gradient-glass: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 100%);
+	--gradient-active: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
-  /* ------------------------------ */
-  /* 📐 GEOMETRY & TYPOGRAPHY       */
-  /* ------------------------------ */
+	/* ------------------------------ */
+	/* 📐 GEOMETRY & TYPOGRAPHY       */
+	/* ------------------------------ */
 
-  --radius-sm: 8px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-full: 9999px;
+	--radius-sm: 8px;
+	--radius-md: 16px;
+	--radius-lg: 24px;
+	--radius-full: 9999px;
 
-  --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-display: "Plus Jakarta Sans", sans-serif;
-  --font-body: "Plus Jakarta Sans", sans-serif;
+	--font-sans: 'Plus Jakarta Sans', sans-serif;
+	--font-display: 'Plus Jakarta Sans', sans-serif;
+	--font-body: 'Plus Jakarta Sans', sans-serif;
 
-  /* Type Scale (Major Third - 1.250) */
-  --font-size-xs: 0.75rem;
-  /* 12px - Labels */
-  --font-size-sm: 0.875rem;
-  /* 14px - UI Text */
-  --font-size-base: 1rem;
-  /* 16px - Body */
-  --font-size-lg: 1.25rem;
-  /* 20px - Subtitles */
-  --font-size-xl: 1.563rem;
-  /* 25px - Section Headers */
-  --font-size-2xl: 1.953rem;
-  /* 31px - Page Titles */
+	/* Type Scale (Major Third - 1.250) */
+	--font-size-xs: 0.75rem;
+	/* 12px - Labels */
+	--font-size-sm: 0.875rem;
+	/* 14px - UI Text */
+	--font-size-base: 1rem;
+	/* 16px - Body */
+	--font-size-lg: 1.25rem;
+	/* 20px - Subtitles */
+	--font-size-xl: 1.563rem;
+	/* 25px - Section Headers */
+	--font-size-2xl: 1.953rem;
+	/* 31px - Page Titles */
 }
 
 /* Reset & Base */
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
 }
 
 body {
-  /* background-color: var(--color-bg-app); */
-  color: var(--color-text-primary);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  line-height: 1.5;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  /* App-like feel */
-  padding: 16px;
+	/* background-color: var(--color-bg-app); */
+	color: var(--color-text-primary);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	line-height: 1.5;
+	height: 100vh;
+	width: 100vw;
+	overflow: hidden;
+	/* App-like feel */
+	padding: 16px;
 }
 
 /* Utility for focus states - crucial for keyboard-first apps */
 :focus-visible {
-  outline: 2px solid var(--a);
-  outline-offset: 2px;
+	outline: 2px solid var(--a);
+	outline-offset: 2px;
 }

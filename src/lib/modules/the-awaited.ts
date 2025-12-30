@@ -1,27 +1,25 @@
-
 // TODO: Publish this as an npm package.
 // https://npmjs.com/package/the-awaited
 
-
 export class TheAwaitedReturnT<ReturnT = any> extends Array<Error | null | ReturnT> {
-  error: Error | null
-  data: ReturnT | null
+	error: Error | null
+	data: ReturnT | null
 
-  constructor(error: Error | null, data: ReturnT | null) {
-    super(error, data)
-    this.error = error
-    this.data = data
-  }
+	constructor(error: Error | null, data: ReturnT | null) {
+		super(error, data)
+		this.error = error
+		this.data = data
+	}
 }
 
 export const awaited = async <T = any>(promise: any): Promise<TheAwaitedReturnT<T>> => {
-  try {
-    const data = await promise
-    return new TheAwaitedReturnT<T>(null, data)
-  } catch (error) {
-    const errorObject = error instanceof Error ? error : new Error(String(error))
-    return new TheAwaitedReturnT<T>(errorObject, null)
-  }
+	try {
+		const data = await promise
+		return new TheAwaitedReturnT<T>(null, data)
+	} catch (error) {
+		const errorObject = error instanceof Error ? error : new Error(String(error))
+		return new TheAwaitedReturnT<T>(errorObject, null)
+	}
 }
 
 /*
