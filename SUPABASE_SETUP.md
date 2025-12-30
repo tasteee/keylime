@@ -25,6 +25,7 @@ This guide will help you set up Supabase for authentication and data persistence
 4. Click "Run" to execute the schema
 
 This will create:
+
 - `profiles` table for user data
 - `projects` table for project metadata
 - `pattern_signals` table for pattern editor data
@@ -40,6 +41,7 @@ This will create:
    - **Anon/Public Key** (starts with `eyJ...`)
 
 3. Create a `.env` file in the project root (if it doesn't exist):
+
    ```bash
    cp .env.example .env
    ```
@@ -53,6 +55,7 @@ This will create:
 ## Step 4: Verify Setup
 
 1. Start your development server:
+
    ```bash
    bun run dev
    ```
@@ -80,7 +83,9 @@ The app uses Supabase Auth with the following features:
 ## Data Structure
 
 ### Projects Table
+
 Stores project metadata including:
+
 - User ID (owner)
 - Title, description
 - Musical settings (key, scale, BPM, octave)
@@ -90,14 +95,18 @@ Stores project metadata including:
 - Timestamps
 
 ### Pattern Signals Table
+
 Stores individual notes/signals in the pattern editor:
+
 - Signal ID and row ID
 - Start time and duration
 - Note and velocity
 - Linked to parent project
 
 ### Progression Items Table
+
 Stores chord progression data:
+
 - Item type (chord or rest)
 - Chord details (symbol, root note, color)
 - Modifiers (inversion, octave offset, voicing, bass note)
@@ -107,6 +116,7 @@ Stores chord progression data:
 ## Row Level Security (RLS)
 
 All tables have RLS enabled to ensure users can only:
+
 - View their own projects and associated data
 - View public projects (read-only)
 - Create/update/delete their own content
@@ -114,6 +124,7 @@ All tables have RLS enabled to ensure users can only:
 ## API Usage Examples
 
 ### Creating a New Project
+
 ```typescript
 import projectStore from '$lib/stores/project.svelte'
 
@@ -122,6 +133,7 @@ await projectStore.save()
 ```
 
 ### Loading a Project
+
 ```typescript
 import projectStore from '$lib/stores/project.svelte'
 
@@ -129,6 +141,7 @@ await projectStore.load('project-id-here')
 ```
 
 ### Fetching User's Projects
+
 ```typescript
 import projectsStore from '$lib/stores/projects.svelte'
 
@@ -137,6 +150,7 @@ import projectsStore from '$lib/stores/projects.svelte'
 ```
 
 ### Deleting a Project
+
 ```typescript
 import projectsStore from '$lib/stores/projects.svelte'
 
@@ -146,23 +160,29 @@ await projectsStore.deleteProject('project-id-here')
 ## Troubleshooting
 
 ### "User must be authenticated" errors
+
 Make sure the user is signed in before attempting to save/load projects:
+
 ```typescript
 import { authStore } from '$lib/stores/auth.svelte'
 
 if (authStore.isAuthenticated) {
-  await projectStore.save()
+	await projectStore.save()
 }
 ```
 
 ### RLS Policy errors
+
 If you get permission errors, verify:
+
 1. The user is authenticated
 2. The project belongs to the authenticated user
 3. RLS policies were created correctly (check SQL Editor)
 
 ### Connection errors
+
 Verify your environment variables are set correctly:
+
 - `PUBLIC_SUPABASE_URL` should start with `https://`
 - `PUBLIC_SUPABASE_ANON_KEY` should be the anon/public key, not the service role key
 

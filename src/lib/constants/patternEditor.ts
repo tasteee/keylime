@@ -12,8 +12,8 @@ export const BEATS_PER_BAR = 4
 export const MAX_BEATS_PER_PATTERN = 128
 
 export const PATTERN_GRID = {
-  DIVISIONS_PER_BEAT: 4, // cells per beat
-  BEAT_WIDTH: 40,
-  DIVISION_WIDTH: 10,
-  ROW_HEIGHT: 32
+	DIVISIONS_PER_BEAT: 4, // cells per beat
+	BEAT_WIDTH: 40,
+	DIVISION_WIDTH: 10,
+	ROW_HEIGHT: 32
 }

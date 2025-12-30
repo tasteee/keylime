@@ -1,6 +1,6 @@
-import { goto } from "$app/navigation";
+import { goto } from '$app/navigation'
 
 export const navigateTo = async (path: string) => {
-  console.log(`Navigating to: ${path}`);
-  await goto(path);
+	console.log(`Navigating to: ${path}`)
+	await goto(path)
 }

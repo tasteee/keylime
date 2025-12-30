@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
+	import { onMount } from 'svelte'
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
 	import { fade } from 'svelte/transition'
+
+	let { data } = $props()
 
 	const handleGoToLogin = () => {
 		goto('/auth/login')
@@ -11,6 +14,15 @@
 	const handleGoToSignup = () => {
 		goto('/auth/signup')
 	}
+
+	onMount(() => {
+		const isAuthenticated = data.isAuthenticated
+		if (isAuthenticated) {
+			goto('/dashboard')
+		} else {
+			goto('/login')
+		}
+	})
 </script>
 
 <div class="splash-container" in:fade>

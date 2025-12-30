@@ -24,6 +24,7 @@ The application uses a neutral scale for most UI elements, defined in `src/app.c
 ## Component Patterns
 
 ### 1. Toolbar Pattern
+
 Used in `ChordCardGrid`, `PatternEditor`, `ProgressionPanel`.
 
 - **Height**: `54px` (standard) or `48px` (compact).
@@ -34,6 +35,7 @@ Used in `ChordCardGrid`, `PatternEditor`, `ProgressionPanel`.
 - **Typography**: Title uses `herPanelTitle` class (or similar weight/size).
 
 ### 2. Card Pattern
+
 Used for `ChordCard`, Projects, Users.
 
 - **Background**: `var(--colorWhite)` (or `var(--n-01)` in some contexts).
@@ -48,6 +50,7 @@ Used for `ChordCard`, Projects, Users.
   - Actions often hidden until hover (e.g., `ChordCard` actions).
 
 ### 3. Page Layout
+
 - **Background**: `var(--n-00)`.
 - **Header**: `TopBar` component (Sticky, 64px height, backdrop blur).
 - **Content**:
@@ -55,11 +58,13 @@ Used for `ChordCard`, Projects, Users.
   - Padding: `24px` or `40px`.
 
 ### 4. Typography
+
 - **Font Family**: `Geologica`, `Plus Jakarta Sans`, system fonts.
 - **Titles**: Bold, dark (`--n-10`).
 - **Body**: Regular, `--n-07` or `--n-06`.
 
 ## UX Guidelines
+
 - **Consistency**: Use the defined CSS variables for all colors.
 - **Feedback**: Ensure hover states are present for all interactive elements.
 - **Whitespace**: Use generous padding (16px, 24px, 32px) to create breathing room.

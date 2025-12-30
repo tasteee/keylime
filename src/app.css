@@ -5,226 +5,213 @@
 @import '@fontsource/plus-jakarta-sans/700.css';
 @import '@fontsource/manrope';
 
-
 .logoFont {
-  font-family: var(--logoFont);
-  font-weight: 900;
-  font-style: normal;
+	font-family: var(--logoFont);
+	font-weight: 900;
+	font-style: normal;
 }
 
 .logo {
-  font-family: var(--logoFont);
-  font-weight: 900;
-  font-style: normal;
+	font-family: var(--logoFont);
+	font-weight: 900;
+	font-style: normal;
 }
 
 :root {
+	--logoFont: 'Saira Variable', sans-serif;
 
-  --logoFont: 'Saira Variable', sans-serif;
+	--colorWhite: #ffffff;
+	--colorBlack: #1c1b1f;
 
-  --colorWhite: #ffffff;
-  --colorBlack: #1c1b1f;
+	/* Neutral Scale (00 = Lightest, 11 = Darkest) */
+	--n-00: #f8f9fc;
+	/* App Background */
+	--n-01: #f2f3f6;
+	/* Subtle Surface */
+	--n-02: #e2e5e9;
+	/* UI Element Background */
+	--n-03: #d1d5db;
+	/* Hover States */
+	--n-04: #9da3ae;
+	/* Disabled / Watermarks */
+	--n-05: #6c7381;
+	/* Tertiary Text / Icons */
+	--n-06: #4d5562;
+	/* Secondary Text */
+	--n-07: #394150;
+	/* Primary Text (Soft) */
+	--n-08: #202936;
+	/* Primary Text (Strong) */
+	--n-09: #111927;
+	/* Headings */
+	--n-10: #030813;
+	/* High Contrast */
+	--n-11: #000000;
+	/* Pure Black */
 
-  /* Neutral Scale (00 = Lightest, 11 = Darkest) */
-  --n-00: #F8F9FC;
-  /* App Background */
-  --n-01: #F2F3F6;
-  /* Subtle Surface */
-  --n-02: #E2E5E9;
-  /* UI Element Background */
-  --n-03: #D1D5DB;
-  /* Hover States */
-  --n-04: #9DA3AE;
-  /* Disabled / Watermarks */
-  --n-05: #6C7381;
-  /* Tertiary Text / Icons */
-  --n-06: #4D5562;
-  /* Secondary Text */
-  --n-07: #394150;
-  /* Primary Text (Soft) */
-  --n-08: #202936;
-  /* Primary Text (Strong) */
-  --n-09: #111927;
-  /* Headings */
-  --n-10: #030813;
-  /* High Contrast */
-  --n-11: #000000;
-  /* Pure Black */
+	/* Alpha/Glass Scales (For that modern overlay look) */
+	--n-alpha-1: rgba(0, 0, 0, 0.04);
+	--n-alpha-2: rgba(0, 0, 0, 0.08);
+	--n-alpha-3: rgba(0, 0, 0, 0.12);
+	--n-alpha-4: rgba(0, 0, 0, 0.2);
+	--n-alpha-5: rgba(0, 0, 0, 0.4);
 
-  /* Alpha/Glass Scales (For that modern overlay look) */
-  --n-alpha-1: rgba(0, 0, 0, 0.04);
-  --n-alpha-2: rgba(0, 0, 0, 0.08);
-  --n-alpha-3: rgba(0, 0, 0, 0.12);
-  --n-alpha-4: rgba(0, 0, 0, 0.20);
-  --n-alpha-5: rgba(0, 0, 0, 0.40);
+	/* Danger Scale (Curved for UI needs) */
+	--d-00: #fff1f2;
+	/* Background */
+	--d-01: #ffe4e6;
+	/* Hover Background */
+	--d-02: #fecdd3;
+	/* Borders */
+	--d-03: #fda4af;
+	/* Decorative */
+	--d-04: #f43f5e;
+	/* UI Focus/Active */
+	--d-05: #e11d48;
+	/* Solid Buttons */
+	--d-06: #be123c;
+	/* Hover Solid */
+	--d-07: #9f1239;
+	/* Text Primary */
+	--d-08: #881337;
+	/* Text Dark */
 
-  /* Danger Scale (Curved for UI needs) */
-  --d-00: #FFF1F2;
-  /* Background */
-  --d-01: #FFE4E6;
-  /* Hover Background */
-  --d-02: #FECDD3;
-  /* Borders */
-  --d-03: #FDA4AF;
-  /* Decorative */
-  --d-04: #F43F5E;
-  /* UI Focus/Active */
-  --d-05: #E11D48;
-  /* Solid Buttons */
-  --d-06: #BE123C;
-  /* Hover Solid */
-  --d-07: #9F1239;
-  /* Text Primary */
-  --d-08: #881337;
-  /* Text Dark */
+	--colorGreen1: #e6f6f0;
+	--colorGreen2: #bff0da;
+	--colorGreen3: #80e6ba;
+	--colorGreen4: #34d399;
+	--colorGreen5: #06885f;
+	--colorGreen7: #06885f;
+	--colorGreen8: #054e3c;
 
-  --colorGreen1: #E6F6F0;
-  --colorGreen2: #BFF0DA;
-  --colorGreen3: #80E6BA;
-  --colorGreen4: #34D399;
-  --colorGreen5: #06885f;
-  --colorGreen7: #06885f;
-  --colorGreen8: #054E3C;
+	--a: #ef4aac;
+	--a-01: #fde8f4;
+	--a-02: #f9b9df;
+	--a-03: #f58ac9;
+	--a-04: #f05bb4;
+	--a-05: #d31385;
+	--a-06: #a40f67;
+	--a-07: #750a4a;
+	--a-08: #46062c;
 
-  --a: #ef4aac;
-  --a-01: #fde8f4;
-  --a-02: #f9b9df;
-  --a-03: #f58ac9;
-  --a-04: #f05bb4;
-  --a-05: #d31385;
-  --a-06: #a40f67;
-  --a-07: #750a4a;
-  --a-08: #46062c;
+	--accent: var(--a-05);
+	--accent-foreground: var(--colorWhite);
+	--accent-border: var(--a-03);
 
-  --accent: var(--a-05);
-  --accent-foreground: var(--colorWhite);
-  --accent-border: var(--a-03);
+	-vc-01: 2px solid #b8457f;
 
-  -vc-01: 2px solid #b8457f;
+	--disabled-button-bg: #9ca3af;
 
-  --disabled-button-bg: #9ca3af;
-
-  /* =========================================
+	/* =========================================
      2. SEMANTICS (Usage Tokens)
      Use these variables in your code, not the raw scales.
      ========================================= */
 
-  /* Surfaces */
-  --bg-app: var(--colorWhite);
-  --bg-panel: var(--n-00);
-  /* Main panels */
-  --bg-panel-hover: var(--n-01);
-  --bg-element: var(--n-01);
-  /* Inputs, cards inside panels */
-  --bg-element-hover: var(--n-02);
-  --bg-element-active: var(--n-03);
-  --bg-inset: rgba(0, 0, 0, 0.03);
-  /* For recessed areas */
+	/* Surfaces */
+	--bg-app: var(--colorWhite);
+	--bg-panel: var(--n-00);
+	/* Main panels */
+	--bg-panel-hover: var(--n-01);
+	--bg-element: var(--n-01);
+	/* Inputs, cards inside panels */
+	--bg-element-hover: var(--n-02);
+	--bg-element-active: var(--n-03);
+	--bg-inset: rgba(0, 0, 0, 0.03);
+	/* For recessed areas */
 
-  /* Typography */
-  /* --font-sans: "Plus Jakarta Sans", sans-serif; */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  --font-mono: "Geologica", monospace;
+	/* Typography */
+	/* --font-sans: "Plus Jakarta Sans", sans-serif; */
+	--font-sans:
+		-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+		sans-serif;
+	--font-mono: 'Geologica', monospace;
 
-  --txt-heading: var(--n-10);
-  --txt-primary: var(--n-08);
-  --txt-secondary: var(--n-06);
-  --txt-tertiary: var(--n-05);
-  --txt-disabled: var(--n-04);
-  --txt-inverse: var(--colorWhite);
-  --txt-danger: var(--d-07);
+	--txt-heading: var(--n-10);
+	--txt-primary: var(--n-08);
+	--txt-secondary: var(--n-06);
+	--txt-tertiary: var(--n-05);
+	--txt-disabled: var(--n-04);
+	--txt-inverse: var(--colorWhite);
+	--txt-danger: var(--d-07);
 
-  /* Borders & Dividers */
-  /* The "Hairline" look is very popular */
-  --border-subtle: var(--n-02);
-  --border-default: var(--n-03);
-  --border-strong: var(--n-05);
-  --border-focus: var(--n-08);
-  --border-danger: var(--d-02);
+	/* Borders & Dividers */
+	/* The "Hairline" look is very popular */
+	--border-subtle: var(--n-02);
+	--border-default: var(--n-03);
+	--border-strong: var(--n-05);
+	--border-focus: var(--n-08);
+	--border-danger: var(--d-02);
 
+	/* Backgrounds */
+	--color-bg-app: var(--n-01);
+	/* The canvas */
+	--color-surface-base: var(--n-00);
+	/* Cards/Panels */
+	--color-surface-dim: var(--n-02);
+	/* Pressed states / Track backgrounds */
 
-  /* Backgrounds */
-  --color-bg-app: var(--n-01);
-  /* The canvas */
-  --color-surface-base: var(--n-00);
-  /* Cards/Panels */
-  --color-surface-dim: var(--n-02);
-  /* Pressed states / Track backgrounds */
+	--color-panel-bg: var(--n-01);
 
-  --color-panel-bg: var(--n-01);
+	/* Text */
+	--color-text-primary: var(--n-09);
+	--color-text-secondary: var(--n-06);
+	--color-text-tertiary: var(--n-04);
 
-  /* Text */
-  --color-text-primary: var(--n-09);
-  --color-text-secondary: var(--n-06);
-  --color-text-tertiary: var(--n-04);
+	/* Accents (Music Context) */
+	--color-accent-primary: #06885f;
+	/* Primary Action / Playhead */
+	--color-accent-secondary: #ff9a9e;
+	/* Recording / Highlight */
 
-  /* Accents (Music Context) */
-  --color-accent-primary: #06885f;
-  /* Primary Action / Playhead */
-  --color-accent-secondary: #FF9A9E;
-  /* Recording / Highlight */
+	/* ------------------------------ */
+	/* ☁️ DEPTH: The Secret Sauce     */
+	/* ------------------------------ */
 
+	/* Level 1: Flat/Inset (Pressed buttons, Slots) */
+	--shadow-inner-sm: inset 0px 1px 2px rgba(0, 0, 0, 0.06);
+	--shadow-inner-md: inset 0px 2px 4px rgba(0, 0, 0, 0.06), inset 0px 1px 1px rgba(255, 255, 255, 0.8);
 
-  /* ------------------------------ */
-  /* ☁️ DEPTH: The Secret Sauce     */
-  /* ------------------------------ */
+	/* Level 2: Surface (Cards, Standard Buttons) */
+	/* Combines a drop shadow with an inner white "rim light" for definition */
+	--shadow-surface-sm: 0px 1px 2px rgba(0, 0, 0, 0.05), inset 0px 0px 0px 1px rgba(255, 255, 255, 0.6);
 
-  /* Level 1: Flat/Inset (Pressed buttons, Slots) */
-  --shadow-inner-sm: inset 0px 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-inner-md: inset 0px 2px 4px rgba(0, 0, 0, 0.06), inset 0px 1px 1px rgba(255, 255, 255, 0.8);
+	--shadow-surface-md:
+		0px 4px 6px -1px rgba(0, 0, 0, 0.04), 0px 2px 4px -1px rgba(0, 0, 0, 0.02),
+		inset 0px 0px 0px 1px rgba(255, 255, 255, 0.5);
 
-  /* Level 2: Surface (Cards, Standard Buttons) */
-  /* Combines a drop shadow with an inner white "rim light" for definition */
-  --shadow-surface-sm:
-    0px 1px 2px rgba(0, 0, 0, 0.05),
-    inset 0px 0px 0px 1px rgba(255, 255, 255, 0.6);
+	/* Level 3: Float (Dropdowns, Dragging Chords) */
+	--shadow-float-lg:
+		0px 20px 25px -5px rgba(0, 0, 0, 0.08), 0px 10px 10px -5px rgba(0, 0, 0, 0.03),
+		inset 0px 0px 0px 1px rgba(255, 255, 255, 0.8);
 
-  --shadow-surface-md:
-    0px 4px 6px -1px rgba(0, 0, 0, 0.04),
-    0px 2px 4px -1px rgba(0, 0, 0, 0.02),
-    inset 0px 0px 0px 1px rgba(255, 255, 255, 0.5);
+	/* Shadows (Colored shadows > Gray shadows) */
+	--shadow-color: 220 3% 15%;
+	/* HSL values for cleaner blending */
 
-  /* Level 3: Float (Dropdowns, Dragging Chords) */
-  --shadow-float-lg:
-    0px 20px 25px -5px rgba(0, 0, 0, 0.08),
-    0px 10px 10px -5px rgba(0, 0, 0, 0.03),
-    inset 0px 0px 0px 1px rgba(255, 255, 255, 0.8);
+	--shadow-xs: 0px 1px 2px hsl(var(--shadow-color) / 0.05);
+	--shadow-sm: 0px 1px 2px hsl(var(--shadow-color) / 0.1), 0px 2px 4px hsl(var(--shadow-color) / 0.05);
+	--shadow-md: 0px 4px 6px -1px hsl(var(--shadow-color) / 0.1), 0px 2px 4px -1px hsl(var(--shadow-color) / 0.06);
+	--shadow-lg: 0px 10px 15px -3px hsl(var(--shadow-color) / 0.1), 0px 4px 6px -2px hsl(var(--shadow-color) / 0.05);
 
+	/* The "Chiseled" Inner Shadow (Innovative Depth) */
+	--shadow-inset-ring: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+	--shadow-inner-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
 
-  /* Shadows (Colored shadows > Gray shadows) */
-  --shadow-color: 220 3% 15%;
-  /* HSL values for cleaner blending */
+	/* Focus Rings */
+	--ring-offset: 2px;
+	--ring-width: 2px;
+	--ring-color: var(--n-03);
 
-  --shadow-xs: 0px 1px 2px hsl(var(--shadow-color) / 0.05);
-  --shadow-sm:
-    0px 1px 2px hsl(var(--shadow-color) / 0.1),
-    0px 2px 4px hsl(var(--shadow-color) / 0.05);
-  --shadow-md:
-    0px 4px 6px -1px hsl(var(--shadow-color) / 0.1),
-    0px 2px 4px -1px hsl(var(--shadow-color) / 0.06);
-  --shadow-lg:
-    0px 10px 15px -3px hsl(var(--shadow-color) / 0.1),
-    0px 4px 6px -2px hsl(var(--shadow-color) / 0.05);
+	/* Radius */
+	--radius-xs: 4px;
+	--radius-sm: 6px;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+	--radius-full: 9999px;
 
-  /* The "Chiseled" Inner Shadow (Innovative Depth) */
-  --shadow-inset-ring: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-  --shadow-inner-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
-
-  /* Focus Rings */
-  --ring-offset: 2px;
-  --ring-width: 2px;
-  --ring-color: var(--n-03);
-
-  /* Radius */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-full: 9999px;
-
-  /* Animations */
-  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+	/* Animations */
+	--ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	--ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* =========================================
@@ -232,15 +219,15 @@
    ========================================= */
 
 body {
-  background: var(--n-00);
-  margin: 0;
-  /* background-color: var(--bg-app); */
-  /* Optional: Subtle Noise Texture for that "Crafted" feel */
-  /* background-image: radial-gradient(circle at 50% 0%, #ffffff 0%, var(--n-01) 100%); */
-  color: var(--txt-primary);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	background: var(--n-00);
+	margin: 0;
+	/* background-color: var(--bg-app); */
+	/* Optional: Subtle Noise Texture for that "Crafted" feel */
+	/* background-image: radial-gradient(circle at 50% 0%, #ffffff 0%, var(--n-01) 100%); */
+	color: var(--txt-primary);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 /* =========================================
@@ -249,36 +236,36 @@ body {
 
 /* Typography Presets */
 .text-display {
-  font-family: var(--font-sans);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--txt-heading);
+	font-family: var(--font-sans);
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	color: var(--txt-heading);
 }
 
 .text-mono {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+	letter-spacing: -0.01em;
 }
 
 .text-xs {
-  font-size: 0.75rem;
-  line-height: 1rem;
+	font-size: 0.75rem;
+	line-height: 1rem;
 }
 
 .text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+	font-size: 0.875rem;
+	line-height: 1.25rem;
 }
 
 .text-base {
-  font-size: 1rem;
-  line-height: 1.5rem;
+	font-size: 1rem;
+	line-height: 1.5rem;
 }
 
 .text-lg {
-  font-size: 1.125rem;
-  line-height: 1.75rem;
+	font-size: 1.125rem;
+	line-height: 1.75rem;
 }
 
 /* 
@@ -287,33 +274,31 @@ body {
   using a subtle top inner white highlight.
 */
 .chisel-top {
-  box-shadow:
-    var(--shadow-sm),
-    var(--shadow-inner-top);
+	box-shadow: var(--shadow-sm), var(--shadow-inner-top);
 }
 
 /* Interaction States */
 .interactive {
-  transition: all 0.15s var(--ease-smooth);
-  cursor: pointer;
+	transition: all 0.15s var(--ease-smooth);
+	cursor: pointer;
 }
 
 .interactive:hover {
-  background-color: var(--bg-element-hover);
-  transform: translateY(-1px);
-  /* Micro-interaction */
+	background-color: var(--bg-element-hover);
+	transform: translateY(-1px);
+	/* Micro-interaction */
 }
 
 .interactive:active {
-  background-color: var(--bg-element-active);
-  transform: translateY(0px);
+	background-color: var(--bg-element-active);
+	transform: translateY(0px);
 }
 
 .interactive:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 var(--ring-offset) var(--bg-app),
-    0 0 0 calc(var(--ring-offset) + var(--ring-width)) var(--n-08);
+	outline: none;
+	box-shadow:
+		0 0 0 var(--ring-offset) var(--bg-app),
+		0 0 0 calc(var(--ring-offset) + var(--ring-width)) var(--n-08);
 }
 
 /* =========================================
@@ -322,229 +307,229 @@ body {
 
 /* Updated Panel Style */
 .herPanel {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 16px;
-  padding: 0px 16px;
-  height: 56px;
-  /* Slightly taller for modern touch targets */
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 16px;
+	padding: 0px 16px;
+	height: 56px;
+	/* Slightly taller for modern touch targets */
 
-  /* background-color: var(--bg-panel); */
-  /* border: 1px solid var(--border-subtle); */
-  /* border-radius: var(--radius-md); */
+	/* background-color: var(--bg-panel); */
+	/* border: 1px solid var(--border-subtle); */
+	/* border-radius: var(--radius-md); */
 
-  /* Modern Depth */
-  /* box-shadow: var(--shadow-sm); */
-  /* transition: border-color 0.2s, box-shadow 0.2s; */
+	/* Modern Depth */
+	/* box-shadow: var(--shadow-sm); */
+	/* transition: border-color 0.2s, box-shadow 0.2s; */
 }
 
 /* Floating panel variant (Glassmorphism) */
 .herPanel.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--n-alpha-2);
+	background: rgba(255, 255, 255, 0.7);
+	backdrop-filter: blur(12px);
+	border: 1px solid var(--n-alpha-2);
 }
 
 .herPanelTitle {
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--txt-heading);
-  letter-spacing: -0.01em;
-  /* Tighter tracking for headings */
+	font-family: var(--font-sans);
+	font-weight: 700;
+	font-size: 15px;
+	color: var(--txt-heading);
+	letter-spacing: -0.01em;
+	/* Tighter tracking for headings */
 }
 
 .herPanelSubtitle {
-  font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 13px;
-  color: var(--txt-secondary);
+	font-family: var(--font-sans);
+	font-weight: 500;
+	font-size: 13px;
+	color: var(--txt-secondary);
 }
 
 /* Updated Badge */
 .herBadge {
-  display: inline-flex;
-  align-items: center;
+	display: inline-flex;
+	align-items: center;
 
-  /* Pill shape is trendier than boxy */
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-default);
-  background: var(--bg-element);
+	/* Pill shape is trendier than boxy */
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--border-default);
+	background: var(--bg-element);
 
-  color: var(--txt-secondary);
-  font-family: var(--font-mono);
-  /* Tech feel */
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  padding: 4px 8px;
-  text-transform: uppercase;
+	color: var(--txt-secondary);
+	font-family: var(--font-mono);
+	/* Tech feel */
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	padding: 4px 8px;
+	text-transform: uppercase;
 }
 
 /* Danger Badge Variant */
 .herBadge.danger {
-  background: var(--d-00);
-  border-color: var(--d-02);
-  color: var(--d-07);
+	background: var(--d-00);
+	border-color: var(--d-02);
+	color: var(--d-07);
 }
 
 /* Inputs / Select Triggers */
-[data-slot="select-trigger"] {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+[data-slot='select-trigger'] {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 
-  height: 36px;
-  padding: 1px 10px 0 12px;
+	height: 36px;
+	padding: 1px 10px 0 12px;
 
-  background: var(--colorWhite);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
+	background: var(--colorWhite);
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-sm);
 
-  color: var(--txt-primary);
-  font-size: 13px;
+	color: var(--txt-primary);
+	font-size: 13px;
 
-  box-shadow: var(--shadow-xs);
-  transition: all 0.2s var(--ease-smooth);
+	box-shadow: var(--shadow-xs);
+	transition: all 0.2s var(--ease-smooth);
 }
 
-[data-slot="select-trigger"]:hover {
-  border-color: var(--border-strong);
-  background: var(--n-00);
+[data-slot='select-trigger']:hover {
+	border-color: var(--border-strong);
+	background: var(--n-00);
 }
 
-[data-slot="select-trigger"]:focus {
-  border-color: var(--n-08);
-  box-shadow: 0 0 0 2px var(--n-02);
+[data-slot='select-trigger']:focus {
+	border-color: var(--n-08);
+	box-shadow: 0 0 0 2px var(--n-02);
 }
 
 /* Menu Typography */
 .herMenuTriggerLabel {
-  font-family: var(--font-sans);
-  color: var(--txt-secondary);
-  font-size: 12px;
-  font-weight: 500;
+	font-family: var(--font-sans);
+	color: var(--txt-secondary);
+	font-size: 12px;
+	font-weight: 500;
 }
 
 .herMenuTriggerValue {
-  color: var(--txt-primary);
-  font-weight: 500;
-  font-size: 12px;
+	color: var(--txt-primary);
+	font-weight: 500;
+	font-size: 12px;
 }
 
 .herMenuTriggerDisplay {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+	display: flex;
+	gap: 8px;
+	align-items: center;
 }
 
 .herPanelControls {
-  margin-left: auto;
-  display: flex;
-  gap: 8px;
+	margin-left: auto;
+	display: flex;
+	gap: 8px;
 }
 
 /* --- New Design System Typography & Utilities --- */
 
 body {
-  color: var(--neutral-textMuted);
-  /* font-size: 20px; */
-  line-height: 28px;
-  font-weight: 400;
-  font-family: var(--font-sans);
+	color: var(--neutral-textMuted);
+	/* font-size: 20px; */
+	line-height: 28px;
+	font-weight: 400;
+	font-family: var(--font-sans);
 }
 
 h1 {
-  color: var(--neutral-text);
-  font-size: 40px;
-  line-height: 48px;
-  font-weight: 800;
-  margin: 0px;
-  font-family: var(--font-sans);
+	color: var(--neutral-text);
+	font-size: 40px;
+	line-height: 48px;
+	font-weight: 800;
+	margin: 0px;
+	font-family: var(--font-sans);
 }
 
 h2 {
-  color: var(--neutral-text);
-  font-size: 26px;
-  line-height: 34px;
-  font-weight: 700;
-  margin: 0px 0px 16px;
-  font-family: var(--font-sans);
+	color: var(--neutral-text);
+	font-size: 26px;
+	line-height: 34px;
+	font-weight: 700;
+	margin: 0px 0px 16px;
+	font-family: var(--font-sans);
 }
 
 h3 {
-  color: var(--neutral-text);
-  font-size: 20px;
-  line-height: 28px;
-  font-weight: 700;
-  margin: 0px;
-  font-family: var(--font-sans);
+	color: var(--neutral-text);
+	font-size: 20px;
+	line-height: 28px;
+	font-weight: 700;
+	margin: 0px;
+	font-family: var(--font-sans);
 }
 
 .shadow-s1 {
-  box-shadow: var(--shadow-s1);
+	box-shadow: var(--shadow-s1);
 }
 
 /* Flows Basics V2 Classes */
 .flows_basicsV2_modal_center {
-  place-self: center;
+	place-self: center;
 }
 
 .flows_basicsV2_modal_width_medium {
-  width: 100%;
-  max-width: var(--flows-basicsV2-modal-size-medium);
+	width: 100%;
+	max-width: var(--flows-basicsV2-modal-size-medium);
 }
 
 .flows_basicsV2_modal_modal {
-  pointer-events: auto;
-  background-color: var(--flows-basicsV2-bg-default);
-  border: var(--flows-basicsV2-border);
-  color: var(--flows-basicsV2-fg-default);
-  border-radius: var(--flows-basicsV2-borderRadius-xl);
-  box-shadow: var(--flows-basicsV2-shadow-large);
-  padding: var(--flows-basicsV2-size-xxl);
-  position: relative;
-  box-sizing: border-box;
-  animation: flows-basicsV2-scaleIn .15s ease-out;
-  position: absolute;
+	pointer-events: auto;
+	background-color: var(--flows-basicsV2-bg-default);
+	border: var(--flows-basicsV2-border);
+	color: var(--flows-basicsV2-fg-default);
+	border-radius: var(--flows-basicsV2-borderRadius-xl);
+	box-shadow: var(--flows-basicsV2-shadow-large);
+	padding: var(--flows-basicsV2-size-xxl);
+	position: relative;
+	box-sizing: border-box;
+	animation: flows-basicsV2-scaleIn 0.15s ease-out;
+	position: absolute;
 }
 
 @keyframes flows-basicsV2-scaleIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
-  }
+	from {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.95);
+	}
 
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
+	to {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
+	}
 }
 
 [data-bits-floating-content-wrapper] {
-  z-index: 9999 !important;
+	z-index: 9999 !important;
 }
 
 [data-slot='dialog-overlay'] {
-  position: absolute;
-  inset: 0;
-  z-index: 110 !important;
+	position: absolute;
+	inset: 0;
+	z-index: 110 !important;
 }
 
 [data-slot='dialog-overlay'][data-state='open'] {
-  animation: fadeIn 150ms ease-out;
+	animation: fadeIn 150ms ease-out;
 }
 
 [data-slot='dialog-overlay'][data-state='closed'] {
-  animation: fadeOut 150ms ease-in;
+	animation: fadeOut 150ms ease-in;
 }
 
 .pageHeader {
-  margin-bottom: 24px;
-  background: var(--colorWhite);
-  border-radius: 12px;
-  padding: 32px;
-  border: 1px solid var(--n-03);
-  box-shadow: 0 2px 8px var(--n-alpha-1);
+	margin-bottom: 24px;
+	background: var(--colorWhite);
+	border-radius: 12px;
+	padding: 32px;
+	border: 1px solid var(--n-03);
+	box-shadow: 0 2px 8px var(--n-alpha-1);
 }
