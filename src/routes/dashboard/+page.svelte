@@ -17,7 +17,9 @@
 	type PropsT = {
 		data: {
 			activeUser: UserT | null
+			authUser: { id: string } | null
 			projects: ProjectT[]
+			isAuthenticated: boolean
 		}
 	}
 
@@ -70,9 +72,8 @@
 
 	// Redirect if not authenticated
 	$effect(() => {
-		const isAuthenticated = !!props.data.activeUser
-		if (browser && !isAuthenticated) {
-			console.log('[dashboard] No active user, redirecting to /auth/login')
+		if (browser && !props.data.isAuthenticated) {
+			console.log('[dashboard] Not authenticated, redirecting to /auth/login')
 			goto('/auth/login')
 		}
 	})
@@ -96,8 +97,8 @@
 	}
 
 	const handleCreateProject = async () => {
-		if (!props.data.activeUser) return
-		const userId = props.data.activeUser.id
+		const userId = props.data.activeUser?.id ?? props.data.authUser?.id
+		if (!userId) return
 		const newProjectData = createNewProjectData(userId)
 		const result = await addProject(newProjectData)
 		console.log('\n\n\nhandleCreateProject result:', { result, newProjectData, userId })

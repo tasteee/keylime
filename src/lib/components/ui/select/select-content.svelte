@@ -36,3 +36,13 @@
 		<SelectScrollDownButton />
 	</SelectPrimitive.Content>
 </SelectPrimitive.Portal>
+
+<style>
+	:global([data-slot='select-content']) {
+		z-index: 10002 !important;
+	}
+
+  [data-bits-floating-content-wrapper] {
+    z-index: 100999999 !important;
+  }
+</style>

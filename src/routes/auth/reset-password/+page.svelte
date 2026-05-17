@@ -3,7 +3,6 @@
 	import { Input } from '$lib/components/ui/input'
 	import { Label } from '$lib/components/ui/label'
 	import { goto } from '$app/navigation'
-	import { page } from '$app/stores'
 	import { fade } from 'svelte/transition'
 	import { onMount } from 'svelte'
 	import { supabase } from '$lib/supabase/client'
@@ -15,10 +14,29 @@
 	let success = $state(false)
 	let hasValidToken = $state(false)
 
-	onMount(() => {
-		// Check if we have a valid token in the URL
-		const token = $page.url.searchParams.get('token')
-		hasValidToken = !!token
+	onMount(async () => {
+		const hash = window.location.hash.substring(1)
+		const hashParams = new URLSearchParams(hash)
+
+		const accessToken = hashParams.get('access_token')
+		const refreshToken = hashParams.get('refresh_token')
+		const tokenType = hashParams.get('type')
+
+		const isRecoveryToken = tokenType === 'recovery' && !!accessToken && !!refreshToken
+		if (!isRecoveryToken) return
+
+		const { error: sessionError } = await supabase.auth.setSession({
+			access_token: accessToken,
+			refresh_token: refreshToken
+		})
+
+		if (sessionError) {
+			error = sessionError.message
+			return
+		}
+
+		hasValidToken = true
+		window.history.replaceState(null, '', window.location.pathname)
 	})
 
 	const handleSubmit = async (event: Event) => {

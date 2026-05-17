@@ -6,15 +6,18 @@
 		},
 		"guitar": {
 			"label": "Guitar",
-			"value": "Guitar"
+			"value": "Guitar",
+			"soundfontInstrumentName": "acoustic_guitar_nylon"
 		},
 		"bass": {
 			"label": "Bass",
-			"value": "Bass"
+			"value": "Bass",
+			"soundfontInstrumentName": "acoustic_bass"
 		},
 		"violin": {
 			"label": "Violin",
-			"value": "Violin"
+			"value": "Violin",
+			"soundfontInstrumentName": "violin"
 		}
 	}
 }
