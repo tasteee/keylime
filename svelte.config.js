@@ -6,7 +6,14 @@ const config = {
 	// Consult https://svelte.dev/docs/kit/integrations
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
-	kit: { adapter: adapter() }
+	kit: {
+		adapter: adapter(),
+		alias: {
+			// Convex functions live under src/convex (see convex.json). This alias
+			// lets app code import the generated API as `$convex/_generated/api`.
+			$convex: './src/convex'
+		}
+	}
 };
 
 export default config;
