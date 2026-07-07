@@ -55,7 +55,7 @@ const toProjectT = (doc: Record<string, any>) => {
 const findByProjectId = async (ctx: QueryCtx, id: string) => {
 	return ctx.db
 		.query('allProjects')
-		.withIndex('by_id', (q) => q.eq('id', id))
+		.withIndex('by_projectId', (q) => q.eq('id', id))
 		.unique()
 }
 

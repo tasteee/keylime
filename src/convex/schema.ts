@@ -47,7 +47,7 @@ export default defineSchema({
 		createdAt: v.number(),
 		updatedAt: v.number()
 	})
-		.index('by_id', ['id'])
+		.index('by_projectId', ['id'])
 		.index('by_userId', ['userId'])
 		.index('by_isPublic', ['isPublic'])
 })
