@@ -101,6 +101,7 @@
 					<Input
 						id="password"
 						type="password"
+						autocomplete="new-password"
 						bind:value={password}
 						placeholder="Enter new password"
 						required
@@ -113,6 +114,7 @@
 					<Input
 						id="confirmPassword"
 						type="password"
+						autocomplete="new-password"
 						bind:value={confirmPassword}
 						placeholder="Confirm new password"
 						required

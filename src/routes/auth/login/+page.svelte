@@ -56,6 +56,7 @@
 							id="email"
 							name="email"
 							placeholder="name@example.com"
+							autocomplete="username"
 							required
 							bind:value={email}
 						/>
@@ -66,7 +67,15 @@
 							<a href="/auth/forgot-password" class="forgot-link">Forgot password?</a>
 						</Box>
 
-						<Input size="large" type="password" id="password" name="password" required bind:value={password} />
+						<Input
+							size="large"
+							type="password"
+							id="password"
+							name="password"
+							autocomplete="current-password"
+							required
+							bind:value={password}
+						/>
 					</Box>
 				</Box>
 

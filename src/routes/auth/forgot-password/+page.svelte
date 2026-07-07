@@ -51,6 +51,7 @@
 					<Input
 						id="email"
 						type="email"
+						autocomplete="username"
 						bind:value={email}
 						placeholder="you@example.com"
 						required
