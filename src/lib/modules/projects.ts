@@ -1,6 +1,7 @@
 import { goto } from "$app/navigation"
 import { SIGNAL_ROWS } from "$lib/constants/signalRows"
-import { supabase } from "$lib/supabase/client"
+import { convexQuery, convexMutation } from "$lib/convex"
+import { api } from "$convex/_generated/api"
 
 export const getFreshPatternSignalRows = () => {
   return JSON.parse(JSON.stringify(SIGNAL_ROWS))
@@ -55,53 +56,37 @@ export const createClonedProjectData = (userId: string, overrides: Partial<Proje
 }
 
 // overwrite or create a new project in the database.
+// Returns a Supabase-style { data: [row], error } shape so existing callers
+// (ContextFrame) keep working unchanged.
 export const saveProject = async (project: ProjectT): Promise<any> => {
-  console.log('saveProject called for project:', project)
-  console.log('About to call supabase upsert...')
-
   try {
-    console.log('Supabase client exists:', !!supabase)
-    console.log('Calling upsert now...')
-
-    const supabaseSaveResult = await supabase
-      .from('all_projects')
-      .upsert(project as any)
-      .select()
-
-    console.log('Upsert completed, result:', supabaseSaveResult)
-    console.log('Result data:', supabaseSaveResult.data)
-    console.log('Result error:', supabaseSaveResult.error)
-
-    return supabaseSaveResult
+    const row = await convexMutation(api.projects.save, { project })
+    return { data: [row], error: null }
   } catch (error) {
-    console.error('Error in saveProject catch block:', error)
-    throw error
+    console.error('Error in saveProject:', error)
+    return { data: null, error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
 
 export const deleteProject = async (id: string) => {
-
-  const supabaseDeleteResult = await supabase
-    .from('all_projects')
-    .delete()
-    .eq('id', id)
-
-  return supabaseDeleteResult
+  try {
+    await convexMutation(api.projects.remove, { id })
+    return { data: null, error: null }
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error : new Error(String(error)) }
+  }
 }
 
 export const goToProjectEditor = (id: string) => {
   goto(`/project/editor/${id}`)
 }
 
+// Returns a Supabase-style { data, error } shape (ContextFrame reads .data / .error).
 export const loadProject = async (id: string): Promise<any> => {
-
-
-  const supabaseLoadResult = await supabase
-    .from('all_projects')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-
-  return supabaseLoadResult
+  try {
+    const data = await convexQuery(api.projects.getById, { id })
+    return { data, error: null }
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error : new Error(String(error)) }
+  }
 }

@@ -1,10 +1,9 @@
 import { SIGNAL_ROWS } from '$lib/constants/signalRows'
 import { numbers } from '$lib/helpers/numbers'
-import { getProjectById, getUserById } from '$lib/modules/database'
-import { createNewProjectData, getFreshPatternSignalRows } from '$lib/modules/projects'
+import { addProject, getProjectById, getUserById } from '$lib/modules/database'
+import { createNewProjectData, deleteProject, getFreshPatternSignalRows, saveProject } from '$lib/modules/projects'
 import { asCleanAsync, cleanAsync, type CleanAsyncReturnT } from '$lib/modules/promises'
 import { type TheAwaitedReturnT } from '$lib/modules/the-awaited'
-import { supabase } from '$lib/supabase/client'
 
 const TOTAL_UNITS = 64
 const PATTERN_MIN_ZOOM = 16
@@ -324,7 +323,7 @@ class ProjectStore {
 
 		const projectData = this.getProjectDocumentData()
 
-		const { error } = await supabase.from('all_projects').upsert(projectData as any)
+		const { error } = await saveProject(projectData)
 
 		if (error) throw new Error(`Failed to save project: ${error.message}`)
 		this.updatedAt = new Date()
@@ -348,7 +347,7 @@ class ProjectStore {
 		projectData.createdAt = new Date()
 		projectData.updatedAt = new Date()
 
-		const { error } = await supabase.from('all_projects').insert(projectData as any)
+		const { error } = await addProject(projectData)
 
 		if (error) throw new Error(`Failed to save clone: ${error.message}`)
 
@@ -418,7 +417,7 @@ class ProjectStore {
 			throw new Error('User ID must be set to delete project')
 		}
 
-		const { error } = await supabase.from('all_projects').delete().eq('id', this.id)
+		const { error } = await deleteProject(this.id)
 
 		if (error) {
 			throw new Error(`Failed to delete project: ${error.message}`)

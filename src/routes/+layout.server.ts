@@ -1,15 +1,15 @@
 import type { LayoutServerLoad } from './$types'
-import { getUserById } from '$lib/modules/database'
+import { serverConvex } from '$lib/server/convex'
+import { api } from '$convex/_generated/api'
 
-export const load: LayoutServerLoad = async (event) => {
-  const authUser = event.locals.user
-  const isAuthenticated = !!authUser
+export const load: LayoutServerLoad = async ({ locals }) => {
+	if (!locals.token) {
+		return { isAuthenticated: false, authUser: null, activeUser: null }
+	}
 
-  let activeUser: UserT | null = null
-  if (authUser) {
-    const userResult = await getUserById(authUser.id)
-    activeUser = userResult.user
-  }
+	const convex = serverConvex(locals.token)
+	const authUser = await convex.query(api.auth.getCurrentUser, {}).catch(() => null)
+	const activeUser = (await convex.query(api.users.getCurrentProfile, {}).catch(() => null)) as UserT | null
 
-  return { isAuthenticated, authUser, activeUser }
+	return { isAuthenticated: !!authUser, authUser, activeUser }
 }

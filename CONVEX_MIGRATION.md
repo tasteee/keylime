@@ -66,30 +66,58 @@ above.
 
 ---
 
-## Stage 2 — Cutover (next, after Stage 1 is live)
+## Stage 2 — Cutover ✅ (this commit)
 
-Swap the app from Supabase to Convex. Planned edits:
+The app now runs on Convex + Better Auth. Supabase is fully removed.
 
-- `src/hooks.server.ts` — replace the Supabase session guard with the Better Auth
-  token hook (`getToken` + `withServerConvexToken`), keeping the existing
-  redirect/route-protection logic.
-- `src/routes/+layout.svelte` — initialise the Svelte auth client.
-- `src/lib/database/auth.ts` — reimplement `login` / `logout` / `signup` /
-  `resetPassword` / `updatePassword` / `updateUserSettings` on `authClient`
-  (+ call `api.users.ensureProfile` after sign-up, replacing the old DB trigger).
-- `src/lib/modules/database/index.ts` and `src/lib/modules/projects.ts` — swap the
-  Supabase calls for Convex `query`/`mutation` calls, keeping the exact same
-  function signatures and `{ data, error }` return shapes so `ContextFrame`, the
-  stores, and the pages don't need changes.
-- Server loads (`+layout.server.ts`, `dashboard/+page.server.js`,
-  `projects/+page.server.js`, `users/[userName]/+page.server.js`,
-  `project/[id]/+layout.server.ts`) — call Convex via the server HTTP client.
-- `src/app.d.ts` — replace the Supabase `Locals` with `{ token }`.
-- Delete `src/lib/supabase/`, `src/routes/auth/callback/`, the dead
-  `src/lib/stores/auth.svelte.ts`, and remove `@supabase/*` from `package.json`.
+Changed:
+
+- `src/hooks.server.ts` — Better Auth token hook (`getToken` +
+  `withServerConvexToken`) with the same redirect/route-protection logic;
+  auth is checked via `api.auth.getCurrentUser`.
+- `src/routes/+layout.svelte` — initialises the Svelte auth client.
+- `src/lib/auth-client.ts` — Better Auth client (from Stage 1).
+- `src/lib/convex.ts` — browser Convex client + `convexQuery` / `convexMutation`
+  helpers (auth token pulled from Better Auth per call).
+- `src/lib/server/convex.ts` — `serverConvex(token)` for load functions.
+- `src/lib/database/auth.ts` — `login` / `logout` / `signup` / `resetPassword` /
+  `updatePassword` / `updateUserSettings` reimplemented on `authClient`; sign-up
+  calls `api.users.ensureProfile` (replaces the old `handle_new_user` DB trigger).
+- `src/lib/modules/database/index.ts` + `src/lib/modules/projects.ts` — Convex
+  calls behind the **same signatures and `{ data, error }` shapes**, so
+  `ContextFrame`, the stores, and the pages were untouched.
+- `src/lib/stores/project.svelte.ts` — uses the module functions instead of the
+  Supabase client directly.
+- Server loads (`+layout.server.ts`, `dashboard`, `projects`, `users/[userName]`,
+  `project/[id]/+layout.server.ts`) — call Convex via `serverConvex`.
+- `src/routes/auth/{forgot,reset}-password/+page.svelte` — use `authClient`.
+- `src/app.d.ts` — `Locals` is now just `{ token }`.
+- **Deleted**: `src/lib/supabase/`, `src/routes/auth/callback/`, the dead
+  `src/lib/stores/auth.svelte.ts`. **Removed** `@supabase/*` from `package.json`.
+
+### ⚠️ Two things to verify when you run it
+
+1. **Convex token accessor** — `src/lib/convex.ts` reads the JWT via
+   `authClient.convex.token()`. If your installed `@convex-dev/better-auth`
+   version exposes it differently, that one function is the only place to fix.
+2. **Password-reset / email-change need an email provider.** Better Auth's
+   `requestPasswordReset` / `changeEmail` only actually send mail once an email
+   provider (e.g. Resend) is wired into `createAuth` (Stage 3). Login, signup,
+   and everything else work without it. Inline password change in the settings
+   dialog is intentionally disabled (Better Auth needs the current password);
+   use the reset flow.
+
+### Verify checklist (after `npx convex dev` + `bun install`)
+
+```bash
+bun run check          # typecheck — needs src/convex/_generated (from convex dev)
+bun run dev            # sign up, sign in, create/save/load a project, sign out
+```
 
 ## Stage 3 — Cleanup / optional
 
-- Password-reset emails need an email provider (e.g. Resend) wired into
-  `createAuth`. Until then, request-reset is a no-op / disabled.
-- Remove the `supabase/` SQL files and Supabase env vars once verified.
+- Wire an email provider (Resend) into `createAuth` to enable password-reset and
+  email-change emails.
+- Delete the now-unused `supabase/` SQL files and the Supabase env vars in
+  `.env.example`.
+- Optionally drop the leftover Supabase `DatabaseT` types in `src/global.d.ts`.

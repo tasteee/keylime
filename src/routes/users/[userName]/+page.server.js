@@ -1,24 +1,20 @@
-import { getUserByUserName, getProjectsByUserId } from '$lib/modules/database'
+import { serverConvex } from '$lib/server/convex'
+import { api } from '$convex/_generated/api'
 
 export const load = async (args) => {
-  const userName = args.params.userName
+	const userName = args.params.userName
+	const convex = serverConvex(args.locals.token)
 
-  const userResult = await getUserByUserName(userName)
+	const user = await convex.query(api.users.getByUserName, { userName }).catch(() => null)
 
-  if (userResult.error || !userResult.data) {
-    return {
-      user: null,
-      projects: []
-    }
-  }
+	if (!user) {
+		return { user: null, projects: [] }
+	}
 
-  const user = userResult.data
-  const projectsResult = await getProjectsByUserId(user.id)
+	const result = await convex.query(api.projects.getByUserId, { userId: user.id }).catch(() => ({ data: [] }))
 
-  const projects = projectsResult.data ?? []
-
-  return {
-    user,
-    projects
-  }
+	return {
+		user,
+		projects: result.data ?? []
+	}
 }
