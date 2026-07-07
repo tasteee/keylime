@@ -1,7 +1,8 @@
-import { supabase } from '$lib/supabase/client'
 import { goto, invalidateAll } from '$app/navigation'
-import { getUserById, checkUsernameAvailable, updateUserProfile } from '$lib/modules/database'
-import { warnWhen } from '$lib/modules/warnWhen'
+import { authClient } from '$lib/auth-client'
+import { convexMutation } from '$lib/convex'
+import { api } from '$convex/_generated/api'
+import { updateUserProfile } from '$lib/modules/database'
 
 type LoginArgsT = {
 	email: string
@@ -26,30 +27,29 @@ type AuthResultT = {
 	error?: string
 }
 
+const errorMessageOf = (error: unknown): string => {
+	if (!error) return 'Something went wrong'
+	if (typeof error === 'string') return error
+	if (typeof error === 'object' && 'message' in error) return String((error as { message: unknown }).message)
+	return String(error)
+}
+
 export const login = async (args: LoginArgsT): Promise<AuthResultT> => {
-	const signInResponse = await supabase.auth.signInWithPassword({
+	const { error } = await authClient.signIn.email({
 		email: args.email,
 		password: args.password
 	})
 
-	const hasSignInError = !!signInResponse.error
-	if (hasSignInError) {
-		const errorMessage = signInResponse.error.message
-		return { success: false, error: errorMessage }
-	}
+	if (error) return { success: false, error: errorMessageOf(error) }
 
 	await invalidateAll()
 	return { success: true }
 }
 
 export const logout = async (): Promise<AuthResultT> => {
-	const signOutResponse = await supabase.auth.signOut()
+	const { error } = await authClient.signOut()
 
-	const hasSignOutError = !!signOutResponse.error
-	if (hasSignOutError) {
-		const errorMessage = signOutResponse.error!.message
-		return { success: false, error: errorMessage }
-	}
+	if (error) return { success: false, error: errorMessageOf(error) }
 
 	await invalidateAll()
 	goto('/auth/login')
@@ -57,138 +57,81 @@ export const logout = async (): Promise<AuthResultT> => {
 }
 
 export const signup = async (args: SignupArgsT): Promise<AuthResultT> => {
-	const signUpResponse = await supabase.auth.signUp({
+	const { error } = await authClient.signUp.email({
 		email: args.email,
-		password: args.password
+		password: args.password,
+		name: args.email.split('@')[0]
 	})
 
-	const hasSignUpError = !!signUpResponse.error
-	if (hasSignUpError) {
-		const errorMessage = signUpResponse.error.message
-		return { success: false, error: errorMessage }
+	if (error) return { success: false, error: errorMessageOf(error) }
+
+	// Create the app profile row (replaces the old Postgres handle_new_user trigger).
+	try {
+		await convexMutation(api.users.ensureProfile, {})
+	} catch (profileError) {
+		return { success: false, error: errorMessageOf(profileError) }
 	}
 
-	// The all_users profile is created automatically by a Postgres trigger
-	// (handle_new_user) that fires on auth.users INSERT with SECURITY DEFINER,
-	// so it works regardless of whether email confirmation is required.
 	await invalidateAll()
 	return { success: true }
 }
 
 export const resetPassword = async (email: string): Promise<AuthResultT> => {
-	const resetUrl = `${window.location.origin}/auth/reset-password`
+	// Sends a reset link. Requires an email provider configured on the Convex
+	// deployment (see CONVEX_MIGRATION.md, stage 3) — until then this is a no-op.
+	const redirectTo = `${window.location.origin}/auth/reset-password`
+	const { error } = await authClient.requestPasswordReset({ email, redirectTo })
 
-	const resetResponse = await supabase.auth.resetPasswordForEmail(email, {
-		redirectTo: resetUrl
-	})
-
-	const hasResetError = !!resetResponse.error
-	if (hasResetError) {
-		const errorMessage = resetResponse.error.message
-		return { success: false, error: errorMessage }
-	}
-
+	if (error) return { success: false, error: errorMessageOf(error) }
 	return { success: true }
 }
 
-export const updatePassword = async (newPassword: string): Promise<AuthResultT> => {
-	const updateResponse = await supabase.auth.updateUser({
-		password: newPassword
-	})
-
-	const hasUpdateError = !!updateResponse.error
-	if (hasUpdateError) {
-		const errorMessage = updateResponse.error.message
-		return { success: false, error: errorMessage }
+export const updatePassword = async (newPassword: string, currentPassword?: string): Promise<AuthResultT> => {
+	// Better Auth requires the current password to change it while signed in.
+	if (!currentPassword) {
+		return {
+			success: false,
+			error: 'To change your password, use the "Forgot password?" reset flow.'
+		}
 	}
 
+	const { error } = await authClient.changePassword({ newPassword, currentPassword })
+	if (error) return { success: false, error: errorMessageOf(error) }
 	return { success: true }
 }
 
 export const updateUserSettings = async (args: UpdateUserSettingsArgsT): Promise<AuthResultT> => {
-	const userResponse = await supabase.auth.getUser()
-	const currentUser = userResponse.data.user
+	const sessionResult = await authClient.getSession()
+	const currentUser = sessionResult.data?.user
 
-	const hasNoCurrentUser = !currentUser
-	if (hasNoCurrentUser) {
-		const errorMessage = 'No authenticated user'
-		return { success: false, error: errorMessage }
-	}
+	if (!currentUser) return { success: false, error: 'No authenticated user' }
 
 	const hasEmailUpdate = args.email && args.email !== currentUser.email
 	if (hasEmailUpdate) {
-		const updateEmailResponse = await supabase.auth.updateUser({
-			email: args.email
-		})
-
-		const hasEmailError = !!updateEmailResponse.error
-		if (hasEmailError) {
-			const errorMessage = updateEmailResponse.error.message
-			return { success: false, error: errorMessage }
-		}
+		const { error } = await authClient.changeEmail({ newEmail: args.email! })
+		if (error) return { success: false, error: errorMessageOf(error) }
 	}
 
 	const hasPasswordUpdate = args.newPassword && args.newPassword.length > 0
 	if (hasPasswordUpdate) {
-		const updatePasswordResult = await updatePassword(args.newPassword!)
-
-		const hasPasswordError = !updatePasswordResult.success
-		if (hasPasswordError) {
-			return updatePasswordResult
-		}
+		const passwordResult = await updatePassword(args.newPassword!)
+		if (!passwordResult.success) return passwordResult
 	}
 
 	const hasProfileUpdate = args.userName || args.bio !== undefined || args.avatarUrl !== undefined
 	if (hasProfileUpdate) {
-		const updateProfileResult = await updateUserProfile({
+		const profileResult = await updateUserProfile({
 			userId: currentUser.id,
 			userName: args.userName,
 			bio: args.bio,
 			avatarUrl: args.avatarUrl
 		})
 
-		const hasProfileError = !updateProfileResult.didSucceed
-		if (hasProfileError) {
-			const errorMessage = updateProfileResult.error?.message || 'Failed to update profile'
-			return { success: false, error: errorMessage }
+		if (!profileResult.didSucceed) {
+			return { success: false, error: profileResult.error?.message || 'Failed to update profile' }
 		}
 	}
 
 	await invalidateAll()
-	return { success: true }
-}
-
-const generateUniqueUsername = async (email: string): Promise<string> => {
-	const baseUsername = email.split('@')[0]
-	const isBaseAvailable = await checkUsernameAvailable(baseUsername)
-	if (isBaseAvailable) return baseUsername
-
-	const maxAttempts = 100
-	for (let attempt = 0; attempt < maxAttempts; attempt++) {
-		const randomDigits = Math.floor(1000 + Math.random() * 9000)
-		const candidateUsername = `${baseUsername}${randomDigits}`
-		const isCandidateAvailable = await checkUsernameAvailable(candidateUsername)
-		if (isCandidateAvailable) return candidateUsername
-	}
-
-	const fallbackUsername = `${baseUsername}${Date.now()}`
-	return fallbackUsername
-}
-
-const createUserProfile = async (args: { userId: string; userName: string; bio: string }): Promise<AuthResultT> => {
-	const insertResponse = await supabase.from('all_users').insert([
-		{
-			id: args.userId,
-			userName: args.userName,
-			bio: args.bio
-		}
-	] as any)
-
-	const hasInsertError = !!insertResponse.error
-	if (hasInsertError) {
-		const errorMessage = insertResponse.error.message
-		return { success: false, error: errorMessage }
-	}
-
 	return { success: true }
 }

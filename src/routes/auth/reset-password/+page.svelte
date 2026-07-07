@@ -5,7 +5,8 @@
 	import { goto } from '$app/navigation'
 	import { fade } from 'svelte/transition'
 	import { onMount } from 'svelte'
-	import { supabase } from '$lib/supabase/client'
+	import { page } from '$app/stores'
+	import { authClient } from '$lib/auth-client'
 
 	let password = $state('')
 	let confirmPassword = $state('')
@@ -13,30 +14,18 @@
 	let error = $state<string | null>(null)
 	let success = $state(false)
 	let hasValidToken = $state(false)
+	let resetToken = $state<string | null>(null)
 
-	onMount(async () => {
-		const hash = window.location.hash.substring(1)
-		const hashParams = new URLSearchParams(hash)
-
-		const accessToken = hashParams.get('access_token')
-		const refreshToken = hashParams.get('refresh_token')
-		const tokenType = hashParams.get('type')
-
-		const isRecoveryToken = tokenType === 'recovery' && !!accessToken && !!refreshToken
-		if (!isRecoveryToken) return
-
-		const { error: sessionError } = await supabase.auth.setSession({
-			access_token: accessToken,
-			refresh_token: refreshToken
-		})
-
-		if (sessionError) {
-			error = sessionError.message
+	onMount(() => {
+		// Better Auth reset links carry the token as a `?token=` query param.
+		const token = $page.url.searchParams.get('token')
+		if (!token) {
+			error = 'This reset link is invalid or has expired.'
 			return
 		}
 
+		resetToken = token
 		hasValidToken = true
-		window.history.replaceState(null, '', window.location.pathname)
 	})
 
 	const handleSubmit = async (event: Event) => {
@@ -53,16 +42,22 @@
 			return
 		}
 
+		if (!resetToken) {
+			error = 'This reset link is invalid or has expired.'
+			return
+		}
+
 		isSubmitting = true
 
-		const { error: updateError } = await supabase.auth.updateUser({
-			password: password
+		const { error: updateError } = await authClient.resetPassword({
+			newPassword: password,
+			token: resetToken
 		})
 
 		isSubmitting = false
 
 		if (updateError) {
-			error = updateError.message
+			error = updateError.message || 'Failed to reset password'
 			return
 		}
 
@@ -101,6 +96,7 @@
 					<Input
 						id="password"
 						type="password"
+						autocomplete="new-password"
 						bind:value={password}
 						placeholder="Enter new password"
 						required
@@ -113,6 +109,7 @@
 					<Input
 						id="confirmPassword"
 						type="password"
+						autocomplete="new-password"
 						bind:value={confirmPassword}
 						placeholder="Confirm new password"
 						required

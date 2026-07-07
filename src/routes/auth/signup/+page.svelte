@@ -68,13 +68,22 @@
 							id="email"
 							name="email"
 							placeholder="name@example.com"
+							autocomplete="username"
 							required
 							bind:value={email}
 						/>
 					</div>
 					<div class="field">
 						<Label for="password">Password</Label>
-						<Input size="large" type="password" id="password" name="password" required bind:value={password} />
+						<Input
+							size="large"
+							type="password"
+							id="password"
+							name="password"
+							autocomplete="new-password"
+							required
+							bind:value={password}
+						/>
 					</div>
 					<div class="field">
 						<Label for="confirmPassword">Confirm Password</Label>
@@ -83,6 +92,7 @@
 							type="password"
 							id="confirmPassword"
 							name="confirmPassword"
+							autocomplete="new-password"
 							required
 							bind:value={confirmPassword}
 						/>

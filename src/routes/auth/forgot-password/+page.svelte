@@ -4,7 +4,7 @@
 	import { Label } from '$lib/components/ui/label'
 	import { goto } from '$app/navigation'
 	import { fade } from 'svelte/transition'
-	import { supabase } from '$lib/supabase/client'
+	import { resetPassword } from '$lib/database/auth'
 
 	let email = $state('')
 	let isSubmitting = $state(false)
@@ -16,14 +16,12 @@
 		isSubmitting = true
 		error = null
 
-		const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-			redirectTo: `${window.location.origin}/auth/reset-password`
-		})
+		const result = await resetPassword(email)
 
 		isSubmitting = false
 
-		if (resetError) {
-			error = resetError.message
+		if (!result.success) {
+			error = result.error || 'Failed to send reset email'
 			return
 		}
 
@@ -51,6 +49,7 @@
 					<Input
 						id="email"
 						type="email"
+						autocomplete="username"
 						bind:value={email}
 						placeholder="you@example.com"
 						required

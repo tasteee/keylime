@@ -1,36 +1,15 @@
 import type { Handle } from '@sveltejs/kit';
-import { createServerClient } from '@supabase/ssr';
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 import { redirect } from '@sveltejs/kit';
+import { getToken } from '@mmailaender/convex-better-auth-svelte/sveltekit';
+import { withServerConvexToken } from '@mmailaender/convex-svelte/sveltekit/server';
+import { serverConvex } from '$lib/server/convex';
+import { api } from '$convex/_generated/api';
 
 export const handle: Handle = async ({ event, resolve }) => {
-  event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-    cookies: {
-      getAll: () => event.cookies.getAll(),
-      setAll: (cookiesToSet) => {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          event.cookies.set(name, value, { ...options, path: '/' });
-        });
-      }
-    }
-  });
+  const token = getToken(event.cookies);
+  event.locals.token = token;
 
-  const {
-    data: { user }
-  } = await event.locals.supabase.auth.getUser();
-
-  event.locals.user = user;
-
-  const isAuthenticated = !!user;
   const currentPath = event.url.pathname;
-
-  console.log('[hooks.server] Request:', {
-    path: currentPath,
-    isAuthenticated,
-    userId: user?.id,
-    email: user?.email
-  });
-
   const isAuthRoute = currentPath.startsWith('/auth');
   const isRootRoute = currentPath === '/';
   const isDashboardRoute = currentPath.startsWith('/dashboard');
@@ -38,37 +17,37 @@ export const handle: Handle = async ({ event, resolve }) => {
   const isProjectsPublicRoute = currentPath === '/projects';
   const isProjectRoute = currentPath.startsWith('/project/');
 
-  // Redirect authenticated users away from auth pages (except password reset with token)
+  const needsAuthDecision =
+    isAuthRoute || isRootRoute || isDashboardRoute || isUsersRoute || isProjectsPublicRoute || isProjectRoute;
+
+  // Only pay for an auth lookup on routes whose redirects depend on it.
+  let isAuthenticated = false;
+  if (needsAuthDecision && token) {
+    try {
+      const user = await serverConvex(token).query(api.auth.getCurrentUser, {});
+      isAuthenticated = !!user;
+    } catch {
+      isAuthenticated = false;
+    }
+  }
+
+  // Redirect authenticated users away from auth pages (except password reset with token).
   if (isAuthenticated && isAuthRoute) {
     const isResetPassword = currentPath === '/auth/reset-password';
     const hasResetToken = event.url.searchParams.has('token');
-
-    if (isResetPassword && hasResetToken) {
-      console.log('[hooks.server] Allowing password reset with token');
-      return resolve(event);
+    if (!(isResetPassword && hasResetToken)) {
+      redirect(303, '/dashboard');
     }
-
-    console.log('[hooks.server] Redirecting authenticated user from auth page to /dashboard');
-    redirect(303, '/dashboard');
   }
 
-  // Redirect authenticated users from root to dashboard
-  if (isAuthenticated && isRootRoute) {
-    console.log('[hooks.server] Redirecting authenticated user from / to /dashboard');
-    redirect(303, '/dashboard');
-  }
+  // Root routing.
+  if (isAuthenticated && isRootRoute) redirect(303, '/dashboard');
+  if (!isAuthenticated && isRootRoute) redirect(303, '/auth/login');
 
-  if (!isAuthenticated && isRootRoute) {
-    console.log('[hooks.server] Redirecting unauthenticated user from / to /auth/login');
-    redirect(303, '/auth/login');
-  }
-
-  // Protect dashboard routes - require authentication
+  // Protect app routes.
   if (!isAuthenticated && (isDashboardRoute || isUsersRoute || isProjectsPublicRoute || isProjectRoute)) {
-    console.log('[hooks.server] Redirecting unauthenticated user from protected route to /auth/login');
     redirect(303, '/auth/login');
   }
 
-  console.log('[hooks.server] Allowing request to proceed');
-  return resolve(event);
+  return withServerConvexToken(token, () => resolve(event));
 };

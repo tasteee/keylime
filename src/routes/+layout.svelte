@@ -16,6 +16,10 @@
 	import PlaybackContextFrame from '$lib/components/PlaybackContextFrame.svelte'
 	import BottomBar from '$lib/components/Project/BottomBar.svelte'
 	import { setContext } from 'svelte'
+	import { createSvelteAuthClient } from '@mmailaender/convex-better-auth-svelte/svelte'
+	import { authClient } from '$lib/auth-client'
+
+	createSvelteAuthClient({ authClient })
 
 	let { children, data } = $props()
 

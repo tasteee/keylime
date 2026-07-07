@@ -1,31 +1,24 @@
-import { getUserById } from '$lib/modules/database'
+import { serverConvex } from '$lib/server/convex'
+import { api } from '$convex/_generated/api'
 
-export const load = async (event) => {
-  const authUser = event.locals.user
+export const load = async ({ locals }) => {
+	if (!locals.token) {
+		return { activeUser: null, projects: [] }
+	}
 
-  if (!authUser) {
-    return { activeUser: null, projects: [] }
-  }
+	const convex = serverConvex(locals.token)
+	const activeUser = await convex.query(api.users.getCurrentProfile, {}).catch(() => null)
 
-  const userResult = await getUserById(authUser.id)
-  const activeUser = userResult.user
+	if (!activeUser) {
+		return { activeUser: null, projects: [] }
+	}
 
-  const { data, error, count } = await event.locals.supabase
-    .from('all_projects')
-    .select('*', { count: 'exact' })
-    .eq('userId', authUser.id)
-    .order('updatedAt', { ascending: false })
-    .range(0, 19);
+	const result = await convex
+		.query(api.projects.getByUserId, { userId: activeUser.id, limit: 20, offset: 0 })
+		.catch(() => ({ data: [] }))
 
-  console.log('[dashboard/+page.server] Projects fetch:', {
-    userId: authUser.id,
-    count,
-    dataLength: data?.length,
-    error
-  });
-
-  return {
-    activeUser,
-    projects: data ?? []
-  };
+	return {
+		activeUser,
+		projects: result.data ?? []
+	}
 }
