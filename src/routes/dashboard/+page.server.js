@@ -1,31 +1,11 @@
-import { getUserById } from '$lib/modules/database'
+import { getUserById, listProjectsByUser } from '$lib/server/repo'
 
 export const load = async (event) => {
-  const authUser = event.locals.user
+	const authUser = event.locals.user
+	if (!authUser) return { activeUser: null, projects: [] }
 
-  if (!authUser) {
-    return { activeUser: null, projects: [] }
-  }
-
-  const userResult = await getUserById(authUser.id)
-  const activeUser = userResult.user
-
-  const { data, error, count } = await event.locals.supabase
-    .from('all_projects')
-    .select('*', { count: 'exact' })
-    .eq('userId', authUser.id)
-    .order('updatedAt', { ascending: false })
-    .range(0, 19);
-
-  console.log('[dashboard/+page.server] Projects fetch:', {
-    userId: authUser.id,
-    count,
-    dataLength: data?.length,
-    error
-  });
-
-  return {
-    activeUser,
-    projects: data ?? []
-  };
+	const db = event.platform.env.DB
+	const activeUser = await getUserById(db, authUser.id)
+	const { data } = await listProjectsByUser(db, authUser.id, { limit: 20 })
+	return { activeUser, projects: data }
 }

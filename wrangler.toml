@@ -1,0 +1,14 @@
+# Keylime on Cloudflare Pages with D1.
+# Pages reads its own dashboard bindings in production.
+# This file is for local runs and `npm run db:migrate:remote`.
+name = "keylime"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".svelte-kit/cloudflare"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "keylime-db"
+# Replace with the id printed by `npx wrangler d1 create keylime-db`.
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"

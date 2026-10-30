@@ -7,6 +7,7 @@
 	import chordsByScale from '$lib/constants/chordsByScale.json'
 	import { generateChord } from '$lib/helpers/chords'
 	import { calculateStartTimes } from '$lib/helpers/progression'
+	import { clearDraft, readDraft, writeDraft } from '$lib/modules/localDraft'
 
 	type PropsT = {
 		children: () => any
@@ -408,14 +409,17 @@
 				}
 
 				console.log('About to call saveProject() for clone')
-				const supabaseSaveResult = await saveProject(projectToSave)
+				const saveResult = await saveProject(projectToSave)
 
-				if (supabaseSaveResult.error) {
-					throw new Error(`Failed to save cloned project: ${supabaseSaveResult.error.message}`)
+				if (saveResult.error) {
+					throw new Error(`Failed to save cloned project: ${saveResult.error.message}`)
 				}
 
-				const syncedProject = (supabaseSaveResult.data?.[0] as unknown as ProjectT) || projectToSave
+				const syncedProject = (saveResult.data as ProjectT | null) || projectToSave
 
+				clearDraft(cleanProject.id as string)
+				clearDraft(syncedProject.id)
+				baseUpdatedAt = syncedProject.updatedAt
 				editorState.project = syncedProject
 				editorState.cleanProjectSnapshot = createCleanSnapshot(syncedProject)
 				editorState.isDirty = false
@@ -433,16 +437,18 @@
 			}
 
 			console.log('About to call saveProject() for update')
-			const supabaseSaveResult = await saveProject(projectToSave)
+			const saveResult = await saveProject(projectToSave)
 
 			console.log('saveProject() returned, checking result')
-			if (supabaseSaveResult.error) {
-				throw new Error(`Failed to save project: ${supabaseSaveResult.error.message}`)
+			if (saveResult.error) {
+				throw new Error(`Failed to save project: ${saveResult.error.message}`)
 			}
 
 			// Use synced data if available, otherwise use the project we just saved
-			const syncedProject = (supabaseSaveResult.data?.[0] as unknown as ProjectT) || projectToSave
+			const syncedProject = (saveResult.data as ProjectT | null) || projectToSave
 
+			clearDraft(syncedProject.id)
+			baseUpdatedAt = syncedProject.updatedAt
 			editorState.project = syncedProject
 			editorState.cleanProjectSnapshot = createCleanSnapshot(syncedProject)
 			editorState.isDirty = false
@@ -475,12 +481,13 @@
 				updatedAt: new Date()
 			}
 
-			const supabaseSaveResult = await saveProject(projectToSave)
+			const saveResult = await saveProject(projectToSave)
 
-			if (supabaseSaveResult.error) {
-				throw new Error(`Failed to save clone: ${supabaseSaveResult.error.message}`)
+			if (saveResult.error) {
+				throw new Error(`Failed to save clone: ${saveResult.error.message}`)
 			}
 
+			clearDraft(editorState.project.id)
 			console.log('Saved cloned project:', projectToSave)
 			return { didSucceed: true, newProjectId }
 		} catch (error) {
@@ -494,13 +501,13 @@
 	const loadProjectData = async (projectId: string) => {
 		editorState.isLoading = true
 
-		const supabaseLoadResult = await loadProject(projectId)
+		const loadResult = await loadProject(projectId)
 
-		if (supabaseLoadResult.error) {
-			throw new Error(`Failed to load project: ${supabaseLoadResult.error.message}`)
+		if (loadResult.error) {
+			throw new Error(`Failed to load project: ${loadResult.error.message}`)
 		}
 
-		const projectData = supabaseLoadResult.data as unknown as ProjectT
+		const projectData = loadResult.data as unknown as ProjectT
 
 		const hasValidSignalRows =
 			projectData.patternSignalRows &&
@@ -569,10 +576,43 @@
 
 	setContext('projectEditor', context)
 
+	// Edits are kept in this browser while the user works. The server
+	// only hears about them when the user saves (button or Ctrl/Cmd+S).
+	let isDraftReady = false
+	// The server copy's updatedAt the current edits started from.
+	let baseUpdatedAt: Date | string = props.project?.updatedAt ?? new Date()
+	let draftTimer: ReturnType<typeof setTimeout> | undefined
+
+	$effect(() => {
+		const currentProject = editorState.project
+		const currentSnapshot = createCleanSnapshot(currentProject)
+		if (!browser || !isDraftReady || editorState.isLoading) return
+
+		clearTimeout(draftTimer)
+		const isDirty = currentSnapshot !== editorState.cleanProjectSnapshot
+		if (!isDirty) return clearDraft(currentProject.id)
+
+		draftTimer = setTimeout(() => writeDraft(currentProject, baseUpdatedAt), 500)
+		return () => clearTimeout(draftTimer)
+	})
+
+	const restoreDraft = () => {
+		const serverProject = props.project
+		if (!serverProject) return
+		const draft = readDraft(serverProject.id, serverProject.updatedAt)
+		if (!draft) return
+		editorState.project = parseProjectData(draft)
+		editorState.isDirty = checkIsDirty()
+	}
+
 	onMount(() => {
 		if (!browser) return
 
+		restoreDraft()
+		isDraftReady = true
+
 		return () => {
+			clearTimeout(draftTimer)
 			// when user navigates away, stop playback from PlaybackContextFrame context
 			const playbackContext = getContext<PlaybackContextT>('playback')
 			playbackContext.stop()

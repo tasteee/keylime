@@ -1,107 +1,70 @@
-// TODO: Break into modular function/files.
+// Browser-side data access. Every call goes to the /api routes,
+// which read and write D1. Return shapes match what pages expect.
 import { warnWhen } from "$lib/modules/warnWhen"
-import { supabase } from "$lib/supabase/client"
 
-type GetUserReturnT = {
-  user: UserT | null
-  error: Error | null
-  didSucceed: boolean
-}
+type ApiResultT<DataT> = { data: DataT | null; error: Error | null; status: number }
 
-export const getUserById = async (id: string): Promise<GetUserReturnT> => {
-  const result = await supabase
-    .from('all_users')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  const user = result.data
-  const error = result.error
-  const hasError = !!error
-
-  if (hasError) {
-    const errorMessage = `Error fetching user by ID: ${error.message}`
-    warnWhen(error, errorMessage)
+const callApi = async <DataT = any>(path: string, init: RequestInit = {}): Promise<ApiResultT<DataT>> => {
+  try {
+    const hasBody = init.body !== undefined
+    const headers = hasBody ? { 'content-type': 'application/json' } : undefined
+    const response = await fetch(path, { credentials: 'same-origin', headers, ...init })
+    const payload = await response.json().catch(() => ({}))
+    if (!response.ok) return { data: null, error: new Error(payload.error ?? `Request failed (${response.status})`), status: response.status }
+    return { data: payload as DataT, error: null, status: response.status }
+  } catch (error) {
+    return { data: null, error: error as Error, status: 0 }
   }
-
-  return { user, error, didSucceed: !error }
 }
 
+const toQuery = (params: Record<string, unknown>): string => {
+  const search = new URLSearchParams()
+  for (const [name, value] of Object.entries(params)) {
+    const isEmpty = value === undefined || value === null || value === ''
+    if (isEmpty) continue
+    search.set(name, Array.isArray(value) ? value.join(',') : String(value))
+  }
+  const text = search.toString()
+  return text ? `?${text}` : ''
+}
+
+// ---------- projects ----------
 
 export const deleteProjectById = async (projectId: string) => {
-  const { error } = await supabase
-    .from('all_projects')
-    .delete()
-    .eq('id', projectId)
+  const result = await callApi(`/api/projects/${projectId}`, { method: 'DELETE' })
+  warnWhen(result.error, `Error deleting project by ID: ${result.error?.message}`)
+  return { error: result.error, didSucceed: !result.error }
+}
 
-  warnWhen(error, `Error deleting project by ID: ${error?.message}`)
-  return { error, didSucceed: !error }
+// Creates the project, or updates it when it is the caller's own.
+export const saveProjectData = async (project: ProjectT) => {
+  const result = await callApi<{ data: ProjectT }>(`/api/projects/${project.id}`, { method: 'PUT', body: JSON.stringify(project) })
+  warnWhen(result.error, `Error saving project: ${result.error?.message}`)
+  return { data: result.data?.data ?? null, error: result.error, didSucceed: !result.error }
 }
 
 export const addProject = async (project: ProjectT) => {
-  const { data, error } = await supabase
-    .from('all_projects')
-    .insert(project as any)
-    .select()
-    .single()
-
-  warnWhen(error, `Error adding project: ${error?.message}`)
-  return { data: data as ProjectT | null, error, didSucceed: !error }
+  const result = await callApi<{ data: ProjectT }>('/api/projects', { method: 'POST', body: JSON.stringify(project) })
+  warnWhen(result.error, `Error adding project: ${result.error?.message}`)
+  return { data: result.data?.data ?? null, error: result.error, didSucceed: !result.error }
 }
 
-export const cloneProjectById = async (projectId: string, currentUserId: string) => {
-  const fetchResult = await getProjectById(projectId)
-
-  if (fetchResult.error || !fetchResult.data) {
-    warnWhen(true, `Error fetching project to clone: ${fetchResult.error?.message}`)
-    return { data: null, error: fetchResult.error, didSucceed: false }
-  }
-
-  const sourceProject = fetchResult.data
-  const clonedProject = {
-    ...sourceProject,
-    id: crypto.randomUUID(),
-    userId: currentUserId,
-    title: `${sourceProject.title} (Clone)`,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  } as ProjectT
-
-  const insertResult = await addProject(clonedProject)
-
-  if (insertResult.error || !insertResult.data) {
-    warnWhen(true, `Error saving cloned project: ${insertResult.error?.message}`)
-    return { data: null, error: insertResult.error, didSucceed: false }
-  }
-
-  return { data: insertResult.data, error: null, didSucceed: true }
+export const cloneProjectById = async (projectId: string, _currentUserId?: string) => {
+  const result = await callApi<{ data: ProjectT }>(`/api/projects/${projectId}/clone`, { method: 'POST' })
+  warnWhen(result.error, `Error cloning project: ${result.error?.message}`)
+  return { data: result.data?.data ?? null, error: result.error, didSucceed: !result.error }
 }
 
 export const getProjectById = async (projectId: string) => {
-  const result = await supabase
-    .from('all_projects')
-    .select('*')
-    .eq('id', projectId)
-    .single()
-
-  const data = result.data as ProjectT | null
-  const error = result.error as Error | null
-  warnWhen(!data, `Received no project by id: ${projectId}`)
-  warnWhen(error, `Error fetching project by ID: ${error?.message}`)
-  console.log('getProjectById result:', { data, error })
-  return { data, error }
+  const result = await callApi<{ data: ProjectT }>(`/api/projects/${projectId}`)
+  warnWhen(result.error, `Error fetching project by ID: ${result.error?.message}`)
+  return { data: result.data?.data ?? null, error: result.error }
 }
 
-export const getProjectsByUserId = async (userId: string, limit: number = 20, offset: number = 0) => {
-  const { data, error, count } = await supabase
-    .from('all_projects')
-    .select('*', { count: 'exact' })
-    .eq('userId', userId)
-    .order('updatedAt', { ascending: false })
-    .range(offset, offset + limit - 1)
-
-  console.info(`getProjectsByUserId | fetched projects for userId=${userId}:`, { error, count })
-  return { data, error, totalCount: count ?? 0 }
+// The signed-in user's own projects.
+export const getProjectsByUserId = async (_userId: string, limit: number = 20, offset: number = 0) => {
+  const result = await callApi<{ data: ProjectT[]; totalCount: number }>(`/api/projects${toQuery({ mine: 1, limit, offset })}`)
+  return { data: result.data?.data ?? null, error: result.error, totalCount: result.data?.totalCount ?? 0 }
 }
 
 type GetPublicProjectsOptionsT = {
@@ -118,87 +81,18 @@ type GetPublicProjectsOptionsT = {
   offset?: number
 }
 
-const DEFAULT_GET_PUBLIC_PROJECTS_OPTIONS: GetPublicProjectsOptionsT = {
-  sortBy: 'updatedAt',
-  sortOrder: 'descending',
-  key: undefined,
-  scale: undefined,
-  minBpm: undefined,
-  maxBpm: undefined,
-  searchQuery: undefined,
-  chordSymbols: undefined,
-  chordMatchMode: 'any',
-  limit: 20,
-  offset: 0,
-}
-
 export const getPublicProjects = async (options: GetPublicProjectsOptionsT) => {
-  const finalOptions = { ...DEFAULT_GET_PUBLIC_PROJECTS_OPTIONS, ...options }
-
-  let query = supabase
-    .from('all_projects')
-    .select(`*, user:all_users!userId ( userName, avatarUrl )`)
-    .eq('isPublic', true)
-
-  console.log('finalOptions', finalOptions)
-
-  if (!!finalOptions.key) {
-    query = query.eq('key', finalOptions.key)
-  }
-
-  if (!!finalOptions.scale) {
-    query = query.eq('scale', finalOptions.scale)
-  }
-
-  if (finalOptions.minBpm !== undefined) {
-    query = query.gte('bpm', finalOptions.minBpm)
-  }
-
-  if (finalOptions.maxBpm !== undefined) {
-    query = query.lte('bpm', finalOptions.maxBpm)
-  }
-
-  if (!!finalOptions.searchQuery) {
-    query = query.or(`title.ilike.%${finalOptions.searchQuery}%,description.ilike.%${finalOptions.searchQuery}%`)
-  }
-
-  if (Array.isArray(finalOptions.chordSymbols) && finalOptions.chordSymbols!.length > 0) {
-    const isMatchAll = finalOptions.chordMatchMode === 'all'
-
-    if (isMatchAll) {
-      query = query.contains('chordSymbols', finalOptions.chordSymbols)
-    }
-    if (!isMatchAll) {
-      query = query.overlaps('chordSymbols', finalOptions.chordSymbols)
-    }
-  }
-
-  const sortByColumn = finalOptions.sortBy || 'updatedAt'
-  const isAscending = finalOptions.sortOrder === 'ascending'
-  query = query.order(sortByColumn, { ascending: isAscending })
-
-  const limitValue = finalOptions.limit ?? 20
-  const offsetValue = finalOptions.offset ?? 0
-  query = query.range(offsetValue, offsetValue + limitValue - 1)
-
-  const result = await query
-  const data = result.data
-  const error = result.error
-
-  warnWhen(error, `Error fetching public projects: ${error?.message}`)
-  warnWhen(!data, `No public projects found with the given filters.`)
-
-  const countQuery = supabase
-    .from('all_projects')
-    .select('id', { count: 'exact', head: true })
-    .eq('isPublic', true)
-
-  const countResult = await countQuery
-  const totalCount = countResult.count ?? 0
-
-  console.log(`getPublicProjects | got ${totalCount}`)
-  return { data, error, totalCount }
+  const result = await callApi<{ data: ProjectT[]; totalCount: number }>(`/api/projects${toQuery(options)}`)
+  warnWhen(result.error, `Error fetching public projects: ${result.error?.message}`)
+  return { data: result.data?.data ?? null, error: result.error, totalCount: result.data?.totalCount ?? 0 }
 }
+
+export const getPublicProjectsByUserName = async (userName: string) => {
+  const result = await callApi<{ projects: ProjectT[] }>(`/api/users/${encodeURIComponent(userName)}`)
+  return { data: result.data?.projects ?? null, error: result.error }
+}
+
+// ---------- users ----------
 
 type GetPublicUsersOptionsT = {
   sortBy?: 'updatedAt' | 'createdAt' | 'userName'
@@ -206,93 +100,27 @@ type GetPublicUsersOptionsT = {
   searchQuery?: string
 }
 
-const DEFAULT_GET_PUBLIC_USERS_OPTIONS: GetPublicUsersOptionsT = {
-  sortBy: 'createdAt',
-  sortOrder: 'descending',
-  searchQuery: undefined,
-}
-
 export const getPublicUsers = async (options: GetPublicUsersOptionsT) => {
-  const finalOptions = { ...DEFAULT_GET_PUBLIC_USERS_OPTIONS, ...options }
-
-
-  let query = supabase
-    .from('all_users')
-    .select('*')
-
-  if (!!finalOptions.searchQuery) {
-    query = query.or(`userName.ilike.%${finalOptions.searchQuery}%,bio.ilike.%${finalOptions.searchQuery}%`)
-  }
-
-  const sortByColumn = finalOptions.sortBy || 'createdAt'
-  const isAscending = finalOptions.sortOrder === 'ascending'
-  query = query.order(sortByColumn, { ascending: isAscending })
-
-  const result = await query
-  const data = result.data
-  const error = result.error
-  warnWhen(error, `Error fetching public users: ${error?.message}`)
-
-  return { data, error }
+  const result = await callApi<{ data: UserT[] }>(`/api/users${toQuery(options)}`)
+  warnWhen(result.error, `Error fetching public users: ${result.error?.message}`)
+  return { data: result.data?.data ?? null, error: result.error }
 }
 
 export const getUserByUserName = async (userName: string) => {
-
-
-  const result = await supabase
-    .from('all_users')
-    .select('*')
-    .eq('userName', userName)
-    .single()
-
-  const data = result.data as UserT | null
-  const error = result.error as Error | null
-  if (!!error) warnWhen(error, `Error fetching user by userName: ${error.message}`)
-  return { data, error }
-}
-
-export const checkUsernameAvailable = async (userName: string): Promise<boolean> => {
-  const result = await getUserByUserName(userName)
-  const isNotFound = result.error && result.error.message.includes('multiple (or no) rows')
-  const isAvailable = !result.data || !!isNotFound
-  return isAvailable
+  const result = await callApi<{ user: UserT }>(`/api/users/${encodeURIComponent(userName)}`)
+  return { data: result.data?.user ?? null, error: result.error }
 }
 
 type UpdateUserProfileArgsT = {
-  userId: string
+  userId?: string
   userName?: string
   bio?: string
   avatarUrl?: string
 }
 
 export const updateUserProfile = async (args: UpdateUserProfileArgsT) => {
-
-
-  const updateData: Partial<UserT> = {}
-  if (args.userName !== undefined) updateData.userName = args.userName
-  if (args.bio !== undefined) updateData.bio = args.bio
-  if (args.avatarUrl !== undefined) updateData.avatarUrl = args.avatarUrl
-
-  const { error } = await supabase
-    .from('all_users')
-    // @ts-ignore - Supabase type generation issue
-    .update(updateData)
-    .eq('id', args.userId)
-
-  if (!!error) warnWhen(error, `Error updating user profile: ${error.message}`)
-  return { error, didSucceed: !error }
-}
-
-export const getPublicProjectsByUserName = async (userName: string) => {
-
-
-  const { data, error } = await supabase
-    .from('all_projects')
-    .select(`*, user:all_users!userId ( userName, avatarUrl )`)
-    .eq('isPublic', true)
-    .eq('user.userName', userName)
-    .order('updatedAt', { ascending: false })
-
-  warnWhen(error, `Error fetching public projects by userName: ${error?.message}`)
-  return { data, error }
+  const { userId: _userId, ...fields } = args
+  const result = await callApi('/api/me', { method: 'PATCH', body: JSON.stringify(fields) })
+  warnWhen(result.error, `Error updating user profile: ${result.error?.message}`)
+  return { error: result.error, didSucceed: !result.error }
 }

@@ -1,15 +1,10 @@
 import type { LayoutServerLoad } from './$types'
-import { getUserById } from '$lib/modules/database'
+import { getUserById } from '$lib/server/repo'
 
 export const load: LayoutServerLoad = async (event) => {
-  const authUser = event.locals.user
-  const isAuthenticated = !!authUser
-
-  let activeUser: UserT | null = null
-  if (authUser) {
-    const userResult = await getUserById(authUser.id)
-    activeUser = userResult.user
-  }
-
-  return { isAuthenticated, authUser, activeUser }
+	const authUser = event.locals.user
+	const isAuthenticated = !!authUser
+	const database = event.platform?.env.DB
+	const activeUser = authUser && database ? await getUserById(database, authUser.id) : null
+	return { isAuthenticated, authUser, activeUser }
 }

@@ -1,36 +1,27 @@
 import type { Handle } from '@sveltejs/kit';
-import { createServerClient } from '@supabase/ssr';
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
-import { redirect } from '@sveltejs/kit';
+import { json, redirect } from '@sveltejs/kit';
+import { getSessionUser } from '$lib/server/auth';
+
+const checkIsSameOrigin = (request: Request, url: URL): boolean => {
+  return request.headers.get('origin') === url.origin;
+};
 
 export const handle: Handle = async ({ event, resolve }) => {
-  event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-    cookies: {
-      getAll: () => event.cookies.getAll(),
-      setAll: (cookiesToSet) => {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          event.cookies.set(name, value, { ...options, path: '/' });
-        });
-      }
-    }
-  });
-
-  const {
-    data: { user }
-  } = await event.locals.supabase.auth.getUser();
-
-  event.locals.user = user;
-
-  const isAuthenticated = !!user;
   const currentPath = event.url.pathname;
+  const database = event.platform?.env.DB;
+  const hasCookie = !!event.cookies.get('keylime_session');
 
-  console.log('[hooks.server] Request:', {
-    path: currentPath,
-    isAuthenticated,
-    userId: user?.id,
-    email: user?.email
-  });
+  // No cookie means no database read.
+  event.locals.user = database && hasCookie ? await getSessionUser(database, event.cookies) : null;
 
+  // Writes must come from Keylime itself. With SameSite cookies
+  // this closes cross-site request forgery.
+  const isApiWrite = currentPath.startsWith('/api/') && event.request.method !== 'GET';
+  if (isApiWrite && !checkIsSameOrigin(event.request, event.url)) {
+    return json({ error: 'bad-origin' }, { status: 403 });
+  }
+
+  const isAuthenticated = !!event.locals.user;
   const isAuthRoute = currentPath.startsWith('/auth');
   const isRootRoute = currentPath === '/';
   const isDashboardRoute = currentPath.startsWith('/dashboard');
@@ -38,37 +29,11 @@ export const handle: Handle = async ({ event, resolve }) => {
   const isProjectsPublicRoute = currentPath === '/projects';
   const isProjectRoute = currentPath.startsWith('/project/');
 
-  // Redirect authenticated users away from auth pages (except password reset with token)
-  if (isAuthenticated && isAuthRoute) {
-    const isResetPassword = currentPath === '/auth/reset-password';
-    const hasResetToken = event.url.searchParams.has('token');
+  if (isAuthenticated && (isAuthRoute || isRootRoute)) redirect(303, '/dashboard');
+  if (!isAuthenticated && isRootRoute) redirect(303, '/auth/login');
 
-    if (isResetPassword && hasResetToken) {
-      console.log('[hooks.server] Allowing password reset with token');
-      return resolve(event);
-    }
+  const isProtectedRoute = isDashboardRoute || isUsersRoute || isProjectsPublicRoute || isProjectRoute;
+  if (!isAuthenticated && isProtectedRoute) redirect(303, '/auth/login');
 
-    console.log('[hooks.server] Redirecting authenticated user from auth page to /dashboard');
-    redirect(303, '/dashboard');
-  }
-
-  // Redirect authenticated users from root to dashboard
-  if (isAuthenticated && isRootRoute) {
-    console.log('[hooks.server] Redirecting authenticated user from / to /dashboard');
-    redirect(303, '/dashboard');
-  }
-
-  if (!isAuthenticated && isRootRoute) {
-    console.log('[hooks.server] Redirecting unauthenticated user from / to /auth/login');
-    redirect(303, '/auth/login');
-  }
-
-  // Protect dashboard routes - require authentication
-  if (!isAuthenticated && (isDashboardRoute || isUsersRoute || isProjectsPublicRoute || isProjectRoute)) {
-    console.log('[hooks.server] Redirecting unauthenticated user from protected route to /auth/login');
-    redirect(303, '/auth/login');
-  }
-
-  console.log('[hooks.server] Allowing request to proceed');
   return resolve(event);
 };

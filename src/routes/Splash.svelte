@@ -9,7 +9,7 @@
 	}
 
 	const handleGoToSignup = () => {
-		goto('/auth/signup')
+		goto('/auth/login')
 	}
 </script>
 
