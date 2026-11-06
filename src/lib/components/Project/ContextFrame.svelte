@@ -110,10 +110,11 @@
 	}
 
 	const createInitialState = (): ProjectEditorStateT => {
-		const hasProjectData = props.project !== null
+		const propsProject = props.project
+		const hasProjectData = propsProject !== null
 
 		if (hasProjectData) {
-			const parsedProject = parseProjectData(props.project)
+			const parsedProject = parseProjectData(propsProject)
 
 			const hasValidSignalRows =
 				parsedProject.patternSignalRows &&

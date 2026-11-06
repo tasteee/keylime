@@ -6,10 +6,12 @@
 	const props = $props()
 
 	const context: PlaybackContextT = {
-		state: playbackStore as unknown as PlaybackStateT,
+		state: playbackStore,
 		load: playbackStore.load,
 		playNote: playbackStore.playNote,
 		playChord: playbackStore.playChord,
+		previewChord: playbackStore.previewChord,
+		stopChordPreview: playbackStore.stopChordPreview,
 		stopNote: playbackStore.stopNote,
 		stopChord: playbackStore.stopChord,
 		perform: playbackStore.perform,

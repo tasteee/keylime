@@ -7,6 +7,7 @@ type ProjectEditorStateT = {
   isDirty: boolean
   cleanProjectSnapshot: string
   activeView: 'chords' | 'pattern'
+  selectedProgressionItemId: string | null
 }
 
 type ProjectEditorContextT = {
