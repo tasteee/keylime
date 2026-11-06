@@ -10,3 +10,15 @@ body {
 body {
 	font-family: var(--font-sans);
 }
+
+/* Zest nudges a button icon down 1px, which pulls the label 1px up.
+   Level the icon so the label sits where it should. */
+z-button > svg {
+	margin-top: 0;
+}
+
+z-toggle-button > svg,
+z-toggle-button-group-item > svg {
+	position: relative;
+	top: -1px;
+}

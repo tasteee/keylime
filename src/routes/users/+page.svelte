@@ -64,14 +64,18 @@
 </script>
 
 <PageLayout>
-	<PageHeader title="Discover creators" subtitle="Explore musicians and their chord progressions." />
-
-	<z-input type="search" value={searchText} placeholder="Search users…" label="Search users" oninput={handleSearch}>
-		<z-box slot="prefix" isInline><MagnifyingGlass size={16} /></z-box>
-	</z-input>
+	<PageHeader title="Discover creators" subtitle="Explore musicians and their chord progressions.">
+		{#snippet actions()}
+			<div class="userSearch">
+				<z-input type="search" value={searchText} placeholder="Search users…" label="Search users" size="sm" oninput={handleSearch}>
+					<z-box slot="prefix" isInline><MagnifyingGlass size={14} /></z-box>
+				</z-input>
+			</div>
+		{/snippet}
+	</PageHeader>
 
 	{#if isLoading}
-		<z-grid minColumnWidth="16rem" gap="lg">
+		<z-grid minColumnWidth="16rem" gap="md">
 			{#each Array.from({ length: 6 }) as _}
 				<z-skeleton shape="rect" height="12rem"></z-skeleton>
 			{/each}
@@ -81,13 +85,13 @@
 			<z-box slot="icon" isInline><UsersThree size={32} /></z-box>
 		</z-empty-state>
 	{:else}
-		<z-grid minColumnWidth="16rem" gap="lg">
+		<z-grid minColumnWidth="16rem" gap="md">
 			{#each users as user (user.id)}
 				<z-card
 					isReactive
 					role="button"
 					tabindex="0"
-					gap="sm"
+					class="userCard"
 					onclick={() => handleUserClick(user.userName)}
 					onkeydown={(event: KeyboardEvent) => handleUserKeyDown(event, user.userName)}
 				>
@@ -106,3 +110,16 @@
 		</z-grid>
 	{/if}
 </PageLayout>
+
+<style>
+	.userSearch {
+		width: 18rem;
+		max-width: 100%;
+	}
+
+	.userCard {
+		--z-card-gap: var(--spacing-2);
+		padding: var(--space-md);
+		cursor: pointer;
+	}
+</style>

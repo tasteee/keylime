@@ -709,7 +709,7 @@
 			</z-button>
 		</z-button-group>
 
-		<z-separator isVertical></z-separator>
+		<z-spacer canGrow></z-spacer>
 
 		<z-tooltip content="Restart the pattern at the start of every chord" placement="bottom">
 			<z-switch size="sm" isChecked={doesPatternReset} onchange={handleResetOnChordChange}>Reset on chord change</z-switch>

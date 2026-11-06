@@ -229,7 +229,7 @@
 
 	<ProjectsBrowserBar onsubmit={handleFilterSubmit} />
 
-	<z-grid minColumnWidth="20rem" gap="lg">
+	<z-grid minColumnWidth="20rem" gap="md">
 		{#each filteredProjects as project (project.id)}
 			<ProjectCard
 				{project}

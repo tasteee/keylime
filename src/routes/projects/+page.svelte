@@ -118,7 +118,7 @@
 	<ProjectsBrowserBar onsubmit={handleFilterSubmit} />
 
 	{#if isLoading}
-		<z-grid minColumnWidth="20rem" gap="lg">
+		<z-grid minColumnWidth="20rem" gap="md">
 			{#each Array.from({ length: 6 }) as _}
 				<z-skeleton shape="rect" height="16rem"></z-skeleton>
 			{/each}
@@ -128,7 +128,7 @@
 			<z-box slot="icon" isInline><MusicNotes size={32} /></z-box>
 		</z-empty-state>
 	{:else}
-		<z-grid minColumnWidth="20rem" gap="lg">
+		<z-grid minColumnWidth="20rem" gap="md">
 			{#each projects as project (project.id)}
 				<ProjectCard
 					{project}
