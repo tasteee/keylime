@@ -1,18 +1,21 @@
 <script lang="ts">
 	import { SquaresFour, MusicNotes, ArrowLeft, PencilSimple, Gear } from 'phosphor-svelte'
-	import Logo from '$lib/components/shell/Logo.svelte'
-	import UserMenu from '$lib/components/shell/UserMenu.svelte'
+		import UserMenu from '$lib/components/shell/UserMenu.svelte'
 	import DialogUserSettings from '$lib/components/DialogUserSettings.svelte'
 	import SelectOutput from './SelectOutput.svelte'
 	import SelectBpm from './SelectBpm.svelte'
 	import SelectOctave from './SelectOctave.svelte'
 	import SelectKeyScale from './SelectKeyScale.svelte'
+	import ProjectPlayButton from './ProjectPlayButton.svelte'
+	import DownloadMenu from './DownloadMenu.svelte'
+	import SaveMenu from './SaveMenu.svelte'
 	import DialogProjectSettings from './DialogProjectSettings.svelte'
 	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 	import { goToPath } from '$lib/modules/navigate'
 
 	const projectEditor = useProjectEditor()
 	const project = $derived(projectEditor.state.project)
+	const isDirty = $derived(projectEditor.state.isDirty)
 	const activeView = $derived(projectEditor.state.activeView)
 
 	let isProjectSettingsOpen = $state(false)
@@ -52,7 +55,11 @@
 				</z-button>
 			</z-tooltip>
 
-			<Logo hasWordmark={false} />
+			<ProjectPlayButton />
+
+			{#if isDirty}
+				<z-status-dot status="away" doesPulse label="Unsaved"></z-status-dot>
+			{/if}
 
 			<z-button kind="ghost" size="sm" onclick={openProjectSettings} aria-label="Edit project settings">
 				<span class="projectTitle">{project.title}</span>
@@ -75,6 +82,8 @@
 			<SelectBpm />
 			<SelectOctave />
 			<SelectKeyScale />
+			<DownloadMenu />
+			<SaveMenu />
 		</z-row>
 
 		<z-row gap="md" alignsY="center" class="topBarSection">

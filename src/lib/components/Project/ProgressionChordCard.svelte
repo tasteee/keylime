@@ -174,9 +174,9 @@
 		align-items: center;
 		justify-content: center;
 		height: auto;
-		--chord-tint: 14%;
+		--chord-tint: 22%;
 		background: color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint), var(--card));
-		border: 1px solid color-mix(in oklch, var(--chord-hue, var(--foreground)) 60%, var(--card));
+		border: 1px solid color-mix(in oklch, var(--chord-hue, var(--foreground)) 70%, var(--card));
 		border-radius: var(--radius-md);
 		color: var(--foreground);
 		cursor: default;
@@ -188,12 +188,12 @@
 	}
 
 	.progressionItem:hover {
-		--chord-tint: 22%;
+		--chord-tint: 32%;
 	}
 
 	/* Selected is one step up in tone: deeper tint, stronger border. */
 	.progressionItem.isSelected {
-		--chord-tint: 32%;
+		--chord-tint: 42%;
 		border-color: var(--chord-hue, var(--foreground));
 		z-index: 20;
 	}
@@ -321,7 +321,7 @@
 	/* Disable hover effects on every card while one is dragged or resized. */
 	:global([data-is-dragging='true']) .progressionItem:not(.isSelected):hover,
 	:global([data-is-resizing='true']) .progressionItem:not(.isSelected):hover {
-		--chord-tint: 14%;
+		--chord-tint: 22%;
 	}
 
 	:global([data-is-dragging='true']) .progressionItem.isRest:hover,

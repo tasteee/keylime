@@ -1,6 +1,5 @@
 <script lang="ts">
 	import ChordCardGrid from '$lib/components/Project/ChordCardGrid.svelte'
-	import ProjectInfoBar from '$lib/components/Project/ProjectInfoBar.svelte'
 	import PatternEditor from '$lib/components/Project/PatternEditor.svelte'
 	import ProgressionPanel from '$lib/components/Project/ProgressionPanel.svelte'
 	import TopBar from '$lib/components/Project/TopBar.svelte'
@@ -196,8 +195,6 @@
 
 		{#if !isLoading}
 			<z-column isFullHeight>
-				<ProjectInfoBar />
-
 				{#if activeView === 'chords'}
 					<ChordCardGrid />
 				{/if}
