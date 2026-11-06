@@ -506,7 +506,7 @@
 		position: absolute;
 		left: var(--spacing-3);
 		right: var(--spacing-3);
-		bottom: var(--spacing-3);
+		bottom: var(--spacing-4);
 		z-index: 200;
 		display: flex;
 		flex-direction: row;
@@ -539,9 +539,14 @@
 	}
 
 	.mainProgressionPanel {
+		--progression-gutter: var(--spacing-3);
+		--progression-chord-height: 64px;
+		--progression-pad-top: calc(var(--spacing-6) + var(--progression-gutter));
+		--progression-pad-bottom: calc(var(--spacing-7) + var(--spacing-5) + var(--progression-gutter));
+		--progression-panel-height: calc(var(--progression-pad-top) + var(--progression-chord-height) + var(--progression-pad-bottom));
 		position: relative;
 		width: 100%;
-		height: calc(10.5rem + var(--spacing-3));
+		height: var(--progression-panel-height);
 		flex-shrink: 0;
 		display: flex;
 		flex-direction: column;
@@ -556,11 +561,10 @@
 		flex-direction: column;
 		overflow-x: auto;
 		overflow-y: hidden;
-		max-height: calc(10.5rem + var(--spacing-3));
+		max-height: var(--progression-panel-height);
 	}
 
 	.itemArea {
-		--progression-gutter: var(--spacing-3);
 		box-sizing: border-box;
 		padding-inline: var(--progression-gutter);
 		position: relative;
@@ -570,8 +574,8 @@
 		display: flex;
 		flex-direction: row;
 		align-items: stretch;
-		padding-top: calc(var(--spacing-6) + var(--progression-gutter));
-		padding-bottom: calc(var(--spacing-7) + var(--spacing-5) + var(--progression-gutter));
+		padding-top: var(--progression-pad-top);
+		padding-bottom: var(--progression-pad-bottom);
 		left: -2px;
 	}
 

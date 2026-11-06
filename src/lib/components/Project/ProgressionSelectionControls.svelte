@@ -131,8 +131,13 @@
 {/if}
 
 <style>
+	/* The same floating surface as the other progression controls. */
 	.selectionControls {
 		margin-left: auto;
+		padding: var(--spacing-2);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-md);
 	}
 
 	.durationLabel {
