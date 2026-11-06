@@ -62,20 +62,12 @@
 		return (props.item as ProgressionChordT).symbol
 	})
 
-	const contextMenuItems = $derived.by(() => {
-		const sharedItems = [
-			{ value: 'duplicate', label: 'Duplicate' },
-			{ value: 'delete', label: 'Delete', isDanger: true }
-		]
-		if (isRest) return sharedItems
-		return [{ value: 'modify', label: 'Modify chord…' }, { isSeparator: true }, ...sharedItems]
-	})
-
-	const handleContextMenuSelect = (event: CustomEvent) => {
-		const selectedValue: string = event.detail.value
-		if (selectedValue === 'modify') isModifierDialogOpen = true
-		if (selectedValue === 'duplicate') context.duplicateProgressionItem(props.item.id)
-		if (selectedValue === 'delete') context.removeProgressionItem(props.item.id)
+	// Right-click opens the chord modifier directly. Rests have no modifiers.
+	const handleContextMenu = (event: MouseEvent) => {
+		event.preventDefault()
+		event.stopPropagation()
+		if (isRest) return
+		isModifierDialogOpen = true
 	}
 
 	const handleModifierClose = () => {
@@ -114,49 +106,48 @@
 
 </script>
 
-<z-context-menu items={contextMenuItems} onselect={handleContextMenuSelect} class="progressionItemMenu">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<div
+	class="progressionItem"
+	data-is-dragging={props.isDragging}
+	data-is-resizing={props.isResizing}
+	class:isRest
+	class:isSelected
+	onclick={props.selectItem}
+	onmousedown={onMouseDown}
+	oncontextmenu={handleContextMenu}
+	data-item-id={props.item.id}
+	data-item-type={props.item.type}
+	data-item-starttime={props.item.startTime}
+	data-item-duration={props.item.durationBeats}
+	style="width: {width};"
+>
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<div
-		class="progressionItem"
-		data-is-dragging={props.isDragging}
-		data-is-resizing={props.isResizing}
-		class:isRest
-		class:isSelected
-		onclick={props.selectItem}
-		onmousedown={onMouseDown}
-		data-item-id={props.item.id}
-		data-item-type={props.item.type}
-		data-item-starttime={props.item.startTime}
-		data-item-duration={props.item.durationBeats}
-		style="width: {width};"
-	>
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="dragHandle" onmousedown={onDragHandleMouseDown}>
-			{#if props.isDragging}
-				<HandGrabbing size={40} weight="fill" />
-			{:else}
-				<DotsSixVertical size={20} weight="bold" />
-			{/if}
-		</div>
-
-		<div class="itemContent">
-			<ChordSymbolDisplay symbol={props.item.symbol} />
-			{#if isModified}
-				<span class="modifiedIndicator">*</span>
-			{/if}
-		</div>
-
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="resizeHandle resizeHandleRight" onmousedown={handleResizeRight}>
-			{#if props.isResizing}
-				<HandGrabbing size={40} weight="fill" />
-			{:else}
-				<div class="resizeHandleBar"></div>
-			{/if}
-		</div>
+	<div class="dragHandle" onmousedown={onDragHandleMouseDown}>
+		{#if props.isDragging}
+			<HandGrabbing size={40} weight="fill" />
+		{:else}
+			<DotsSixVertical size={20} weight="bold" />
+		{/if}
 	</div>
-</z-context-menu>
+
+	<div class="itemContent">
+		<ChordSymbolDisplay symbol={props.item.symbol} />
+		{#if isModified}
+			<span class="modifiedIndicator">*</span>
+		{/if}
+	</div>
+
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="resizeHandle resizeHandleRight" onmousedown={handleResizeRight}>
+		{#if props.isResizing}
+			<HandGrabbing size={40} weight="fill" />
+		{:else}
+			<div class="resizeHandleBar"></div>
+		{/if}
+	</div>
+</div>
 
 {#if props.item.type === 'chord' && isModifierDialogOpen}
 	<DialogChordModifier
@@ -169,10 +160,6 @@
 {/if}
 
 <style>
-	:global(.progressionItemMenu) {
-		display: contents;
-	}
-
 	.progressionItem {
 		position: relative;
 		display: flex;

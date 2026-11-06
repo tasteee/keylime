@@ -2,8 +2,8 @@
 	import { Plus } from 'phosphor-svelte'
 	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 	import playbackStore from '$lib/stores/playback.svelte'
-	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
 	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
+	import DialogChordModifier from './DialogChordModifier.svelte'
 
 	type ChordCardPropsT = {
 		chord: ChordT
@@ -14,14 +14,7 @@
 	const project = $derived(projectEditor.state.project)
 	const isPlaying = $derived(playbackStore.currentlyPlayingChordId === props.chord.id)
 
-	const contextMenuItems = [
-		{ value: 'add', label: 'Add to progression' },
-		{ value: 'modify', label: 'Modify chord…' }
-	]
-
-	const openChordModifier = () => {
-		chordModifierStore.openForGridChord({ chordId: props.chord.id })
-	}
+	let isModifierDialogOpen = $state(false)
 
 	const addChordToProgression = () => {
 		const chordToAdd: ChordT = {
@@ -32,10 +25,24 @@
 		projectEditor.addProgressionChord(chordToAdd)
 	}
 
-	const handleContextMenuSelect = (event: CustomEvent) => {
-		const selectedValue: string = event.detail.value
-		if (selectedValue === 'add') addChordToProgression()
-		if (selectedValue === 'modify') openChordModifier()
+	// Right-click opens the chord modifier directly.
+	const handleContextMenu = (event: MouseEvent) => {
+		event.preventDefault()
+		event.stopPropagation()
+		isModifierDialogOpen = true
+	}
+
+	const handleModifierClose = () => {
+		isModifierDialogOpen = false
+	}
+
+	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: string }) => {
+		projectEditor.updateGridChordModifiers({
+			chordId: props.chord.id,
+			octaveOffset: args.octaveOffset,
+			inversion: args.inversion,
+			voicing: args.voicing as VoicingT
+		})
 	}
 
 	const handleAddButtonClick = (event: MouseEvent) => {
@@ -46,8 +53,11 @@
 
 	const handleMouseDown = (event: MouseEvent) => {
 		const target = event.target as HTMLElement
+		// Clicks on the add button or inside the modifier dialog are not previews.
 		const isButtonTarget = target.closest('z-button')
 		if (isButtonTarget) return
+		const isDialogTarget = target.closest('z-dialog')
+		if (isDialogTarget) return
 
 		const isLeftButton = event.button === 0
 		if (!isLeftButton) return
@@ -58,31 +68,40 @@
 	}
 </script>
 
-<z-context-menu items={contextMenuItems} onselect={handleContextMenuSelect}>
-	<z-surface
-		level="1"
-		isBordered
-		isInteractive
-		isFullWidth
-		radius="md"
-		insetX="lg"
-		class="chordCard"
-		class:isPlaying
-		role="button"
-		tabindex="0"
-		onmousedown={handleMouseDown}
-	>
-		<z-row alignsX="between" alignsY="center" isFullHeight>
-			<ChordSymbolDisplay symbol={props.chord.symbol} />
+<z-surface
+	level="1"
+	isBordered
+	isInteractive
+	isFullWidth
+	radius="md"
+	insetX="lg"
+	class="chordCard"
+	class:isPlaying
+	role="button"
+	tabindex="0"
+	onmousedown={handleMouseDown}
+	oncontextmenu={handleContextMenu}
+>
+	<z-row alignsX="between" alignsY="center" isFullHeight>
+		<ChordSymbolDisplay symbol={props.chord.symbol} />
 
-			<z-tooltip content="Add to progression" placement="top" class="chordCardAction">
-				<z-button kind="ghost" size="sm" onclick={handleAddButtonClick} aria-label="Add to progression">
-					<Plus size={16} weight="bold" />
-				</z-button>
-			</z-tooltip>
-		</z-row>
-	</z-surface>
-</z-context-menu>
+		<z-tooltip content="Add to progression" placement="top" class="chordCardAction">
+			<z-button kind="ghost" size="sm" onclick={handleAddButtonClick} aria-label="Add to progression">
+				<Plus size={16} weight="bold" />
+			</z-button>
+		</z-tooltip>
+	</z-row>
+
+	{#if isModifierDialogOpen}
+		<DialogChordModifier
+			isOpen={isModifierDialogOpen}
+			chord={props.chord as ProgressionChordT}
+			projectOctave={String(project.octave)}
+			onClose={handleModifierClose}
+			onSave={handleModifierSave}
+		/>
+	{/if}
+</z-surface>
 
 <style>
 	.chordCard {
