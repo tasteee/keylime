@@ -12,8 +12,8 @@ importers:
         specifier: ^5.2.11
         version: 5.2.11
       '@tasteee/zest':
-        specifier: github:tasteee/zest#build
-        version: git+https://git@github.com:tasteee/zest.git#9d8c28190cc40e22767f5d988bcb4fef63af356b
+        specifier: git+https://github.com/tasteee/zest.git#build
+        version: git+https://github.com/tasteee/zest.git#9d8c28190cc40e22767f5d988bcb4fef63af356b
       '@tonaljs/voicing':
         specifier: ^5.1.2
         version: 5.1.3
@@ -870,8 +870,8 @@ packages:
   '@swc/helpers@0.5.21':
     resolution: {integrity: sha512-jI/VAmtdjB/RnI8GTnokyX7Ug8c+g+ffD6QRLa6XQewtnGyukKkKSk3wLTM3b5cjt1jNh9x0jfVlagdN2gDKQg==}
 
-  '@tasteee/zest@git+https://git@github.com:tasteee/zest.git#9d8c28190cc40e22767f5d988bcb4fef63af356b':
-    resolution: {commit: 9d8c28190cc40e22767f5d988bcb4fef63af356b, repo: git@github.com:tasteee/zest.git, type: git}
+  '@tasteee/zest@git+https://github.com/tasteee/zest.git#9d8c28190cc40e22767f5d988bcb4fef63af356b':
+    resolution: {commit: 9d8c28190cc40e22767f5d988bcb4fef63af356b, repo: https://github.com/tasteee/zest.git, type: git}
     version: 1.0.0
 
   '@testing-library/dom@10.4.1':
@@ -2178,7 +2178,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@tasteee/zest@git+https://git@github.com:tasteee/zest.git#9d8c28190cc40e22767f5d988bcb4fef63af356b':
+  '@tasteee/zest@git+https://github.com/tasteee/zest.git#9d8c28190cc40e22767f5d988bcb4fef63af356b':
     dependencies:
       atomico: 2.2.0
 
