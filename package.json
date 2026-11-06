@@ -43,7 +43,7 @@
 	},
 	"dependencies": {
 		"@fontsource-variable/saira": "^5.2.11",
-		"@tasteee/zest": "git+https://github.com/tasteee/zest.git#build",
+		"@tasteee/zest": "github:tasteee/zest#build",
 		"@tonaljs/voicing": "^5.1.2",
 		"@tonaljs/voicing-dictionary": "^5.1.2",
 		"@types/store": "^2.0.5",

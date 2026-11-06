@@ -55,7 +55,6 @@ The UI is built with [Zest](https://github.com/tasteee/zest), our design system.
 - Colors, spacing, radii and type come from Zest tokens (`var(--card)`, `var(--border)`, `var(--spacing-4)`, ...). Do not hardcode them.
 - Set element props in camelCase (`isFullWidth`, `alignsX`). Listen with lowercase handlers (`onchange`, `onselect`). Event data is on `event.detail`.
 - `src/zest.d.ts` types every Zest element for Svelte. It is generated. Run `node scripts/generateZestSvelteTypes.mjs` after updating Zest.
-- `src/app.css` holds a small shim that stops nested `z-row` and `z-column` inheriting each other's gap and padding.
 
 ## Saving
 
