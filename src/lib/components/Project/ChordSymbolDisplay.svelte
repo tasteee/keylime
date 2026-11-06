@@ -1,6 +1,7 @@
 <script lang="ts">
 	type ChordSymbolDisplayPropsT = {
 		symbol: string
+		size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 	}
 
 	const props: ChordSymbolDisplayPropsT = $props()
@@ -13,9 +14,10 @@
 
 	const isRest = $derived(props.symbol === 'REST')
 	const rootColor = $derived(isRest ? 'muted' : 'strong')
+	const textSize = $derived(props.size ?? 'sm')
 </script>
 
-<z-text size="sm" weight={700} color={rootColor} class="chordSymbol">
+<z-text size={textSize} weight={700} color={rootColor} class="chordSymbol">
 	<z-inline class="chordRoot">{symbolParts.root}</z-inline><z-inline weight={400} class="chordSuffix">{symbolParts.suffix}</z-inline>
 </z-text>
 
