@@ -91,7 +91,7 @@
 		height: 3rem;
 		user-select: none;
 		background: var(--chord-bg, var(--color-neutral-1)) !important;
-		border-color: color-mix(in oklab, var(--chord-border, var(--border)), black 10%) !important;
+		border-color: var(--chord-border, var(--border)) !important;
 		transition:
 			background var(--motion-fast) var(--ease-enter),
 			border-color var(--motion-fast) var(--ease-enter);
@@ -99,7 +99,8 @@
 
 	.chordCard:hover,
 	.chordCard.isPlaying {
-		border-color: var(--chord-hue, var(--border)) !important;
+		background: var(--chord-bg-hover, var(--color-neutral-2)) !important;
+		border-color: var(--chord-border-hover, var(--border)) !important;
 	}
 
 	.chordCard :global(.chordCardAction) {

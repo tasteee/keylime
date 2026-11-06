@@ -33,17 +33,6 @@ z-toggle-button-group-item > svg {
 	--purple: var(--foreground);
 }
 
-/* Selected notes in the pattern editor use Zest's purple. The
-   neutral overrides above do not touch the palette tones. */
-:root,
-:root[data-theme='dark'] {
-	--note-selected: var(--palette-purple-800);
-}
-
-:root[data-theme='light'] {
-	--note-selected: var(--palette-purple-900);
-}
-
 /* The accent for the pattern editor: marquee, focus ring, loop bar. */
 :root,
 :root[data-theme='dark'] {
@@ -54,256 +43,348 @@ z-toggle-button-group-item > svg {
 	--active-accent: oklch(0.54 0.17 250);
 }
 
-/* Chord palette. Seven families, eleven tones each:
-   50 is the palest tint, 950 is the deepest shade. */
+/* Note palette. One scale per pitch class, twelve in all.
+   Steps run 0 (darkest) to 9 (lightest), like Zest's own
+   --color-primary-N scales. Hues are spaced by equal
+   perceived distance, not equal degrees, so every pair of
+   neighbors reads as a different color. Yellows sit a little
+   lighter and blues a little darker, as they do in nature. */
 :root {
-	--palette-red-50: #fffaf7;
-	--palette-red-100: #fff7f3;
-	--palette-red-200: #fff3ee;
-	--palette-red-300: #ffede8;
-	--palette-red-400: #ffdfd6;
-	--palette-red-500: #ffcfc3;
-	--palette-red-600: #ffb7a6;
-	--palette-red-700: #ff927c;
-	--palette-red-800: #ff7f68;
-	--palette-red-900: #b95948;
-	--palette-red-950: #7c2012;
+	/* C · red */
+	--color-note-c-0: oklch(0.200 0.070 25);
+	--color-note-c-1: oklch(0.282 0.100 25);
+	--color-note-c-2: oklch(0.364 0.130 25);
+	--color-note-c-3: oklch(0.466 0.160 25);
+	--color-note-c-4: oklch(0.588 0.190 25);
+	--color-note-c-5: oklch(0.711 0.175 25);
+	--color-note-c-6: oklch(0.801 0.109 25);
+	--color-note-c-7: oklch(0.868 0.068 25);
+	--color-note-c-8: oklch(0.926 0.036 25);
+	--color-note-c-9: oklch(0.974 0.012 25);
 
-	--palette-orange-50: #fffcf4;
-	--palette-orange-100: #fff9ef;
-	--palette-orange-200: #fff5ea;
-	--palette-orange-300: #fff0e3;
-	--palette-orange-400: #ffe3c3;
-	--palette-orange-500: #ffd4a8;
-	--palette-orange-600: #ffc087;
-	--palette-orange-700: #ffa44a;
-	--palette-orange-800: #e18d37;
-	--palette-orange-900: #ab6820;
-	--palette-orange-950: #6d3400;
+	/* C♯ · orange */
+	--color-note-c-sharp-0: oklch(0.200 0.047 58);
+	--color-note-c-sharp-1: oklch(0.286 0.066 58);
+	--color-note-c-sharp-2: oklch(0.372 0.086 58);
+	--color-note-c-sharp-3: oklch(0.478 0.110 58);
+	--color-note-c-sharp-4: oklch(0.604 0.139 58);
+	--color-note-c-sharp-5: oklch(0.730 0.168 58);
+	--color-note-c-sharp-6: oklch(0.820 0.116 58);
+	--color-note-c-sharp-7: oklch(0.884 0.071 58);
+	--color-note-c-sharp-8: oklch(0.938 0.036 58);
+	--color-note-c-sharp-9: oklch(0.982 0.010 58);
 
-	--palette-yellow-50: #fffef3;
-	--palette-yellow-100: #fffbee;
-	--palette-yellow-200: #fef7e8;
-	--palette-yellow-300: #fbf2e1;
-	--palette-yellow-400: #fee9bd;
-	--palette-yellow-500: #fadc9f;
-	--palette-yellow-600: #ffc949;
-	--palette-yellow-700: #e6b027;
-	--palette-yellow-800: #cd9b0f;
-	--palette-yellow-900: #9b7300;
-	--palette-yellow-950: #5d4000;
+	/* D · amber */
+	--color-note-d-0: oklch(0.200 0.040 88);
+	--color-note-d-1: oklch(0.288 0.057 88);
+	--color-note-d-2: oklch(0.376 0.074 88);
+	--color-note-d-3: oklch(0.484 0.095 88);
+	--color-note-d-4: oklch(0.612 0.120 88);
+	--color-note-d-5: oklch(0.740 0.145 88);
+	--color-note-d-6: oklch(0.830 0.163 88);
+	--color-note-d-7: oklch(0.892 0.124 88);
+	--color-note-d-8: oklch(0.944 0.063 88);
+	--color-note-d-9: oklch(0.986 0.016 88);
 
-	--palette-green-50: #f7fff8;
-	--palette-green-100: #f3fff5;
-	--palette-green-200: #eefcf0;
-	--palette-green-300: #e8f8ea;
-	--palette-green-400: #cff8d4;
-	--palette-green-500: #b8f1c0;
-	--palette-green-600: #9be4a7;
-	--palette-green-700: #62d17b;
-	--palette-green-800: #55bd6d;
-	--palette-green-900: #398e4e;
-	--palette-green-950: #005718;
+	/* D♯ · yellow */
+	--color-note-d-sharp-0: oklch(0.200 0.046 120);
+	--color-note-d-sharp-1: oklch(0.288 0.066 120);
+	--color-note-d-sharp-2: oklch(0.375 0.086 120);
+	--color-note-d-sharp-3: oklch(0.483 0.110 120);
+	--color-note-d-sharp-4: oklch(0.611 0.139 120);
+	--color-note-d-sharp-5: oklch(0.738 0.168 120);
+	--color-note-d-sharp-6: oklch(0.828 0.170 120);
+	--color-note-d-sharp-7: oklch(0.891 0.130 120);
+	--color-note-d-sharp-8: oklch(0.943 0.070 120);
+	--color-note-d-sharp-9: oklch(0.985 0.030 120);
 
-	--palette-blue-50: #f8ffff;
-	--palette-blue-100: #f4fcff;
-	--palette-blue-200: #eff9ff;
-	--palette-blue-300: #e9f4ff;
-	--palette-blue-400: #d3efff;
-	--palette-blue-500: #bfe4ff;
-	--palette-blue-600: #a2d4ff;
-	--palette-blue-700: #6bb3ff;
-	--palette-blue-800: #65a8ef;
-	--palette-blue-900: #477db6;
-	--palette-blue-950: #0c477b;
+	/* E · lime */
+	--color-note-e-0: oklch(0.200 0.059 146);
+	--color-note-e-1: oklch(0.286 0.084 146);
+	--color-note-e-2: oklch(0.371 0.109 146);
+	--color-note-e-3: oklch(0.477 0.140 146);
+	--color-note-e-4: oklch(0.603 0.177 146);
+	--color-note-e-5: oklch(0.728 0.190 146);
+	--color-note-e-6: oklch(0.818 0.170 146);
+	--color-note-e-7: oklch(0.883 0.130 146);
+	--color-note-e-8: oklch(0.937 0.070 146);
+	--color-note-e-9: oklch(0.981 0.030 146);
 
-	--palette-purple-50: #fffbff;
-	--palette-purple-100: #fff8ff;
-	--palette-purple-200: #fcf4ff;
-	--palette-purple-300: #f8efff;
-	--palette-purple-400: #f8e0ff;
-	--palette-purple-500: #f0d1ff;
-	--palette-purple-600: #e5bbff;
-	--palette-purple-700: #d79bff;
-	--palette-purple-800: #ce92ff;
-	--palette-purple-900: #9062b4;
-	--palette-purple-950: #592c79;
+	/* F · green */
+	--color-note-f-0: oklch(0.200 0.038 172);
+	--color-note-f-1: oklch(0.283 0.053 172);
+	--color-note-f-2: oklch(0.365 0.068 172);
+	--color-note-f-3: oklch(0.468 0.087 172);
+	--color-note-f-4: oklch(0.590 0.110 172);
+	--color-note-f-5: oklch(0.713 0.133 172);
+	--color-note-f-6: oklch(0.803 0.149 172);
+	--color-note-f-7: oklch(0.870 0.130 172);
+	--color-note-f-8: oklch(0.928 0.070 172);
+	--color-note-f-9: oklch(0.975 0.030 172);
 
-	--palette-pink-50: #fffaff;
-	--palette-pink-100: #fff6fd;
-	--palette-pink-200: #fff2f9;
-	--palette-pink-300: #ffecf5;
-	--palette-pink-400: #ffdbf0;
-	--palette-pink-500: #ffcae7;
-	--palette-pink-600: #ffafd9;
-	--palette-pink-700: #ff88c6;
-	--palette-pink-800: #ff80be;
-	--palette-pink-900: #b35483;
-	--palette-pink-950: #761b4e;
+	/* F♯ · teal */
+	--color-note-f-sharp-0: oklch(0.200 0.033 208);
+	--color-note-f-sharp-1: oklch(0.277 0.046 208);
+	--color-note-f-sharp-2: oklch(0.355 0.059 208);
+	--color-note-f-sharp-3: oklch(0.452 0.075 208);
+	--color-note-f-sharp-4: oklch(0.570 0.094 208);
+	--color-note-f-sharp-5: oklch(0.687 0.113 208);
+	--color-note-f-sharp-6: oklch(0.777 0.128 208);
+	--color-note-f-sharp-7: oklch(0.850 0.130 208);
+	--color-note-f-sharp-8: oklch(0.912 0.070 208);
+	--color-note-f-sharp-9: oklch(0.965 0.030 208);
+
+	/* G · cyan */
+	--color-note-g-0: oklch(0.200 0.046 242);
+	--color-note-g-1: oklch(0.274 0.063 242);
+	--color-note-g-2: oklch(0.347 0.079 242);
+	--color-note-g-3: oklch(0.441 0.101 242);
+	--color-note-g-4: oklch(0.554 0.126 242);
+	--color-note-g-5: oklch(0.668 0.152 242);
+	--color-note-g-6: oklch(0.758 0.131 242);
+	--color-note-g-7: oklch(0.834 0.087 242);
+	--color-note-g-8: oklch(0.901 0.051 242);
+	--color-note-g-9: oklch(0.957 0.022 242);
+
+	/* G♯ · blue */
+	--color-note-g-sharp-0: oklch(0.200 0.070 271);
+	--color-note-g-sharp-1: oklch(0.272 0.100 271);
+	--color-note-g-sharp-2: oklch(0.344 0.130 271);
+	--color-note-g-sharp-3: oklch(0.436 0.160 271);
+	--color-note-g-sharp-4: oklch(0.548 0.190 271);
+	--color-note-g-sharp-5: oklch(0.660 0.173 271);
+	--color-note-g-sharp-6: oklch(0.750 0.123 271);
+	--color-note-g-sharp-7: oklch(0.828 0.082 271);
+	--color-note-g-sharp-8: oklch(0.896 0.048 271);
+	--color-note-g-sharp-9: oklch(0.954 0.021 271);
+
+	/* A · indigo */
+	--color-note-a-0: oklch(0.200 0.070 302);
+	--color-note-a-1: oklch(0.272 0.100 302);
+	--color-note-a-2: oklch(0.345 0.130 302);
+	--color-note-a-3: oklch(0.437 0.160 302);
+	--color-note-a-4: oklch(0.550 0.190 302);
+	--color-note-a-5: oklch(0.662 0.190 302);
+	--color-note-a-6: oklch(0.752 0.148 302);
+	--color-note-a-7: oklch(0.830 0.098 302);
+	--color-note-a-8: oklch(0.897 0.058 302);
+	--color-note-a-9: oklch(0.955 0.025 302);
+
+	/* A♯ · violet */
+	--color-note-a-sharp-0: oklch(0.200 0.070 329);
+	--color-note-a-sharp-1: oklch(0.275 0.100 329);
+	--color-note-a-sharp-2: oklch(0.349 0.130 329);
+	--color-note-a-sharp-3: oklch(0.444 0.160 329);
+	--color-note-a-sharp-4: oklch(0.559 0.190 329);
+	--color-note-a-sharp-5: oklch(0.673 0.190 329);
+	--color-note-a-sharp-6: oklch(0.763 0.170 329);
+	--color-note-a-sharp-7: oklch(0.839 0.130 329);
+	--color-note-a-sharp-8: oklch(0.904 0.070 329);
+	--color-note-a-sharp-9: oklch(0.959 0.030 329);
+
+	/* B · pink */
+	--color-note-b-0: oklch(0.200 0.070 354);
+	--color-note-b-1: oklch(0.278 0.100 354);
+	--color-note-b-2: oklch(0.355 0.130 354);
+	--color-note-b-3: oklch(0.453 0.160 354);
+	--color-note-b-4: oklch(0.571 0.190 354);
+	--color-note-b-5: oklch(0.689 0.190 354);
+	--color-note-b-6: oklch(0.779 0.143 354);
+	--color-note-b-7: oklch(0.851 0.089 354);
+	--color-note-b-8: oklch(0.913 0.049 354);
+	--color-note-b-9: oklch(0.965 0.018 354);
 }
 
-/* Chord cards. Each note wears one family.
-   Light theme: border 50, root 200, suffix 500.
-   Dark theme mirrors it: border 950, root 800, suffix 500.
-   Hue is the vivid tone shown on hover, selected, and playing.
-   The bg is that hue at 5% opacity. Progression chords use 15%. */
-[data-chord-color] {
-	--chord-bg: color-mix(in hsl, var(--chord-hue) 5%, transparent);
-	--chord-bg-strong: color-mix(in hsl, var(--chord-hue) 15%, transparent);
+/* Selected notes in the pattern editor. */
+:root,
+:root[data-theme='dark'] {
+	--note-selected: #ce92ff;
 }
 
+:root[data-theme='light'] {
+	--note-selected: #9062b4;
+}
+
+/* Chord cards. Each card points --chord-tone-N at its note's
+   scale, then the role tokens below pick steps from it. */
 [data-chord-color='c'] {
-	--chord-hue: var(--palette-green-900);
-	--chord-border: var(--palette-green-950);
-	--chord-root: var(--palette-green-800);
-	--chord-suffix: var(--palette-green-500);
+	--chord-tone-0: var(--color-note-c-0);
+	--chord-tone-1: var(--color-note-c-1);
+	--chord-tone-2: var(--color-note-c-2);
+	--chord-tone-3: var(--color-note-c-3);
+	--chord-tone-4: var(--color-note-c-4);
+	--chord-tone-5: var(--color-note-c-5);
+	--chord-tone-6: var(--color-note-c-6);
+	--chord-tone-7: var(--color-note-c-7);
+	--chord-tone-8: var(--color-note-c-8);
+	--chord-tone-9: var(--color-note-c-9);
 }
 
 [data-chord-color='c-sharp'] {
-	--chord-hue: var(--palette-pink-900);
-	--chord-border: var(--palette-pink-950);
-	--chord-root: var(--palette-pink-800);
-	--chord-suffix: var(--palette-pink-500);
+	--chord-tone-0: var(--color-note-c-sharp-0);
+	--chord-tone-1: var(--color-note-c-sharp-1);
+	--chord-tone-2: var(--color-note-c-sharp-2);
+	--chord-tone-3: var(--color-note-c-sharp-3);
+	--chord-tone-4: var(--color-note-c-sharp-4);
+	--chord-tone-5: var(--color-note-c-sharp-5);
+	--chord-tone-6: var(--color-note-c-sharp-6);
+	--chord-tone-7: var(--color-note-c-sharp-7);
+	--chord-tone-8: var(--color-note-c-sharp-8);
+	--chord-tone-9: var(--color-note-c-sharp-9);
 }
 
 [data-chord-color='d'] {
-	--chord-hue: var(--palette-purple-800);
-	--chord-border: var(--palette-purple-950);
-	--chord-root: var(--palette-purple-800);
-	--chord-suffix: var(--palette-purple-500);
+	--chord-tone-0: var(--color-note-d-0);
+	--chord-tone-1: var(--color-note-d-1);
+	--chord-tone-2: var(--color-note-d-2);
+	--chord-tone-3: var(--color-note-d-3);
+	--chord-tone-4: var(--color-note-d-4);
+	--chord-tone-5: var(--color-note-d-5);
+	--chord-tone-6: var(--color-note-d-6);
+	--chord-tone-7: var(--color-note-d-7);
+	--chord-tone-8: var(--color-note-d-8);
+	--chord-tone-9: var(--color-note-d-9);
 }
 
 [data-chord-color='d-sharp'] {
-	--chord-hue: var(--palette-red-900);
-	--chord-border: var(--palette-red-950);
-	--chord-root: var(--palette-red-800);
-	--chord-suffix: var(--palette-red-500);
+	--chord-tone-0: var(--color-note-d-sharp-0);
+	--chord-tone-1: var(--color-note-d-sharp-1);
+	--chord-tone-2: var(--color-note-d-sharp-2);
+	--chord-tone-3: var(--color-note-d-sharp-3);
+	--chord-tone-4: var(--color-note-d-sharp-4);
+	--chord-tone-5: var(--color-note-d-sharp-5);
+	--chord-tone-6: var(--color-note-d-sharp-6);
+	--chord-tone-7: var(--color-note-d-sharp-7);
+	--chord-tone-8: var(--color-note-d-sharp-8);
+	--chord-tone-9: var(--color-note-d-sharp-9);
 }
 
 [data-chord-color='e'] {
-	--chord-hue: var(--palette-yellow-600);
-	--chord-border: var(--palette-yellow-950);
-	--chord-root: var(--palette-yellow-800);
-	--chord-suffix: var(--palette-yellow-500);
+	--chord-tone-0: var(--color-note-e-0);
+	--chord-tone-1: var(--color-note-e-1);
+	--chord-tone-2: var(--color-note-e-2);
+	--chord-tone-3: var(--color-note-e-3);
+	--chord-tone-4: var(--color-note-e-4);
+	--chord-tone-5: var(--color-note-e-5);
+	--chord-tone-6: var(--color-note-e-6);
+	--chord-tone-7: var(--color-note-e-7);
+	--chord-tone-8: var(--color-note-e-8);
+	--chord-tone-9: var(--color-note-e-9);
 }
 
 [data-chord-color='f'] {
-	--chord-hue: var(--palette-purple-900);
-	--chord-border: var(--palette-purple-950);
-	--chord-root: var(--palette-purple-800);
-	--chord-suffix: var(--palette-purple-500);
+	--chord-tone-0: var(--color-note-f-0);
+	--chord-tone-1: var(--color-note-f-1);
+	--chord-tone-2: var(--color-note-f-2);
+	--chord-tone-3: var(--color-note-f-3);
+	--chord-tone-4: var(--color-note-f-4);
+	--chord-tone-5: var(--color-note-f-5);
+	--chord-tone-6: var(--color-note-f-6);
+	--chord-tone-7: var(--color-note-f-7);
+	--chord-tone-8: var(--color-note-f-8);
+	--chord-tone-9: var(--color-note-f-9);
 }
 
 [data-chord-color='f-sharp'] {
-	--chord-hue: var(--palette-orange-700);
-	--chord-border: var(--palette-orange-950);
-	--chord-root: var(--palette-orange-800);
-	--chord-suffix: var(--palette-orange-500);
+	--chord-tone-0: var(--color-note-f-sharp-0);
+	--chord-tone-1: var(--color-note-f-sharp-1);
+	--chord-tone-2: var(--color-note-f-sharp-2);
+	--chord-tone-3: var(--color-note-f-sharp-3);
+	--chord-tone-4: var(--color-note-f-sharp-4);
+	--chord-tone-5: var(--color-note-f-sharp-5);
+	--chord-tone-6: var(--color-note-f-sharp-6);
+	--chord-tone-7: var(--color-note-f-sharp-7);
+	--chord-tone-8: var(--color-note-f-sharp-8);
+	--chord-tone-9: var(--color-note-f-sharp-9);
 }
 
 [data-chord-color='g'] {
-	--chord-hue: var(--palette-pink-800);
-	--chord-border: var(--palette-pink-950);
-	--chord-root: var(--palette-pink-800);
-	--chord-suffix: var(--palette-pink-500);
+	--chord-tone-0: var(--color-note-g-0);
+	--chord-tone-1: var(--color-note-g-1);
+	--chord-tone-2: var(--color-note-g-2);
+	--chord-tone-3: var(--color-note-g-3);
+	--chord-tone-4: var(--color-note-g-4);
+	--chord-tone-5: var(--color-note-g-5);
+	--chord-tone-6: var(--color-note-g-6);
+	--chord-tone-7: var(--color-note-g-7);
+	--chord-tone-8: var(--color-note-g-8);
+	--chord-tone-9: var(--color-note-g-9);
 }
 
 [data-chord-color='g-sharp'] {
-	--chord-hue: var(--palette-red-800);
-	--chord-border: var(--palette-red-950);
-	--chord-root: var(--palette-red-800);
-	--chord-suffix: var(--palette-red-500);
+	--chord-tone-0: var(--color-note-g-sharp-0);
+	--chord-tone-1: var(--color-note-g-sharp-1);
+	--chord-tone-2: var(--color-note-g-sharp-2);
+	--chord-tone-3: var(--color-note-g-sharp-3);
+	--chord-tone-4: var(--color-note-g-sharp-4);
+	--chord-tone-5: var(--color-note-g-sharp-5);
+	--chord-tone-6: var(--color-note-g-sharp-6);
+	--chord-tone-7: var(--color-note-g-sharp-7);
+	--chord-tone-8: var(--color-note-g-sharp-8);
+	--chord-tone-9: var(--color-note-g-sharp-9);
 }
 
 [data-chord-color='a'] {
-	--chord-hue: var(--palette-orange-900);
-	--chord-border: var(--palette-orange-950);
-	--chord-root: var(--palette-orange-800);
-	--chord-suffix: var(--palette-orange-500);
+	--chord-tone-0: var(--color-note-a-0);
+	--chord-tone-1: var(--color-note-a-1);
+	--chord-tone-2: var(--color-note-a-2);
+	--chord-tone-3: var(--color-note-a-3);
+	--chord-tone-4: var(--color-note-a-4);
+	--chord-tone-5: var(--color-note-a-5);
+	--chord-tone-6: var(--color-note-a-6);
+	--chord-tone-7: var(--color-note-a-7);
+	--chord-tone-8: var(--color-note-a-8);
+	--chord-tone-9: var(--color-note-a-9);
 }
 
 [data-chord-color='a-sharp'] {
-	--chord-hue: var(--palette-yellow-900);
-	--chord-border: var(--palette-yellow-950);
-	--chord-root: var(--palette-yellow-800);
-	--chord-suffix: var(--palette-yellow-500);
+	--chord-tone-0: var(--color-note-a-sharp-0);
+	--chord-tone-1: var(--color-note-a-sharp-1);
+	--chord-tone-2: var(--color-note-a-sharp-2);
+	--chord-tone-3: var(--color-note-a-sharp-3);
+	--chord-tone-4: var(--color-note-a-sharp-4);
+	--chord-tone-5: var(--color-note-a-sharp-5);
+	--chord-tone-6: var(--color-note-a-sharp-6);
+	--chord-tone-7: var(--color-note-a-sharp-7);
+	--chord-tone-8: var(--color-note-a-sharp-8);
+	--chord-tone-9: var(--color-note-a-sharp-9);
 }
 
 [data-chord-color='b'] {
-	--chord-hue: var(--palette-pink-800);
-	--chord-border: var(--palette-pink-950);
-	--chord-root: var(--palette-pink-800);
-	--chord-suffix: var(--palette-pink-500);
+	--chord-tone-0: var(--color-note-b-0);
+	--chord-tone-1: var(--color-note-b-1);
+	--chord-tone-2: var(--color-note-b-2);
+	--chord-tone-3: var(--color-note-b-3);
+	--chord-tone-4: var(--color-note-b-4);
+	--chord-tone-5: var(--color-note-b-5);
+	--chord-tone-6: var(--color-note-b-6);
+	--chord-tone-7: var(--color-note-b-7);
+	--chord-tone-8: var(--color-note-b-8);
+	--chord-tone-9: var(--color-note-b-9);
 }
 
-:root[data-theme='light'] [data-chord-color='c'] {
-	--chord-border: var(--palette-green-50);
-	--chord-root: var(--palette-green-200);
-	--chord-suffix: var(--palette-green-500);
+/* Roles, dark theme. Fills are the mid tone mixed into
+   transparent, so Zest's surfaces and grid lines show through.
+   The suffix leans toward Zest's muted text. */
+[data-chord-color] {
+	--chord-bg: color-mix(in oklab, var(--chord-tone-4) 7%, transparent);
+	--chord-bg-hover: color-mix(in oklab, var(--chord-tone-4) 12%, transparent);
+	--chord-bg-strong: color-mix(in oklab, var(--chord-tone-4) 16%, transparent);
+	--chord-bg-strong-hover: color-mix(in oklab, var(--chord-tone-4) 22%, transparent);
+	--chord-border: var(--chord-tone-2);
+	--chord-border-hover: var(--chord-tone-5);
+	--chord-root: var(--chord-tone-6);
+	--chord-suffix: color-mix(in oklab, var(--chord-tone-5) 65%, var(--muted-foreground));
 }
 
-:root[data-theme='light'] [data-chord-color='c-sharp'] {
-	--chord-border: var(--palette-pink-50);
-	--chord-root: var(--palette-pink-200);
-	--chord-suffix: var(--palette-pink-500);
-}
-
-:root[data-theme='light'] [data-chord-color='d'] {
-	--chord-border: var(--palette-purple-50);
-	--chord-root: var(--palette-purple-200);
-	--chord-suffix: var(--palette-purple-500);
-}
-
-:root[data-theme='light'] [data-chord-color='d-sharp'] {
-	--chord-border: var(--palette-red-50);
-	--chord-root: var(--palette-red-200);
-	--chord-suffix: var(--palette-red-500);
-}
-
-:root[data-theme='light'] [data-chord-color='e'] {
-	--chord-border: var(--palette-yellow-50);
-	--chord-root: var(--palette-yellow-200);
-	--chord-suffix: var(--palette-yellow-500);
-}
-
-:root[data-theme='light'] [data-chord-color='f'] {
-	--chord-border: var(--palette-purple-50);
-	--chord-root: var(--palette-purple-200);
-	--chord-suffix: var(--palette-purple-500);
-}
-
-:root[data-theme='light'] [data-chord-color='f-sharp'] {
-	--chord-border: var(--palette-orange-50);
-	--chord-root: var(--palette-orange-200);
-	--chord-suffix: var(--palette-orange-500);
-}
-
-:root[data-theme='light'] [data-chord-color='g'] {
-	--chord-border: var(--palette-pink-50);
-	--chord-root: var(--palette-pink-200);
-	--chord-suffix: var(--palette-pink-500);
-}
-
-:root[data-theme='light'] [data-chord-color='g-sharp'] {
-	--chord-border: var(--palette-red-50);
-	--chord-root: var(--palette-red-200);
-	--chord-suffix: var(--palette-red-500);
-}
-
-:root[data-theme='light'] [data-chord-color='a'] {
-	--chord-border: var(--palette-orange-50);
-	--chord-root: var(--palette-orange-200);
-	--chord-suffix: var(--palette-orange-500);
-}
-
-:root[data-theme='light'] [data-chord-color='a-sharp'] {
-	--chord-border: var(--palette-yellow-50);
-	--chord-root: var(--palette-yellow-200);
-	--chord-suffix: var(--palette-yellow-500);
-}
-
-:root[data-theme='light'] [data-chord-color='b'] {
-	--chord-border: var(--palette-pink-50);
-	--chord-root: var(--palette-pink-200);
-	--chord-suffix: var(--palette-pink-500);
+/* Roles, light theme. Same steps, mirrored. */
+:root[data-theme='light'] [data-chord-color] {
+	--chord-bg: color-mix(in oklab, var(--chord-tone-4) 6%, transparent);
+	--chord-bg-hover: color-mix(in oklab, var(--chord-tone-4) 10%, transparent);
+	--chord-bg-strong: color-mix(in oklab, var(--chord-tone-4) 13%, transparent);
+	--chord-bg-strong-hover: color-mix(in oklab, var(--chord-tone-4) 19%, transparent);
+	--chord-border: var(--chord-tone-7);
+	--chord-border-hover: var(--chord-tone-4);
+	--chord-root: var(--chord-tone-3);
+	--chord-suffix: color-mix(in oklab, var(--chord-tone-4) 65%, var(--muted-foreground));
 }
