@@ -165,7 +165,8 @@
 
 	.progressionItem:hover,
 	.progressionItem.isSelected {
-		border-color: var(--chord-hue, var(--border));
+		background: var(--chord-bg-strong-hover, var(--color-neutral-2));
+		border-color: var(--chord-border-hover, var(--border));
 	}
 
 	.progressionItem.isSelected {
