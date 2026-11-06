@@ -127,6 +127,7 @@ const projectFromRow = (row: ProjectRowT): ProjectT => {
 	const project = {
 		...rest,
 		isPublic: Boolean(rest.isPublic),
+		doesPatternResetOnChordChange: Boolean(rest.doesPatternResetOnChordChange),
 		octave: String(rest.octave),
 		progressionChords: parseJson(rest.progressionChords, []),
 		chordSymbols: parseJson(rest.chordSymbols, []),
@@ -255,6 +256,17 @@ const int = (value: unknown, fallback: number): number => {
 	return Number.isFinite(number) ? Math.round(number) : fallback
 }
 
+// Pattern length is a number of bars from 1/16 up to 16, in steps of 1/16.
+const MIN_PATTERN_BARS = 1 / 16
+const MAX_PATTERN_BARS = 16
+
+const patternBars = (value: unknown, fallback: number): number => {
+	const number = Number(value)
+	if (!Number.isFinite(number)) return fallback
+	const inSixteenths = Math.round(number * 16) / 16
+	return Math.min(MAX_PATTERN_BARS, Math.max(MIN_PATTERN_BARS, inSixteenths))
+}
+
 const jsonText = (value: unknown, fallback: unknown): string | null => {
 	const output = JSON.stringify(value ?? fallback)
 	return output.length <= MAX_JSON_CHARS ? output : null
@@ -292,7 +304,8 @@ export const saveProject = async (db: D1Database, userId: string, input: Partial
 		chordSymbols,
 		patternSignals,
 		patternSignalRows,
-		int(input.patternDurationBars, 1),
+		patternBars(input.patternDurationBars, 1),
+		input.doesPatternResetOnChordChange ? 1 : 0,
 		int(input.patternZoomLevel, 32),
 		int(input.progressionZoomLevel, 82),
 		Number.isNaN(Date.parse(createdAt)) ? stamp : createdAt,
@@ -301,7 +314,7 @@ export const saveProject = async (db: D1Database, userId: string, input: Partial
 
 	const sql = `INSERT INTO projects (id, title, description, userId, isPublic, key, scale, octave, bpm, minVelocity, maxVelocity,
 			progressionChords, progressionDurationBars, chordSymbols, patternSignals, patternSignalRows,
-			patternDurationBars, patternZoomLevel, progressionZoomLevel, createdAt, updatedAt)
+			patternDurationBars, doesPatternResetOnChordChange, patternZoomLevel, progressionZoomLevel, createdAt, updatedAt)
 		VALUES (${values.map(() => '?').join(', ')})
 		ON CONFLICT (id) DO UPDATE SET
 			title = excluded.title, description = excluded.description, isPublic = excluded.isPublic,
@@ -310,6 +323,7 @@ export const saveProject = async (db: D1Database, userId: string, input: Partial
 			progressionChords = excluded.progressionChords, progressionDurationBars = excluded.progressionDurationBars,
 			chordSymbols = excluded.chordSymbols, patternSignals = excluded.patternSignals,
 			patternSignalRows = excluded.patternSignalRows, patternDurationBars = excluded.patternDurationBars,
+			doesPatternResetOnChordChange = excluded.doesPatternResetOnChordChange,
 			patternZoomLevel = excluded.patternZoomLevel, progressionZoomLevel = excluded.progressionZoomLevel,
 			updatedAt = excluded.updatedAt
 		WHERE projects.userId = excluded.userId`

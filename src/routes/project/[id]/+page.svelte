@@ -102,6 +102,7 @@
 			patternSignals: patternActiveSignals,
 			patternSignalRows: project.patternSignalRows,
 			patternDurationBars: patternActiveDurationBeats / 4,
+			doesPatternResetOnChordChange: project.doesPatternResetOnChordChange,
 			minVelocity: project.minVelocity,
 			maxVelocity: project.maxVelocity
 		})

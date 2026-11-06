@@ -125,6 +125,7 @@ export const exportPerformanceAsMidi = (project: ProjectT) => {
     signalRows: project.patternSignalRows,
     patternLengthBeats,
     progressionLengthBeats,
+    doesPatternResetOnChordChange: project.doesPatternResetOnChordChange,
     octave: project.octave,
     minVelocity: project.minVelocity,
     maxVelocity: project.maxVelocity

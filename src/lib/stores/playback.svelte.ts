@@ -17,6 +17,7 @@ type PerformProjectArgsT = {
 	patternSignals: SignalT[]
 	patternSignalRows: SignalRowsT
 	patternDurationBars: number
+	doesPatternResetOnChordChange?: boolean
 	minVelocity: number
 	maxVelocity: number
 }
@@ -280,6 +281,7 @@ class PlaybackStore {
 			signalRows: project.patternSignalRows,
 			patternLengthBeats,
 			progressionLengthBeats,
+			doesPatternResetOnChordChange: project.doesPatternResetOnChordChange,
 			octave: project.octave,
 			minVelocity: project.minVelocity,
 			maxVelocity: project.maxVelocity
@@ -322,6 +324,7 @@ class PlaybackStore {
 			signalRows: project.patternSignalRows,
 			patternLengthBeats,
 			progressionLengthBeats,
+			doesPatternResetOnChordChange: project.doesPatternResetOnChordChange,
 			octave: project.octave,
 			minVelocity: project.minVelocity,
 			maxVelocity: project.maxVelocity

@@ -9,6 +9,9 @@ type GeneratePerformanceArgsT = {
   signalRows: SignalRowsT
   patternLengthBeats: number
   progressionLengthBeats: number
+  // Restart the pattern at the start of every chord instead of letting
+  // it run on through chord changes.
+  doesPatternResetOnChordChange?: boolean
   octave: string
   minVelocity?: number
   maxVelocity?: number
@@ -86,6 +89,8 @@ export const generatePerformance = (args: GeneratePerformanceArgsT): Performance
   const hasNoProgressionLength = args.progressionLengthBeats <= 0
   if (hasNoProgressionLength) return performanceNotes
 
+  if (args.doesPatternResetOnChordChange) return generateResettingPerformance(args)
+
   // Calculate how many times the pattern tiles across the progression
   const numberOfPatternRepeats = Math.ceil(args.progressionLengthBeats / args.patternLengthBeats)
 
@@ -144,4 +149,105 @@ export const generatePerformance = (args: GeneratePerformanceArgsT): Performance
 
   const sortedNotes = performanceNotes.sort((noteA, noteB) => noteA.startTime - noteB.startTime)
   return sortedNotes
+}
+
+
+type ChordSegmentT = {
+  item: ProgressionItemT
+  start: number
+  end: number
+}
+
+// Chords and rests laid end to end. Start times come from the
+// durations, so this does not depend on startTime being filled in.
+const getChordSegments = (chords: ProgressionItemT[]): ChordSegmentT[] => {
+  const segments: ChordSegmentT[] = []
+  let segmentStart = 0
+
+  for (const item of chords) {
+    const segmentEnd = segmentStart + item.durationBeats
+    segments.push({ item, start: segmentStart, end: segmentEnd })
+    segmentStart = segmentEnd
+  }
+
+  return segments
+}
+
+// The pattern starts over at every chord. Inside a chord it repeats
+// for as long as the chord lasts. Notes are cut off at the chord's end.
+const generateResettingPerformance = (args: GeneratePerformanceArgsT): PerformanceNoteT[] => {
+  const performanceNotes: PerformanceNoteT[] = []
+  const segments = getChordSegments(args.chords)
+
+  segments.forEach((segment, segmentIndex) => {
+    const isRest = segment.item.type !== 'chord'
+    if (isRest) return
+
+    const chord = segment.item as ProgressionChordT
+    const chordNotes = chordToNotes({ chord, rootOctave: args.octave })
+    const chordLengthBeats = segment.end - segment.start
+    const numberOfRepeats = Math.ceil(chordLengthBeats / args.patternLengthBeats)
+
+    for (let repeatIndex = 0; repeatIndex < numberOfRepeats; repeatIndex++) {
+      const repeatStart = segment.start + repeatIndex * args.patternLengthBeats
+
+      args.signals.forEach((signal) => {
+        const isSignalOutsidePattern = signal.startTime >= args.patternLengthBeats
+        if (isSignalOutsidePattern) return
+
+        const signalRow = getSignalRowById({ signalRows: args.signalRows, signalId: signal.id })
+        if (!signalRow) return
+
+        const absoluteStartTime = repeatStart + signal.startTime
+        const isSignalAfterChord = absoluteStartTime >= segment.end
+        if (isSignalAfterChord) return
+
+        const absoluteEndTime = absoluteStartTime + signal.duration
+        const clippedEndTime = Math.min(absoluteEndTime, segment.end)
+        const effectiveDuration = clippedEndTime - absoluteStartTime
+        const isNoDuration = effectiveDuration <= 0
+        if (isNoDuration) return
+
+        const note = mapSignalToNote({ signal, chord, signalRow, chordNotes })
+        if (!note) return
+
+        const minVelocity = args.minVelocity ?? 70
+        const maxVelocity = args.maxVelocity ?? 80
+
+        performanceNotes.push({
+          id: `${chord.id}-${signal.id}-${segmentIndex}-${repeatIndex}`,
+          note,
+          startTime: absoluteStartTime,
+          duration: effectiveDuration,
+          velocity: getRandomBetween({ min: minVelocity, max: maxVelocity }),
+          chordId: chord.id,
+          signalId: signal.id
+        })
+      })
+    }
+  })
+
+  return performanceNotes.sort((noteA, noteB) => noteA.startTime - noteB.startTime)
+}
+
+type GetPatternBeatArgsT = {
+  beat: number
+  patternLengthBeats: number
+  chords: ProgressionItemT[]
+  doesPatternResetOnChordChange: boolean
+}
+
+// Where in the pattern the playhead is, in beats, for a point in
+// the progression. Used to draw the playback cursor.
+export const getPatternBeat = (args: GetPatternBeatArgsT): number => {
+  if (args.patternLengthBeats <= 0) return 0
+
+  if (!args.doesPatternResetOnChordChange) return args.beat % args.patternLengthBeats
+
+  const segments = getChordSegments(args.chords)
+  const currentSegment = segments.find((segment) => args.beat >= segment.start && args.beat < segment.end)
+  if (!currentSegment) return args.beat % args.patternLengthBeats
+
+  const beatsIntoChord = args.beat - currentSegment.start
+  return beatsIntoChord % args.patternLengthBeats
 }
