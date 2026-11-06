@@ -22,6 +22,13 @@ type ProjectEditorContextT = {
   updatePatternSignal: (signalId: string, updates: Partial<SignalT>) => void
   removePatternSignal: (signalId: string) => void
   movePatternSignalToRow: (args: MoveSignalToRowOptionsT) => void
+  replacePattern: (pattern: {
+    patternSignals: SignalT[]
+    patternSignalRows: SignalRowsT
+    patternDurationBars: number
+  }) => void
+  undoPatternChange: () => boolean
+  redoPatternChange: () => boolean
   updateGridChordModifiers: (args: {
     chordId: string
     octaveOffset?: number
