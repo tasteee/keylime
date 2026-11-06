@@ -5,7 +5,7 @@
 	import ProgressionTimingMarkers from './ProgressionTimingMarkers.svelte'
 	import { Pause, MagnifyingGlassPlus, MagnifyingGlassMinus, ArrowRight } from 'phosphor-svelte'
 	import { isTypingInTextField } from '$lib/helpers/typing'
-	import { getContext } from 'svelte'
+	import { getContext, tick } from 'svelte'
 	import GENERAL_CONFIG from '$lib/constants/general.json'
 	import { getGridStepBeats, snapBeatToGrid } from '$lib/helpers/progressionGrid'
 
@@ -377,8 +377,42 @@
 		event.stopPropagation()
 	}
 
+	// A trackpad pinch arrives as a wheel event with ctrl held.
+	// Fingers apart (negative delta) zoom in, fingers together zoom out.
+	const PINCH_ZOOM_SENSITIVITY = 0.01
+	let fractionalZoomLevel = 0
+
+	const zoomWithPinch = async (event: WheelEvent) => {
+		if (!middleElement) return
+
+		const currentLevel = context.state.project.progressionZoomLevel
+		const isFractionalLevelCurrent = Math.round(fractionalZoomLevel) === currentLevel
+		const baseLevel = isFractionalLevelCurrent ? fractionalZoomLevel : currentLevel
+		const scale = Math.exp(-event.deltaY * PINCH_ZOOM_SENSITIVITY)
+		const scaledLevel = baseLevel * scale
+		fractionalZoomLevel = Math.min(MAX_PIXELS_PER_BEAT, Math.max(MIN_PIXELS_PER_BEAT, scaledLevel))
+
+		const nextLevel = Math.round(fractionalZoomLevel)
+		const hasLevelChanged = nextLevel !== currentLevel
+		if (!hasLevelChanged) return
+
+		// Keep the beat under the pointer where it was.
+		const pointerX = event.clientX - middleElement.getBoundingClientRect().left
+		const beatUnderPointer = (middleElement.scrollLeft + pointerX) / currentLevel
+		context.updateProject({ progressionZoomLevel: nextLevel })
+		await tick()
+		middleElement.scrollLeft = beatUnderPointer * nextLevel - pointerX
+	}
+
 	const handleWheel = (event: WheelEvent) => {
 		if (!middleElement) return
+
+		const isPinchZoom = event.ctrlKey || event.metaKey
+		if (isPinchZoom) {
+			event.preventDefault()
+			zoomWithPinch(event)
+			return
+		}
 
 		// A touchpad swipe is mostly horizontal. Leave it to the browser,
 		// which scrolls the area natively. Only a vertical wheel is redirected.

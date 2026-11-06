@@ -125,9 +125,10 @@ z-toggle-button-group-item > svg {
    Light theme: border 50, root 200, suffix 500.
    Dark theme mirrors it: border 950, root 800, suffix 500.
    Hue is the vivid tone shown on hover, selected, and playing.
-   The bg is that hue at 5% opacity. */
+   The bg is that hue at 5% opacity. Progression chords use 15%. */
 [data-chord-color] {
 	--chord-bg: color-mix(in hsl, var(--chord-hue) 5%, transparent);
+	--chord-bg-strong: color-mix(in hsl, var(--chord-hue) 15%, transparent);
 }
 
 [data-chord-color='c'] {

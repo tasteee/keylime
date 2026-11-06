@@ -8,9 +8,7 @@
 	import { createPatternEditor, type AuditionArgsT } from '$lib/midiGrid/editor'
 	import {
 		MAX_CELL_PIXELS,
-		MAX_ROW_HEIGHT,
 		MIN_CELL_PIXELS,
-		MIN_ROW_HEIGHT,
 		TICKS_PER_BEAT,
 		VELOCITY_LANE_HEIGHT
 	} from '$lib/midiGrid/constants'
@@ -166,25 +164,17 @@
 		editor.setView({ pxPerTick: zoomLevel / ticksPerCell })
 	})
 
-	// Row height is dragged on the row labels. It starts level with the cell width.
-	onMount(() => {
-		const startingRowHeight = clampNumber({ value: project.patternZoomLevel, min: MIN_ROW_HEIGHT, max: MAX_ROW_HEIGHT })
-		editor.setView({ rowHeight: startingRowHeight })
-	})
+	// Row height is only changed by dragging the row labels.
 
 	const handleCellPixelsChange = (cellPixels: number) => {
 		const patternZoomLevel = clampNumber({ value: cellPixels, min: MIN_CELL_PIXELS, max: MAX_CELL_PIXELS })
 		projectEditor.updateProject({ patternZoomLevel })
 	}
 
-	// The buttons and the wheel zoom both axes together.
+	// The buttons, pinch, and ctrl+wheel zoom time only.
 	const changeZoom = (direction: 1 | -1) => {
 		const step = direction * PATTERN_ZOOM_STEP
 		handleCellPixelsChange(project.patternZoomLevel + step)
-
-		const nextRowHeight = editor.getView().rowHeight + step
-		const rowHeight = clampNumber({ value: nextRowHeight, min: MIN_ROW_HEIGHT, max: MAX_ROW_HEIGHT })
-		editor.setView({ rowHeight })
 	}
 
 	const zoomInPattern = () => changeZoom(1)
