@@ -115,7 +115,7 @@
 		height: 3rem;
 		user-select: none;
 		background: var(--chord-bg, var(--color-neutral-1)) !important;
-		border-color: var(--chord-border, var(--border)) !important;
+		border-color: color-mix(in oklab, var(--chord-border, var(--border)), black 10%) !important;
 		transition:
 			background var(--motion-fast) var(--ease-enter),
 			border-color var(--motion-fast) var(--ease-enter);
