@@ -122,13 +122,17 @@ z-toggle-button-group-item > svg {
 }
 
 /* Chord cards. Each note wears one family.
-   Light theme: border 50, bg 100, root 200, suffix 500.
-   Dark theme mirrors it: border 950, bg 900, root 800, suffix 500.
-   Hue is the vivid tone shown on hover, selected, and playing. */
+   Light theme: border 50, root 200, suffix 500.
+   Dark theme mirrors it: border 950, root 800, suffix 500.
+   Hue is the vivid tone shown on hover, selected, and playing.
+   The bg is that hue at 5% opacity. */
+[data-chord-color] {
+	--chord-bg: color-mix(in hsl, var(--chord-hue) 5%, transparent);
+}
+
 [data-chord-color='c'] {
 	--chord-hue: var(--palette-green-900);
 	--chord-border: var(--palette-green-950);
-	--chord-bg: var(--palette-green-900);
 	--chord-root: var(--palette-green-800);
 	--chord-suffix: var(--palette-green-500);
 }
@@ -136,7 +140,6 @@ z-toggle-button-group-item > svg {
 [data-chord-color='c-sharp'] {
 	--chord-hue: var(--palette-pink-900);
 	--chord-border: var(--palette-pink-950);
-	--chord-bg: var(--palette-pink-900);
 	--chord-root: var(--palette-pink-800);
 	--chord-suffix: var(--palette-pink-500);
 }
@@ -144,7 +147,6 @@ z-toggle-button-group-item > svg {
 [data-chord-color='d'] {
 	--chord-hue: var(--palette-purple-800);
 	--chord-border: var(--palette-purple-950);
-	--chord-bg: var(--palette-purple-900);
 	--chord-root: var(--palette-purple-800);
 	--chord-suffix: var(--palette-purple-500);
 }
@@ -152,7 +154,6 @@ z-toggle-button-group-item > svg {
 [data-chord-color='d-sharp'] {
 	--chord-hue: var(--palette-red-900);
 	--chord-border: var(--palette-red-950);
-	--chord-bg: var(--palette-red-900);
 	--chord-root: var(--palette-red-800);
 	--chord-suffix: var(--palette-red-500);
 }
@@ -160,7 +161,6 @@ z-toggle-button-group-item > svg {
 [data-chord-color='e'] {
 	--chord-hue: var(--palette-yellow-600);
 	--chord-border: var(--palette-yellow-950);
-	--chord-bg: var(--palette-yellow-900);
 	--chord-root: var(--palette-yellow-800);
 	--chord-suffix: var(--palette-yellow-500);
 }
@@ -168,7 +168,6 @@ z-toggle-button-group-item > svg {
 [data-chord-color='f'] {
 	--chord-hue: var(--palette-purple-900);
 	--chord-border: var(--palette-purple-950);
-	--chord-bg: var(--palette-purple-900);
 	--chord-root: var(--palette-purple-800);
 	--chord-suffix: var(--palette-purple-500);
 }
@@ -176,7 +175,6 @@ z-toggle-button-group-item > svg {
 [data-chord-color='f-sharp'] {
 	--chord-hue: var(--palette-orange-700);
 	--chord-border: var(--palette-orange-950);
-	--chord-bg: var(--palette-orange-900);
 	--chord-root: var(--palette-orange-800);
 	--chord-suffix: var(--palette-orange-500);
 }
@@ -184,7 +182,6 @@ z-toggle-button-group-item > svg {
 [data-chord-color='g'] {
 	--chord-hue: var(--palette-pink-800);
 	--chord-border: var(--palette-pink-950);
-	--chord-bg: var(--palette-pink-900);
 	--chord-root: var(--palette-pink-800);
 	--chord-suffix: var(--palette-pink-500);
 }
@@ -192,7 +189,6 @@ z-toggle-button-group-item > svg {
 [data-chord-color='g-sharp'] {
 	--chord-hue: var(--palette-red-800);
 	--chord-border: var(--palette-red-950);
-	--chord-bg: var(--palette-red-900);
 	--chord-root: var(--palette-red-800);
 	--chord-suffix: var(--palette-red-500);
 }
@@ -200,7 +196,6 @@ z-toggle-button-group-item > svg {
 [data-chord-color='a'] {
 	--chord-hue: var(--palette-orange-900);
 	--chord-border: var(--palette-orange-950);
-	--chord-bg: var(--palette-orange-900);
 	--chord-root: var(--palette-orange-800);
 	--chord-suffix: var(--palette-orange-500);
 }
@@ -208,7 +203,6 @@ z-toggle-button-group-item > svg {
 [data-chord-color='a-sharp'] {
 	--chord-hue: var(--palette-yellow-900);
 	--chord-border: var(--palette-yellow-950);
-	--chord-bg: var(--palette-yellow-900);
 	--chord-root: var(--palette-yellow-800);
 	--chord-suffix: var(--palette-yellow-500);
 }
@@ -216,91 +210,78 @@ z-toggle-button-group-item > svg {
 [data-chord-color='b'] {
 	--chord-hue: var(--palette-pink-800);
 	--chord-border: var(--palette-pink-950);
-	--chord-bg: var(--palette-pink-900);
 	--chord-root: var(--palette-pink-800);
 	--chord-suffix: var(--palette-pink-500);
 }
 
 :root[data-theme='light'] [data-chord-color='c'] {
 	--chord-border: var(--palette-green-50);
-	--chord-bg: var(--palette-green-100);
 	--chord-root: var(--palette-green-200);
 	--chord-suffix: var(--palette-green-500);
 }
 
 :root[data-theme='light'] [data-chord-color='c-sharp'] {
 	--chord-border: var(--palette-pink-50);
-	--chord-bg: var(--palette-pink-100);
 	--chord-root: var(--palette-pink-200);
 	--chord-suffix: var(--palette-pink-500);
 }
 
 :root[data-theme='light'] [data-chord-color='d'] {
 	--chord-border: var(--palette-purple-50);
-	--chord-bg: var(--palette-purple-100);
 	--chord-root: var(--palette-purple-200);
 	--chord-suffix: var(--palette-purple-500);
 }
 
 :root[data-theme='light'] [data-chord-color='d-sharp'] {
 	--chord-border: var(--palette-red-50);
-	--chord-bg: var(--palette-red-100);
 	--chord-root: var(--palette-red-200);
 	--chord-suffix: var(--palette-red-500);
 }
 
 :root[data-theme='light'] [data-chord-color='e'] {
 	--chord-border: var(--palette-yellow-50);
-	--chord-bg: var(--palette-yellow-100);
 	--chord-root: var(--palette-yellow-200);
 	--chord-suffix: var(--palette-yellow-500);
 }
 
 :root[data-theme='light'] [data-chord-color='f'] {
 	--chord-border: var(--palette-purple-50);
-	--chord-bg: var(--palette-purple-100);
 	--chord-root: var(--palette-purple-200);
 	--chord-suffix: var(--palette-purple-500);
 }
 
 :root[data-theme='light'] [data-chord-color='f-sharp'] {
 	--chord-border: var(--palette-orange-50);
-	--chord-bg: var(--palette-orange-100);
 	--chord-root: var(--palette-orange-200);
 	--chord-suffix: var(--palette-orange-500);
 }
 
 :root[data-theme='light'] [data-chord-color='g'] {
 	--chord-border: var(--palette-pink-50);
-	--chord-bg: var(--palette-pink-100);
 	--chord-root: var(--palette-pink-200);
 	--chord-suffix: var(--palette-pink-500);
 }
 
 :root[data-theme='light'] [data-chord-color='g-sharp'] {
 	--chord-border: var(--palette-red-50);
-	--chord-bg: var(--palette-red-100);
 	--chord-root: var(--palette-red-200);
 	--chord-suffix: var(--palette-red-500);
 }
 
 :root[data-theme='light'] [data-chord-color='a'] {
 	--chord-border: var(--palette-orange-50);
-	--chord-bg: var(--palette-orange-100);
 	--chord-root: var(--palette-orange-200);
 	--chord-suffix: var(--palette-orange-500);
 }
 
 :root[data-theme='light'] [data-chord-color='a-sharp'] {
 	--chord-border: var(--palette-yellow-50);
-	--chord-bg: var(--palette-yellow-100);
 	--chord-root: var(--palette-yellow-200);
 	--chord-suffix: var(--palette-yellow-500);
 }
 
 :root[data-theme='light'] [data-chord-color='b'] {
 	--chord-border: var(--palette-pink-50);
-	--chord-bg: var(--palette-pink-100);
 	--chord-root: var(--palette-pink-200);
 	--chord-suffix: var(--palette-pink-500);
 }
