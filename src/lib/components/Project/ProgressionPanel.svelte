@@ -585,7 +585,7 @@
 	.mainProgressionPanel {
 		--progression-gutter: var(--spacing-3);
 		--progression-chord-height: 64px;
-		--progression-pad-top: calc(var(--spacing-6) + var(--progression-gutter));
+		--progression-pad-top: var(--spacing-6);
 		--progression-controls-height: 3rem;
 		--progression-controls-offset: var(--spacing-4);
 		--progression-controls-gap: 1rem;
