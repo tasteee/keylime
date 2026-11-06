@@ -409,6 +409,7 @@
 			patternSignals: patternActiveSignals,
 			patternSignalRows: context.state.project.patternSignalRows,
 			patternDurationBars: patternActiveDurationBeats / 4,
+			doesPatternResetOnChordChange: context.state.project.doesPatternResetOnChordChange,
 			minVelocity: context.state.project.minVelocity,
 			maxVelocity: context.state.project.maxVelocity
 		})

@@ -24,6 +24,7 @@
 			patternSignals: SignalT[]
 			patternSignalRows: SignalRowsT
 			patternDurationBars: number
+			doesPatternResetOnChordChange?: boolean
 			minVelocity: number
 			maxVelocity: number
 		}
@@ -82,6 +83,7 @@
 			patternSignals: props.project.patternSignals,
 			patternSignalRows: props.project.patternSignalRows,
 			patternDurationBars: props.project.patternDurationBars,
+			doesPatternResetOnChordChange: props.project.doesPatternResetOnChordChange,
 			minVelocity: props.project.minVelocity,
 			maxVelocity: props.project.maxVelocity
 		})

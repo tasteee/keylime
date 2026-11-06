@@ -155,6 +155,7 @@
 			patternSignals: [],
 			patternSignalRows: {},
 			patternDurationBars: 1,
+			doesPatternResetOnChordChange: false,
 			patternZoomLevel: 32,
 			progressionZoomLevel: 82,
 			createdAt: new Date(),

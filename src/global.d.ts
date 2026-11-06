@@ -97,7 +97,8 @@ type ProjectT = {
   chordSymbols: string[] // e.g., ['Cmaj7', 'Am7', ...] derived from progressionChords.
   patternSignals: SignalT[] // json... right? or array in supabase??
   patternSignalRows: SignalRowsT // json...
-  patternDurationBars: number
+  patternDurationBars: number // 1/16 (one cell) up to 16, in steps of 1/16
+  doesPatternResetOnChordChange?: boolean // restart the pattern at each chord
   patternZoomLevel: number // between 16 - 48, steps of 4. defai;t 32
   progressionZoomLevel: number // between 40 and 160, steps of 12, default 82
   createdAt: Date

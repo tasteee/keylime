@@ -8,6 +8,7 @@
 	import { createSignal } from '$lib/helpers/creators'
 	import { resolveSignalConflicts, getNoteFromSignalRow } from '$lib/helpers/signalRows'
 	import { chordToNotes } from '$lib/helpers/chordToNotes'
+	import { getPatternBeat } from '$lib/helpers/performance'
 	import { chordNotesToSignalRowNotes } from '$lib/helpers/chordNotesToSignalRowNotes'
 	import { numbers } from '$lib/helpers/numbers'
 	import playbackStore from '$lib/stores/playback.svelte'
@@ -86,6 +87,13 @@
 		const barsToBeats = context.state.project.patternDurationBars * 4
 		return barsToBeats
 	})
+
+	const doesPatternReset = $derived(Boolean(context.state.project.doesPatternResetOnChordChange))
+
+	const handleResetOnChordChange = (event: CustomEvent) => {
+		const isChecked: boolean = event.detail.checked
+		context.updateProject({ doesPatternResetOnChordChange: isChecked })
+	}
 
 	// Derive progressionItems with calculated startTime
 	const progressionItems = $derived.by(() => {
@@ -651,7 +659,12 @@
 		const patternDurationBeats = patternActiveDurationBeats
 		if (patternDurationBeats === 0) return
 
-		const loopedBeat = currentBeat % patternDurationBeats
+		const loopedBeat = getPatternBeat({
+			beat: currentBeat,
+			patternLengthBeats: patternDurationBeats,
+			chords: progressionItems,
+			doesPatternResetOnChordChange: doesPatternReset
+		})
 		const cellsPerBeat = CELLS_PER_BEAT
 		const x = loopedBeat * cellsPerBeat * context.state.project.patternZoomLevel
 		cursorElement.style.transform = `translateX(${x}px)`
@@ -680,7 +693,7 @@
 				<z-subheading size="md">Pattern</z-subheading>
 				<z-text size="xs" color="muted" class="patternBarCount">
 					{toFractionString(context.state.project.patternDurationBars)}
-					{context.state.project.patternDurationBars === 1 ? 'bar' : 'bars'}
+					{context.state.project.patternDurationBars <= 1 ? 'bar' : 'bars'}
 				</z-text>
 			</z-column>
 		</z-row>
@@ -695,6 +708,12 @@
 				<MagnifyingGlassPlus size={16} weight="bold" />
 			</z-button>
 		</z-button-group>
+
+		<z-separator isVertical></z-separator>
+
+		<z-tooltip content="Restart the pattern at the start of every chord" placement="bottom">
+			<z-switch size="sm" isChecked={doesPatternReset} onchange={handleResetOnChordChange}>Reset on chord change</z-switch>
+		</z-tooltip>
 	</z-row>
 	<z-separator></z-separator>
 

@@ -24,6 +24,7 @@ export const createNewProjectData = (userId: string, overrides: Partial<ProjectT
     minVelocity: overrides.minVelocity ?? 70,
     maxVelocity: overrides.maxVelocity ?? 80,
     patternDurationBars: overrides.patternDurationBars ?? 1,
+    doesPatternResetOnChordChange: overrides.doesPatternResetOnChordChange ?? false,
     isPublic: overrides.isPublic ?? false, // TODO: Once public, cant make private??? Or is that not ok?
     progressionDurationBars: overrides.progressionDurationBars ?? progressionDurationBars,
     progressionChords,
