@@ -33,46 +33,90 @@ z-toggle-button-group-item > svg {
 	--purple: var(--foreground);
 }
 
-/* Chord hues. One per scale degree, shared by the chord grid,
-   the progression, and anything else that shows a chord.
+/* Chord hues. One per note, shared by the chord grid, the
+   progression, and anything else that shows a chord.
+   Light notes are lighter tones, dark notes are deeper tones.
    Components tint with color-mix, so they stay flat in both themes. */
-:root {
-	--chord-purple: oklch(0.62 0.19 300);
-	--chord-pink: oklch(0.68 0.19 350);
-	--chord-red: oklch(0.63 0.21 25);
-	--chord-orange: oklch(0.72 0.17 55);
-	--chord-yellow: oklch(0.82 0.16 95);
-	--chord-green: oklch(0.68 0.17 150);
-	--chord-blue: oklch(0.64 0.17 250);
+:root,
+:root[data-theme='dark'] {
+	--chord-d: oklch(0.78 0.13 300);
+	--chord-d-sharp: oklch(0.56 0.2 300);
+	--chord-e: oklch(0.82 0.11 350);
+	--chord-f: oklch(0.62 0.21 350);
+	--chord-f-sharp: oklch(0.82 0.11 350);
+	--chord-g: oklch(0.56 0.21 25);
+	--chord-g-sharp: oklch(0.74 0.15 25);
+	--chord-a: oklch(0.64 0.18 55);
+	--chord-a-sharp: oklch(0.82 0.13 55);
+	--chord-b: oklch(0.74 0.15 95);
+	--chord-c: oklch(0.9 0.12 95);
+	--chord-c-sharp: oklch(0.56 0.16 150);
 
 	/* The live part of the pattern: the chosen duration. */
-	--active-accent: var(--chord-blue);
+	--active-accent: oklch(0.64 0.17 250);
 }
 
-[data-chord-color='purple'] {
-	--chord-hue: var(--chord-purple);
+:root[data-theme='light'] {
+	--chord-d: oklch(0.72 0.14 300);
+	--chord-d-sharp: oklch(0.46 0.2 300);
+	--chord-e: oklch(0.76 0.13 350);
+	--chord-f: oklch(0.52 0.21 350);
+	--chord-f-sharp: oklch(0.76 0.13 350);
+	--chord-g: oklch(0.48 0.2 25);
+	--chord-g-sharp: oklch(0.68 0.16 25);
+	--chord-a: oklch(0.56 0.16 55);
+	--chord-a-sharp: oklch(0.78 0.14 60);
+	--chord-b: oklch(0.64 0.14 95);
+	--chord-c: oklch(0.84 0.14 100);
+	--chord-c-sharp: oklch(0.46 0.14 150);
+
+	--active-accent: oklch(0.54 0.17 250);
 }
 
-[data-chord-color='pink'] {
-	--chord-hue: var(--chord-pink);
+[data-chord-color='c'] {
+	--chord-hue: var(--chord-c);
 }
 
-[data-chord-color='red'] {
-	--chord-hue: var(--chord-red);
+[data-chord-color='c-sharp'] {
+	--chord-hue: var(--chord-c-sharp);
 }
 
-[data-chord-color='orange'] {
-	--chord-hue: var(--chord-orange);
+[data-chord-color='d'] {
+	--chord-hue: var(--chord-d);
 }
 
-[data-chord-color='yellow'] {
-	--chord-hue: var(--chord-yellow);
+[data-chord-color='d-sharp'] {
+	--chord-hue: var(--chord-d-sharp);
 }
 
-[data-chord-color='green'] {
-	--chord-hue: var(--chord-green);
+[data-chord-color='e'] {
+	--chord-hue: var(--chord-e);
 }
 
-[data-chord-color='blue'] {
-	--chord-hue: var(--chord-blue);
+[data-chord-color='f'] {
+	--chord-hue: var(--chord-f);
+}
+
+[data-chord-color='f-sharp'] {
+	--chord-hue: var(--chord-f-sharp);
+}
+
+[data-chord-color='g'] {
+	--chord-hue: var(--chord-g);
+}
+
+[data-chord-color='g-sharp'] {
+	--chord-hue: var(--chord-g-sharp);
+}
+
+[data-chord-color='a'] {
+	--chord-hue: var(--chord-a);
+}
+
+[data-chord-color='a-sharp'] {
+	--chord-hue: var(--chord-a-sharp);
+}
+
+[data-chord-color='b'] {
+	--chord-hue: var(--chord-b);
 }

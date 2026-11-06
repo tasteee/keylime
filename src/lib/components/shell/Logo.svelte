@@ -4,6 +4,8 @@
 
 	type LogoPropsT = {
 		size?: 'sm' | 'md' | 'lg'
+		// Set false to show only the icon.
+		hasWordmark?: boolean
 	}
 
 	const props: LogoPropsT = $props()
@@ -11,12 +13,15 @@
 	const logoSize = $derived(props.size ?? 'md')
 	const iconSizeByLogoSize = { sm: 20, md: 24, lg: 32 }
 	const iconSize = $derived(iconSizeByLogoSize[logoSize])
+	const shouldShowWordmark = $derived(props.hasWordmark ?? true)
 	const homeHref = buildHref('/dashboard')
 </script>
 
 <a class="logo isSize{logoSize}" href={homeHref} aria-label="Keylime home">
 	<OrangeSlice size={iconSize} weight="fill" />
-	<span class="logoWordmark">KEYLIME</span>
+	{#if shouldShowWordmark}
+		<span class="logoWordmark">KEYLIME</span>
+	{/if}
 </a>
 
 <style>

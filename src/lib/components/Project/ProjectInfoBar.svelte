@@ -1,20 +1,14 @@
 <script lang="ts">
-	import { FloppyDisk, Gear, PencilSimple } from 'phosphor-svelte'
+	import { FloppyDisk } from 'phosphor-svelte'
 	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 	import { goToPath } from '$lib/modules/navigate'
 	import { awaited } from '$lib/modules/the-awaited'
-	import SelectBpm from './SelectBpm.svelte'
-	import SelectOctave from './SelectOctave.svelte'
-	import SelectKeyScale from './SelectKeyScale.svelte'
 	import ProjectPlayButton from './ProjectPlayButton.svelte'
 	import DownloadMenu from './DownloadMenu.svelte'
-	import DialogProjectSettings from './DialogProjectSettings.svelte'
 
 	const projectEditor = useProjectEditor()
-	const project = $derived(projectEditor.state.project)
 	const isDirty = $derived(projectEditor.state.isDirty)
 
-	let isSettingsOpen = $state(false)
 	let isSaving = $state(false)
 
 	const saveButtonTone = $derived(isDirty ? 'primary' : 'neutral')
@@ -24,14 +18,6 @@
 		{ value: 'save', label: 'Save', shortcut: '⌘S' },
 		{ value: 'clone', label: 'Clone & save' }
 	]
-
-	const openSettings = () => {
-		isSettingsOpen = true
-	}
-
-	const handleSettingsOpenChange = (open: boolean) => {
-		isSettingsOpen = open
-	}
 
 	const handleSave = async () => {
 		isSaving = true
@@ -67,30 +53,14 @@
 
 <z-column>
 	<z-row insetX="lg" insetY="sm" alignsX="between" alignsY="center" gap="lg" isFullWidth>
-		<z-row gap="sm" alignsY="center" class="projectTitleRow">
+		<z-row gap="sm" alignsY="center">
 			<ProjectPlayButton />
 			{#if isDirty}
 				<z-status-dot status="away" doesPulse label="Unsaved"></z-status-dot>
 			{/if}
-			<z-button kind="ghost" size="sm" onclick={openSettings} aria-label="Edit project settings">
-				<PencilSimple size={14} />
-				<span class="projectTitle">{project.title}</span>
-			</z-button>
 		</z-row>
 
 		<z-row gap="md" alignsY="center">
-			<SelectBpm />
-			<SelectOctave />
-			<SelectKeyScale />
-
-			<z-separator isVertical></z-separator>
-
-			<z-tooltip content="Project settings" placement="bottom">
-				<z-button kind="outline" size="sm" onclick={openSettings} aria-label="Project settings">
-					<Gear size={16} />
-				</z-button>
-			</z-tooltip>
-
 			<DownloadMenu />
 
 			<z-menu items={saveMenuItems} align="end" onselect={handleSaveMenuSelect}>
@@ -111,18 +81,3 @@
 	</z-row>
 	<z-separator></z-separator>
 </z-column>
-
-<DialogProjectSettings isOpen={isSettingsOpen} onOpenChange={handleSettingsOpenChange} {projectEditor} />
-
-<style>
-	.projectTitleRow {
-		min-width: 0;
-	}
-
-	.projectTitle {
-		max-width: 16rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-</style>

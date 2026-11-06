@@ -1,16 +1,37 @@
-export type ChordColorNameT = 'purple' | 'pink' | 'red' | 'orange' | 'yellow' | 'green' | 'blue'
+export type ChordColorNameT =
+	| 'c'
+	| 'c-sharp'
+	| 'd'
+	| 'd-sharp'
+	| 'e'
+	| 'f'
+	| 'f-sharp'
+	| 'g'
+	| 'g-sharp'
+	| 'a'
+	| 'a-sharp'
+	| 'b'
 
 type GetChordColorOptionsT = {
 	symbol: string
-	key: string
-	scale: string
 }
 
-// One color per scale degree, from the 1st to the 7th.
-const DEGREE_COLORS: ChordColorNameT[] = ['purple', 'pink', 'red', 'orange', 'yellow', 'green', 'blue']
-
-const MAJOR_SCALE_STEPS = [0, 2, 4, 5, 7, 9, 11]
-const MINOR_SCALE_STEPS = [0, 2, 3, 5, 7, 8, 10]
+// One color per chord root, indexed by pitch class (C = 0).
+// The color follows the note itself, not the scale degree.
+const COLOR_BY_PITCH_CLASS: ChordColorNameT[] = [
+	'c',
+	'c-sharp',
+	'd',
+	'd-sharp',
+	'e',
+	'f',
+	'f-sharp',
+	'g',
+	'g-sharp',
+	'a',
+	'a-sharp',
+	'b'
+]
 
 const PITCH_CLASS_BY_NOTE: Record<string, number> = {
 	C: 0,
@@ -38,21 +59,13 @@ const getRootName = (symbol: string): string | null => {
 	return rootMatch[0]
 }
 
-// Returns null for rests and for roots outside the key's scale.
+// Returns null for rests and for symbols with no valid root.
 export const getChordColor = (options: GetChordColorOptionsT): ChordColorNameT | null => {
 	const rootName = getRootName(options.symbol)
 	if (!rootName) return null
 
 	const rootPitchClass = PITCH_CLASS_BY_NOTE[rootName]
-	const keyPitchClass = PITCH_CLASS_BY_NOTE[options.key]
-	const hasUnknownNote = rootPitchClass === undefined || keyPitchClass === undefined
-	if (hasUnknownNote) return null
+	if (rootPitchClass === undefined) return null
 
-	const semitonesAboveKey = (rootPitchClass - keyPitchClass + 12) % 12
-	const isMinor = options.scale.toLowerCase() === 'minor'
-	const scaleSteps = isMinor ? MINOR_SCALE_STEPS : MAJOR_SCALE_STEPS
-	const degreeIndex = scaleSteps.indexOf(semitonesAboveKey)
-	if (degreeIndex === -1) return null
-
-	return DEGREE_COLORS[degreeIndex]
+	return COLOR_BY_PITCH_CLASS[rootPitchClass]
 }
