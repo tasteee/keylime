@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Minus, Plus, ArrowLeft, ArrowRight, Copy, Trash } from 'phosphor-svelte'
+	import { ArrowLeft, ArrowRight, Copy, Trash } from 'phosphor-svelte'
 	import { toFractionString } from '$lib/helpers/numbers'
 	import { getContext } from 'svelte'
 
@@ -33,7 +33,6 @@
 	const context = getContext<ProjectEditorContextT>('projectEditor')
 
 	const BEATS_PER_BAR = 4
-	const MIN_DURATION_BEATS = 1
 
 	// Derive progressionItems with calculated startTime
 	const progressionItems = $derived.by(() => {
@@ -51,15 +50,6 @@
 		const found = progressionItems.find((item) => item.id === selectedProgressionItemId)
 		return found ?? null
 	})
-
-	const adjustDuration = (delta: number) => {
-		if (!selectedItem) return
-		const newDuration = Math.max(MIN_DURATION_BEATS, selectedItem.durationBeats + delta * 0.5)
-		context.updateProgressionItem({
-			id: selectedItem.id,
-			durationBeats: newDuration
-		})
-	}
 
 	const moveItem = (direction: number) => {
 		if (!selectedItem) return
@@ -93,17 +83,6 @@
 	<div class="selectionControls">
 		<z-toolbar size="sm" aria-label="Selected item">
 			<z-text size="xs" weight={600} class="durationLabel">{durationLabel}</z-text>
-
-			<z-separator isVertical></z-separator>
-
-			<z-toolbar-group label="Duration">
-				<z-button kind="ghost" size="sm" onclick={() => adjustDuration(-1)} aria-label="Decrease duration">
-					<Minus size={16} />
-				</z-button>
-				<z-button kind="ghost" size="sm" onclick={() => adjustDuration(1)} aria-label="Increase duration">
-					<Plus size={16} />
-				</z-button>
-			</z-toolbar-group>
 
 			<z-separator isVertical></z-separator>
 

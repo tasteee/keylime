@@ -3,9 +3,24 @@
 		pixelsPerBeat: number
 		beatsPerBar: number
 		maxMarkerBars: number
+		gridStepBeats: number
 	}
 
-	const { pixelsPerBeat, beatsPerBar, maxMarkerBars }: ProgressionTimingMarkersPropsT = $props()
+	const { pixelsPerBeat, beatsPerBar, maxMarkerBars, gridStepBeats }: ProgressionTimingMarkersPropsT = $props()
+
+	// Grid lines inside one bar, after its first line.
+	const gridLines = $derived.by(() => {
+		const lines: { pixel: number; isBeat: boolean }[] = []
+		const lineCount = Math.round(beatsPerBar / gridStepBeats)
+
+		for (let lineIndex = 1; lineIndex < lineCount; lineIndex++) {
+			const beatOffset = lineIndex * gridStepBeats
+			const isBeat = Number.isInteger(beatOffset)
+			lines.push({ pixel: beatOffset * pixelsPerBeat, isBeat })
+		}
+
+		return lines
+	})
 
 	const markers = $derived.by(() => {
 		const markersList: { beat: number; pixel: number; label: string }[] = []
@@ -33,9 +48,8 @@
 	<div class="barMarker" style="left: {marker.pixel}px;">
 		<div class="barMarkerLine"></div>
 		<span class="barMarkerText">{marker.label}</span>
-		<!-- Render 3 beat lines within this bar (the 4th is the first line of next bar) -->
-		{#each [1, 2, 3] as beatOffset}
-			<div class="beatLine" style="left: {beatOffset * pixelsPerBeat}px;"></div>
+		{#each gridLines as line}
+			<div class="beatLine" class:isSubdivision={!line.isBeat} style="left: {line.pixel}px;"></div>
 		{/each}
 	</div>
 {/each}
@@ -67,6 +81,10 @@
 		height: 100%;
 		background-color: var(--color-neutral-5);
 		opacity: 0.2;
+	}
+
+	.beatLine.isSubdivision {
+		opacity: 0.1;
 	}
 
 	.barMarkerText {
