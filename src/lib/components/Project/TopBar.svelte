@@ -1,19 +1,25 @@
 <script lang="ts">
-	import TopBarShell from '../TopBarShell.svelte'
+	import { SquaresFour, MusicNotes } from 'phosphor-svelte'
+	import AppTopBar from '$lib/components/shell/AppTopBar.svelte'
 	import { useProjectEditor } from '$lib/modules/useProjectEditor'
-	import * as ToggleTabs from '$lib/components/ui/ToggleTabs'
 
 	const projectEditor = useProjectEditor()
 	const activeView = $derived(projectEditor.state.activeView)
 
-	const handleViewChange = (value: string) => {
-		projectEditor.state.activeView = value as 'chords' | 'pattern'
+	const handleViewPress = (view: 'chords' | 'pattern') => {
+		projectEditor.state.activeView = view
 	}
 </script>
 
-<TopBarShell>
-	<ToggleTabs.Root value={activeView} size="small" onChange={handleViewChange}>
-		<ToggleTabs.Option value="chords" iconName="mingcute:grid-line" iconClass="mr-2 size-4">Chords</ToggleTabs.Option>
-		<ToggleTabs.Option value="pattern" iconName="mingcute:music-2-line" iconClass="mr-2 size-4">Pattern</ToggleTabs.Option>
-	</ToggleTabs.Root>
-</TopBarShell>
+<AppTopBar hasNavigation={false}>
+	<z-toggle-button-group size="sm" kind="outline" aria-label="Editor view">
+		<z-toggle-button-group-item value="chords" isPressed={activeView === 'chords'} onpress={() => handleViewPress('chords')}>
+			<SquaresFour size={16} />
+			Chords
+		</z-toggle-button-group-item>
+		<z-toggle-button-group-item value="pattern" isPressed={activeView === 'pattern'} onpress={() => handleViewPress('pattern')}>
+			<MusicNotes size={16} />
+			Pattern
+		</z-toggle-button-group-item>
+	</z-toggle-button-group>
+</AppTopBar>

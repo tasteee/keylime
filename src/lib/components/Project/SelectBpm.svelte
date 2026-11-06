@@ -1,30 +1,24 @@
 <script lang="ts">
-	import { InputNumberButton } from '$lib/components/ui/input-number-button/index.js'
 	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 
 	const projectEditor = useProjectEditor()
+	const bpm = $derived(projectEditor.state.project.bpm)
 
-	let value = $state(projectEditor.state.project.bpm)
-
-	// Sync with project state
-	$effect(() => {
-		value = projectEditor.state.project.bpm
-	})
-
-	const handleBpmCommit = (newBpm: number) => {
-		projectEditor.updateProject({ bpm: newBpm })
+	const handleBpmChange = (event: CustomEvent) => {
+		const nextBpm: number = event.detail.value
+		projectEditor.updateProject({ bpm: nextBpm })
 	}
 </script>
 
-<InputNumberButton
-	bind:value
-	min={20}
-	max={300}
-	step={1}
-	inputWidth="48px"
-	label="BPM"
-	size="small"
-	kind="solid"
-	color="neutral"
-	oncommit={handleBpmCommit}
-/>
+<z-row gap="xs" alignsY="center">
+	<z-text size="xs" color="muted" weight={600} class="controlLabel">BPM</z-text>
+	<z-number-input value={bpm} min={20} max={300} step={1} size="sm" label="BPM" hasStepperButtons isInline onchange={handleBpmChange}
+	></z-number-input>
+</z-row>
+
+<style>
+	.controlLabel {
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+</style>

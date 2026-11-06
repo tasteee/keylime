@@ -1,52 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { buildHref } from '$lib/modules/navigate'
+	import { goToPath } from '$lib/modules/navigate'
 
 	const status = $page.status
 	const message = $page.error?.message || 'An error occurred'
+
+	const handleReturnToDashboard = () => {
+		goToPath('/dashboard')
+	}
 </script>
 
-<div class="errorContainer">
-	<h1>{status}</h1>
-	<p>{message}</p>
-	<a href={buildHref('/dashboard')}>Return to Dashboard</a>
-</div>
-
-<style>
-	.errorContainer {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		min-height: 100vh;
-		padding: 2rem;
-		text-align: center;
-		gap: 1rem;
-	}
-
-	h1 {
-		font-size: 4rem;
-		font-weight: bold;
-		margin: 0;
-	}
-
-	p {
-		font-size: 1.25rem;
-		margin: 0;
-		opacity: 0.8;
-	}
-
-	a {
-		margin-top: 1rem;
-		padding: 0.75rem 1.5rem;
-		background: var(--accent-color, #4a90e2);
-		color: white;
-		text-decoration: none;
-		border-radius: 0.5rem;
-		transition: opacity 0.2s;
-	}
-
-	a:hover {
-		opacity: 0.9;
-	}
-</style>
+<z-center doesCenterBoth minHeight="100vh" inset="lg">
+	<z-column gap="md" alignsX="center">
+		<z-display size="sm">{status}</z-display>
+		<z-text size="lg" color="muted">{message}</z-text>
+		<z-button tone="primary" onclick={handleReturnToDashboard}>Return to dashboard</z-button>
+	</z-column>
+</z-center>

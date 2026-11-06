@@ -1,12 +1,10 @@
 import devtoolsJson from 'vite-plugin-devtools-json';
-import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
 // import { svelteKitDecorators } from 'vite-plugin-sveltekit-decorators';
 
 export default defineConfig({
   plugins: [
-    tailwindcss(),
     // svelteKitDecorators({
     //   enabled: true,
     //   debug: false

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import INSTRUMENTS_CONFIG from '../../constants/instruments.json'
-	import * as Select from '$lib/components/ui/select/index.js'
+	import SelectControl from './SelectControl.svelte'
 	import output from '../../stores/output.svelte'
 	import { onMount } from 'svelte'
 	import { browser } from '$app/environment'
@@ -13,6 +12,8 @@
 
 	let devices = $state<MidiDeviceT[]>([])
 
+	const deviceOptions = $derived(devices.map((device) => ({ value: device.name, label: device.name })))
+
 	const handleSelect = (value: string) => {
 		output.midiDeviceName = value
 	}
@@ -22,23 +23,15 @@
 
 		WebMidi.enable()
 			.then(() => {
-				WebMidi.outputs.forEach((output) => {
-					devices.push({ name: output.name, id: output.id })
+				WebMidi.outputs.forEach((midiOutput) => {
+					devices.push({ name: midiOutput.name, id: midiOutput.id })
 				})
 
-				if (devices.length > 0 && !output.midiDeviceName) {
-					output.midiDeviceName = devices[0].name
-				}
+				const hasDevices = devices.length > 0
+				if (hasDevices && !output.midiDeviceName) output.midiDeviceName = devices[0].name
 			})
-			.catch((err) => console.error('Could not enable WebMIDI:', err))
+			.catch((error) => console.error('Could not enable WebMIDI:', error))
 	})
 </script>
 
-<Select.Root type="single" onValueChange={handleSelect} value={output.midiDeviceName}>
-	<Select.Trigger size="small" label="Device" value={output.midiDeviceName || 'Select Device'} />
-	<Select.Content>
-		{#each devices as device}
-			<Select.Item value={device.name}>{device.name}</Select.Item>
-		{/each}
-	</Select.Content>
-</Select.Root>
+<SelectControl label="Device" value={output.midiDeviceName} options={deviceOptions} onValueChange={handleSelect} />

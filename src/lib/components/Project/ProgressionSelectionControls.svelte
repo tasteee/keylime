@@ -1,8 +1,6 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte'
-	import { Button } from '$lib/components/ui/button'
+	import { Minus, Plus, ArrowLeft, ArrowRight, Copy, Trash } from 'phosphor-svelte'
 	import { toFractionString } from '$lib/helpers/numbers'
-	import SheDivider from '$lib/components/ui/divider.svelte'
 	import { getContext } from 'svelte'
 
 	type ProjectEditorContextT = {
@@ -54,13 +52,6 @@
 		return found ?? null
 	})
 
-	const selectedTypeText = $derived.by(() => {
-		if (!selectedItem) return ''
-		if (selectedItem.type === 'rest') return 'Rest'
-		if (selectedItem.type === 'chord') return 'Chord'
-		return ''
-	})
-
 	const adjustDuration = (delta: number) => {
 		if (!selectedItem) return
 		const newDuration = Math.max(MIN_DURATION_BEATS, selectedItem.durationBeats + delta * 0.5)
@@ -84,6 +75,9 @@
 		})
 	}
 
+	const durationBars = $derived(selectedItem ? selectedItem.durationBeats / BEATS_PER_BAR : 0)
+	const durationLabel = $derived(`${toFractionString(durationBars)} ${durationBars === 1 ? 'bar' : 'bars'}`)
+
 	const handleDelete = () => {
 		if (!selectedItem) return
 		context.removeProgressionItem(selectedItem.id)
@@ -95,62 +89,55 @@
 	}
 </script>
 
-<div class="selectionControls">
-	{#if selectedItem}
-		<!-- <p class="herPanelTitleSmall">{selectedTypeText}</p> -->
+{#if selectedItem}
+	<z-surface level="1" kind="soft" isBordered radius="md" insetX="sm" insetY="2xs" class="selectionControls">
+		<z-toolbar size="sm" aria-label="Selected item">
+			<z-text size="xs" weight={600} class="durationLabel">{durationLabel}</z-text>
 
-		<div class="controls-group">
-			<span class="text-xs font-medium text-foreground/80 whitespace-nowrap">
-				{toFractionString(selectedItem.durationBeats / BEATS_PER_BAR)}
-				{selectedItem.durationBeats / BEATS_PER_BAR === 1 ? 'BAR' : 'BARS'}
-			</span>
+			<z-separator isVertical></z-separator>
 
-			<SheDivider />
+			<z-toolbar-group label="Duration">
+				<z-button kind="ghost" size="sm" onclick={() => adjustDuration(-1)} aria-label="Decrease duration">
+					<Minus size={16} />
+				</z-button>
+				<z-button kind="ghost" size="sm" onclick={() => adjustDuration(1)} aria-label="Increase duration">
+					<Plus size={16} />
+				</z-button>
+			</z-toolbar-group>
 
-			<Button kind="ghost" isIcon onclick={() => adjustDuration(-1)} title="Decrease duration">
-				<Icon icon="mingcute:minimize-line" class="w-5 h-5" />
-			</Button>
+			<z-separator isVertical></z-separator>
 
-			<Button kind="ghost" isIcon onclick={() => adjustDuration(1)} title="Increase duration">
-				<Icon icon="mingcute:add-line" class="w-5 h-5" />
-			</Button>
+			<z-toolbar-group label="Position">
+				<z-button kind="ghost" size="sm" onclick={() => moveItem(-1)} aria-label="Move left">
+					<ArrowLeft size={16} />
+				</z-button>
+				<z-button kind="ghost" size="sm" onclick={() => moveItem(1)} aria-label="Move right">
+					<ArrowRight size={16} />
+				</z-button>
+			</z-toolbar-group>
 
-			<SheDivider />
+			<z-separator isVertical></z-separator>
 
-			<Button kind="ghost" isIcon onclick={() => moveItem(-1)} title="Move Left">
-				<Icon icon="mingcute:arrow-left-line" class="w-5 h-5" />
-			</Button>
-
-			<Button kind="ghost" isIcon onclick={() => moveItem(1)} title="Move Right">
-				<Icon icon="mingcute:arrow-right-line" class="w-5 h-5" />
-			</Button>
-
-			<SheDivider />
-
-			<Button kind="ghost" isIcon onclick={handleDuplicate} title="Duplicate">
-				<Icon icon="mingcute:copy-2-fill" class="w-5 h-5" />
-			</Button>
-			<Button kind="ghost" isIcon onclick={handleDelete} title="Delete">
-				<Icon icon="mingcute:delete-2-fill" class="w-5 h-5" />
-			</Button>
-		</div>
-	{/if}
-</div>
+			<z-toolbar-group label="Item">
+				<z-button kind="ghost" size="sm" onclick={handleDuplicate} aria-label="Duplicate">
+					<Copy size={16} />
+				</z-button>
+				<z-button kind="ghost" tone="danger" size="sm" onclick={handleDelete} aria-label="Delete">
+					<Trash size={16} />
+				</z-button>
+			</z-toolbar-group>
+		</z-toolbar>
+	</z-surface>
+{/if}
 
 <style>
 	.selectionControls {
-		display: flex;
-		align-items: center;
-		gap: 12px;
 		margin-left: auto;
 	}
 
-	.controls-group {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		border: 1px solid var(--n-03);
-		padding: 4px 8px 4px 12px;
-		border-radius: 6px;
+	.durationLabel {
+		white-space: nowrap;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
 	}
 </style>

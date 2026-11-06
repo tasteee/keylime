@@ -17,30 +17,20 @@
 	})
 </script>
 
-<div class="QwertyKeyboard">
-	{#each config.rows as row}
-		<div class="row">
-			{#each row as keyCode}
-				<QwertyKey {keyCode} />
-			{/each}
-		</div>
-	{/each}
-</div>
+<z-surface level="1" kind="soft" isBordered radius="md" inset="sm" isFullWidth>
+	<z-column gap="2xs">
+		{#each config.rows as row}
+			<z-row gap="2xs" class="keyboardRow">
+				{#each row as keyCode}
+					<QwertyKey {keyCode} />
+				{/each}
+			</z-row>
+		{/each}
+	</z-column>
+</z-surface>
 
 <style>
-	.QwertyKeyboard {
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-		border: 1px solid #020617;
-		border-radius: 2px;
-		padding: 8px;
-		gap: 2px;
-	}
-
-	.row {
-		display: flex;
-		gap: 2px;
-		height: 80px;
+	.keyboardRow {
+		height: 5rem;
 	}
 </style>

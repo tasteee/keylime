@@ -56,23 +56,22 @@
 <style>
 	.patternTimingHeader {
 		display: flex;
-		height: 32px;
+		height: 2rem;
 		position: sticky;
 		top: 0;
 		z-index: 101;
-		background: var(--colorWhite);
-		border-bottom: 1px solid var(--n-03);
+		background: var(--card);
+		border-bottom: 1px solid var(--border);
 		width: fit-content;
-		/* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); */
 	}
 
 	.barMarker {
 		height: 100%;
-		border-left: 1px solid var(--n-03);
+		border-left: 1px solid var(--border);
 		display: flex;
-		font-size: 10px;
-		font-weight: 600;
-		color: var(--n-05);
+		font-size: var(--font-size-1);
+		font-weight: var(--font-weight-semibold);
+		color: var(--muted-foreground);
 		user-select: none;
 		box-sizing: border-box;
 		position: relative;
@@ -80,13 +79,13 @@
 	}
 
 	.barMarker.inactive {
-		background-color: var(--n-03);
+		background-color: var(--color-neutral-3);
 		opacity: 0.5;
 	}
 
 	.barMarker:hover {
 		cursor: pointer;
-		background-color: var(--secondary);
+		background-color: color-mix(in oklch, var(--purple) 14%, var(--card));
 		opacity: 1;
 	}
 
@@ -99,20 +98,19 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		opacity: 0.75;
 		z-index: 10;
-		background: var(--n-00);
-		/* border-right: 1px solid var(--n-03); */
+		background: var(--card);
 	}
 
 	.setDurationText {
-		font-size: 12px;
-		font-weight: bold;
-		color: var(--n-07);
+		font-size: var(--font-size-2);
+		font-weight: var(--font-weight-bold);
+		color: var(--foreground);
+		white-space: nowrap;
 	}
 
 	.setDurationText span {
-		font-weight: 500;
+		font-weight: var(--font-weight-medium);
 		margin-right: 2px;
 	}
 
@@ -122,12 +120,11 @@
 		position: relative;
 		display: flex;
 		align-items: center;
-		position: relative;
 		left: -0.5px;
 	}
 
 	.barLabel {
-		padding-left: 6px;
+		padding-left: var(--spacing-2);
 	}
 
 	.beatTick {
@@ -135,7 +132,7 @@
 		left: 0;
 		bottom: 0;
 		width: 1px;
-		height: 12px;
+		height: 0.75rem;
 		background-color: var(--border);
 	}
 </style>

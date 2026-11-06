@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { goToPath } from '$lib/modules/navigate'
-	import { Button } from '$lib/components/ui/button'
-	import Icon from '@iconify/svelte'
-	import { fade } from 'svelte/transition'
+	import { Plus, MusicNotes, FunnelSimple } from 'phosphor-svelte'
 	import { browser } from '$app/environment'
-	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
-	import ConfirmDeleteDialog from '$lib/components/Dashboard/ConfirmDeleteDialog.svelte'
-	import Box from '$lib/components/ui/box.svelte'
+	import PageLayout from '$lib/components/PageLayout.svelte'
+	import PageHeader from '$lib/components/PageHeader.svelte'
 	import ProjectCard from '$lib/components/ProjectCard.svelte'
+	import ConfirmDeleteDialog from '$lib/components/Dashboard/ConfirmDeleteDialog.svelte'
 	import { daysAgo } from '$lib/modules/dateTime'
 	import ProjectsBrowserBar from '$lib/components/ProjectsBrowserBar.svelte'
 	import { addProject, deleteProjectById, getProjectsByUserId, cloneProjectById } from '$lib/modules/database'
@@ -28,8 +26,7 @@
 	let userProjects = $state<ProjectT[]>([])
 	let isLoadingUserProjects = $state(false)
 	let totalProjectsCount = $state(0)
-	let isDeleteDialogOpen = $state(false)
-	let projectToDelete = $state<{ id: string; title: string } | null>(null)
+	let projectPendingDeletion = $state<ProjectT | null>(null)
 	let activeFilters = $state({
 		searchText: '',
 		key: null as string | null,
@@ -107,8 +104,20 @@
 		goToPath(`/project/${project.id}`)
 	}
 
-	const handleDeleteProject = async (id: string) => {
-		await deleteProjectById(id)
+	const handleRequestDeleteProject = (projectId: string) => {
+		const projectToDelete = userProjects.find((project) => project.id === projectId)
+		projectPendingDeletion = projectToDelete ?? null
+	}
+
+	const handleCancelDeleteProject = () => {
+		projectPendingDeletion = null
+	}
+
+	const handleConfirmDeleteProject = async () => {
+		const projectToDelete = projectPendingDeletion
+		projectPendingDeletion = null
+		if (!projectToDelete) return
+		await deleteProjectById(projectToDelete.id)
 		await loadUserProjects()
 	}
 
@@ -197,90 +206,67 @@
 	}
 
 	const totalPages = $derived(Math.ceil(totalProjectsCount / itemsPerPage))
+	const isDeleteDialogOpen = $derived(projectPendingDeletion !== null)
+	const pendingDeletionTitle = $derived(projectPendingDeletion?.title ?? '')
+	const hasMultiplePages = $derived(totalProjectsCount > itemsPerPage)
+	const hasNoProjectsAtAll = $derived(userProjects.length === 0)
+	const hasNoMatchingProjects = $derived(filteredProjects.length === 0 && userProjects.length > 0)
+
+	const handlePaginationChange = (event: CustomEvent) => {
+		handlePageChange(event.detail.page)
+	}
 </script>
 
-<div class="dashboard" in:fade>
-	<TopBar />
+<PageLayout>
+	<PageHeader title="Your projects" subtitle="Look at all these bangers.">
+		{#snippet actions()}
+			<z-button tone="primary" onclick={handleCreateProject}>
+				<Plus size={16} weight="bold" />
+				New project
+			</z-button>
+		{/snippet}
+	</PageHeader>
 
-	<main data-page-content-scrollable class="pageMainContent">
-		<Box class="pageContentHeader" isColumn>
-			<Box isFullWidth justify="between" align="center">
-				<h1 class="pageTitle">Your Projects</h1>
-				<Button onclick={handleCreateProject} size="medium" color="brand">
-					<Icon icon="mingcute:add-line" class="mr-2 size-4" />
-					New Project
-				</Button>
-			</Box>
-			<p class="pageSubtitle">Look at all these bangers.</p>
-		</Box>
+	<ProjectsBrowserBar onsubmit={handleFilterSubmit} />
 
-		<ProjectsBrowserBar onsubmit={handleFilterSubmit} />
+	<z-grid minColumnWidth="20rem" gap="lg">
+		{#each filteredProjects as project (project.id)}
+			<ProjectCard
+				{project}
+				daysAgo={daysAgo(project.updatedAt)}
+				onOpenProject={handleOpenProject}
+				onCloneProject={handleCloneProject}
+				onDeleteProject={handleRequestDeleteProject}
+			/>
+		{/each}
+	</z-grid>
 
-		<div class="projects-grid">
-			{#each filteredProjects as project (project.id)}
-				<ProjectCard
-					{project}
-					daysAgo={daysAgo(project.updatedAt)}
-					onOpenProject={handleOpenProject}
-					onCloneProject={handleCloneProject}
-					onDeleteProject={handleDeleteProject}
-				/>
-			{/each}
-		</div>
+	{#if hasNoMatchingProjects}
+		<z-empty-state heading="No matches" description="No projects match your filters. Try loosening them." isBordered>
+			<z-box slot="icon" isInline><FunnelSimple size={32} /></z-box>
+		</z-empty-state>
+	{/if}
 
-		{#if filteredProjects.length === 0 && userProjects.length > 0}
-			<div class="empty-state">
-				<p>No projects match your filters.</p>
-			</div>
-		{:else if userProjects.length === 0}
-			<div class="empty-state">
-				<p>No projects yet. Create one to get started!</p>
-			</div>
-		{/if}
+	{#if hasNoProjectsAtAll}
+		<z-empty-state heading="No projects yet" description="Create one to get started!" isBordered>
+			<z-box slot="icon" isInline><MusicNotes size={32} /></z-box>
+			<z-button tone="primary" onclick={handleCreateProject}>
+				<Plus size={16} weight="bold" />
+				New project
+			</z-button>
+		</z-empty-state>
+	{/if}
 
-		{#if totalProjectsCount > itemsPerPage}
-			<Box justify="center" gap="8px" class="mt-6">
-				<Button
-					onclick={() => handlePageChange(currentPage - 1)}
-					disabled={currentPage === 1 || isLoadingUserProjects}
-					kind="outline"
-					size="medium"
-				>
-					<Icon icon="mingcute:left-line" class="size-4" />
-				</Button>
-				<span class="text-sm text-muted-foreground">
-					Page {currentPage} of {totalPages}
-				</span>
-				<Button
-					onclick={() => handlePageChange(currentPage + 1)}
-					disabled={currentPage >= totalPages || isLoadingUserProjects}
-					kind="outline"
-					size="medium"
-				>
-					<Icon icon="mingcute:right-line" class="size-4" />
-				</Button>
-			</Box>
-		{/if}
-	</main>
-</div>
+	{#if hasMultiplePages}
+		<z-row alignsX="center">
+			<z-pagination page={currentPage} total={totalPages} onchange={handlePaginationChange}></z-pagination>
+		</z-row>
+	{/if}
+</PageLayout>
 
-<style>
-	.dashboard {
-		display: flex;
-		flex-direction: column;
-		min-height: 100vh;
-		background: var(--n-01);
-	}
-
-	.projects-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		gap: 24px;
-	}
-
-	.empty-state {
-		text-align: center;
-		padding: 60px;
-		color: var(--n-05);
-	}
-</style>
+<ConfirmDeleteDialog
+	isOpen={isDeleteDialogOpen}
+	projectTitle={pendingDeletionTitle}
+	onConfirm={handleConfirmDeleteProject}
+	onCancel={handleCancelDeleteProject}
+/>

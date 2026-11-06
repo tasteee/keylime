@@ -1,229 +1,101 @@
 <script lang="ts">
+	import { ArrowRight, MusicNotes, UsersThree, PlugsConnected } from 'phosphor-svelte'
 	import { goToPath } from '$lib/modules/navigate'
-	import { Button } from '$lib/components/ui/button'
-	import Icon from '@iconify/svelte'
-	import { fade } from 'svelte/transition'
+	import Logo from '$lib/components/shell/Logo.svelte'
+
+	const features = [
+		{
+			icon: MusicNotes,
+			title: 'Intuitive composition',
+			description: 'Build chord progressions with an easy-to-use pattern editor. Preview your work instantly.'
+		},
+		{
+			icon: UsersThree,
+			title: 'Share & collaborate',
+			description: 'Publish your projects and discover creations from musicians worldwide. Follow your favorites.'
+		},
+		{
+			icon: PlugsConnected,
+			title: 'MIDI export',
+			description: 'Export to MIDI or connect directly to your DAW. Seamless integration with your workflow.'
+		}
+	]
+
+	const currentYear = new Date().getFullYear()
 
 	const handleGoToLogin = () => {
 		goToPath('/auth/login')
 	}
-
-	const handleGoToSignup = () => {
-		goToPath('/auth/login')
-	}
 </script>
 
-<div class="splash-container" in:fade>
-	<header class="splash-header">
-		<div class="logo">
-			<span class="logo">KEYLIME</span>
-		</div>
-		<div class="header-actions">
-			<Button kind="ghost" onclick={handleGoToLogin}>Log In</Button>
-			<Button onclick={handleGoToSignup}>Sign Up</Button>
-		</div>
-	</header>
+<z-column isFullHeight class="splash">
+	<z-row insetX="lg" insetY="md" alignsX="between" alignsY="center" isFullWidth>
+		<Logo />
+		<z-row gap="sm" alignsY="center">
+			<z-button kind="ghost" onclick={handleGoToLogin}>Log in</z-button>
+			<z-button tone="primary" onclick={handleGoToLogin}>Sign up</z-button>
+		</z-row>
+	</z-row>
+	<z-separator></z-separator>
 
-	<main class="splash-main">
-		<section class="hero">
-			<h1 class="hero-title">
-				Create music with<br />
-				<span class="gradient-text">chord progressions</span>
-			</h1>
-			<p class="hero-subtitle">
-				A powerful, intuitive tool for musicians to compose, collaborate, and share chord progressions. Build your next hit
-				with Keylime.
-			</p>
-			<div class="hero-actions">
-				<Button size="large" onclick={handleGoToSignup}>
-					Get Started Free
-					<Icon icon="mingcute:arrow-right-line" class="ml-2 size-5" />
-				</Button>
-				<Button kind="outline" size="large" onclick={handleGoToLogin}>Learn More</Button>
-			</div>
-		</section>
+	<z-scroll class="splashScroll">
+		<z-section spaceTop="4xl" spaceBottom="4xl" container="xl" gutter="lg">
+			<z-column gap="4xl">
+				<z-column gap="lg" alignsX="center" class="hero">
+					<z-eyebrow label="Chord progressions, simplified" tone="primary"></z-eyebrow>
+					<z-display size="md" class="heroTitle">Create music with chord progressions</z-display>
+					<z-text size="lg" color="muted" class="heroSubtitle">
+						A powerful, intuitive tool for musicians to compose, collaborate, and share chord progressions. Build your next
+						hit with Keylime.
+					</z-text>
+					<z-row gap="sm" alignsY="center" alignsX="center">
+						<z-button size="lg" tone="primary" onclick={handleGoToLogin}>
+							Get started free
+							<ArrowRight size={18} weight="bold" />
+						</z-button>
+						<z-button size="lg" kind="outline" onclick={handleGoToLogin}>Learn more</z-button>
+					</z-row>
+				</z-column>
 
-		<section class="features">
-			<div class="feature-grid">
-				<div class="feature-card">
-					<div class="feature-icon">
-						<Icon icon="mingcute:music-2-line" class="size-12" />
-					</div>
-					<h3 class="feature-title">Intuitive Composition</h3>
-					<p class="feature-desc">
-						Build chord progressions with an easy-to-use pattern editor. Preview your work instantly.
-					</p>
-				</div>
+				<z-grid minColumnWidth="18rem" gap="lg">
+					{#each features as feature (feature.title)}
+						<z-card gap="md">
+							<feature.icon size={32} />
+							<z-text size="xl" weight={600} color="strong">{feature.title}</z-text>
+							<z-text color="muted">{feature.description}</z-text>
+						</z-card>
+					{/each}
+				</z-grid>
+			</z-column>
+		</z-section>
 
-				<div class="feature-card">
-					<div class="feature-icon">
-						<Icon icon="mingcute:group-line" class="size-12" />
-					</div>
-					<h3 class="feature-title">Share & Collaborate</h3>
-					<p class="feature-desc">
-						Publish your projects and discover creations from musicians worldwide. Follow your favorites.
-					</p>
-				</div>
-
-				<div class="feature-card">
-					<div class="feature-icon">
-						<Icon icon="mingcute:plugin-2-line" class="size-12" />
-					</div>
-					<h3 class="feature-title">MIDI Export</h3>
-					<p class="feature-desc">
-						Export to MIDI or connect directly to your DAW. Seamless integration with your workflow.
-					</p>
-				</div>
-			</div>
-		</section>
-	</main>
-
-	<footer class="splash-footer">
-		<p>&copy; 2025 Keylime. All rights reserved.</p>
-	</footer>
-</div>
+		<z-separator></z-separator>
+		<z-row inset="lg" alignsX="center">
+			<z-text size="sm" color="muted">&copy; {currentYear} Keylime. All rights reserved.</z-text>
+		</z-row>
+	</z-scroll>
+</z-column>
 
 <style>
-	.splash-container {
-		min-height: 100vh;
-		display: flex;
-		flex-direction: column;
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-		color: white;
+	.splash {
+		height: 100vh;
+		overflow: hidden;
 	}
 
-	.splash-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 24px 48px;
-		background-color: rgba(255, 255, 255, 0.1);
-		backdrop-filter: blur(10px);
-	}
-
-	.header-actions {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.splash-main {
+	.splashScroll {
 		flex: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 80px 24px;
+		min-height: 0;
 	}
 
 	.hero {
 		text-align: center;
-		max-width: 800px;
-		margin-bottom: 120px;
 	}
 
-	.hero-title {
-		font-size: 64px;
-		font-weight: 800;
-		line-height: 1.1;
-		margin: 0 0 24px 0;
-		letter-spacing: -0.02em;
+	.heroTitle {
+		max-width: 52rem;
 	}
 
-	.gradient-text {
-		background: linear-gradient(90deg, #fff 0%, #f0f0f0 100%);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-	}
-
-	.hero-subtitle {
-		font-size: 20px;
-		line-height: 1.6;
-		margin: 0 0 40px 0;
-		color: rgba(255, 255, 255, 0.9);
-		max-width: 600px;
-		margin-left: auto;
-		margin-right: auto;
-	}
-
-	.hero-actions {
-		display: flex;
-		gap: 16px;
-		justify-content: center;
-		align-items: center;
-	}
-
-	.features {
-		width: 100%;
-		max-width: 1200px;
-	}
-
-	.feature-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-		gap: 32px;
-	}
-
-	.feature-card {
-		background: rgba(255, 255, 255, 0.1);
-		backdrop-filter: blur(10px);
-		border-radius: 16px;
-		padding: 32px;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		transition: transform 0.2s ease;
-	}
-
-	.feature-card:hover {
-		transform: translateY(-4px);
-		background: rgba(255, 255, 255, 0.15);
-	}
-
-	.feature-icon {
-		margin-bottom: 16px;
-		opacity: 0.9;
-	}
-
-	.feature-title {
-		font-size: 24px;
-		font-weight: 700;
-		margin: 0 0 12px 0;
-	}
-
-	.feature-desc {
-		font-size: 16px;
-		line-height: 1.6;
-		margin: 0;
-		color: rgba(255, 255, 255, 0.85);
-	}
-
-	.splash-footer {
-		padding: 32px;
-		text-align: center;
-		background-color: rgba(0, 0, 0, 0.2);
-		color: rgba(255, 255, 255, 0.7);
-		font-size: 14px;
-	}
-
-	.splash-footer p {
-		margin: 0;
-	}
-
-	@media (max-width: 768px) {
-		.hero-title {
-			font-size: 48px;
-		}
-
-		.hero-subtitle {
-			font-size: 18px;
-		}
-
-		.feature-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.splash-header {
-			padding: 16px 24px;
-		}
+	.heroSubtitle {
+		max-width: 40rem;
 	}
 </style>

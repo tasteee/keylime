@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button'
-	import Icon from '@iconify/svelte'
+	import { Plus } from 'phosphor-svelte'
 	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { chordModifierStore } from '$lib/stores/chordModifier.svelte'
@@ -15,19 +14,16 @@
 	const project = $derived(projectEditor.state.project)
 	const isPlaying = $derived(playbackStore.currentlyPlayingChordId === props.chord.id)
 
-	const handleContextMenu = (event: MouseEvent) => {
-		event.preventDefault()
-		event.stopPropagation()
-		chordModifierStore.openForGridChord({
-			chordId: props.chord.id
-		})
+	const contextMenuItems = [
+		{ value: 'add', label: 'Add to progression' },
+		{ value: 'modify', label: 'Modify chord…' }
+	]
+
+	const openChordModifier = () => {
+		chordModifierStore.openForGridChord({ chordId: props.chord.id })
 	}
 
-	const addChordToProgression = (event: MouseEvent) => {
-		event.preventDefault()
-		event.stopPropagation()
-
-		// Create a new chord instance for the progression
+	const addChordToProgression = () => {
 		const chordToAdd: ChordT = {
 			...props.chord,
 			id: crypto.randomUUID()
@@ -36,88 +32,75 @@
 		projectEditor.addProgressionChord(chordToAdd)
 	}
 
-	const onMouseDown = (event: MouseEvent) => {
+	const handleContextMenuSelect = (event: CustomEvent) => {
+		const selectedValue: string = event.detail.value
+		if (selectedValue === 'add') addChordToProgression()
+		if (selectedValue === 'modify') openChordModifier()
+	}
+
+	const handleAddButtonClick = (event: MouseEvent) => {
+		event.preventDefault()
+		event.stopPropagation()
+		addChordToProgression()
+	}
+
+	const handleMouseDown = (event: MouseEvent) => {
 		const target = event.target as HTMLElement
-		if (target.closest('button')) return
+		const isButtonTarget = target.closest('z-button')
+		if (isButtonTarget) return
+
 		const isLeftButton = event.button === 0
 		if (!isLeftButton) return
+
 		event.preventDefault()
 		event.stopPropagation()
 		playbackStore.playChord(props.chord, project.octave)
 	}
-
-	const onMouseUp = (event: MouseEvent) => {
-		const isLeftButton = event.button === 0
-		if (!isLeftButton) return
-
-		event.preventDefault()
-		event.stopPropagation()
-
-		// Stop playback handled by playChord internally
-	}
-
-	const onMouseLeave = () => {
-		// Stop playback handled by playChord internally
-	}
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div
-	class="chordCard"
-	class:playing={isPlaying}
-	onmousedown={onMouseDown}
-	onmouseup={onMouseUp}
-	onmouseleave={onMouseLeave}
-	oncontextmenu={handleContextMenu}
-	role="button"
-	tabindex={0}
->
-	<ChordSymbolDisplay symbol={props.chord.symbol} />
+<z-context-menu items={contextMenuItems} onselect={handleContextMenuSelect}>
+	<z-surface
+		level="1"
+		isBordered
+		isInteractive
+		isFullWidth
+		radius="md"
+		insetX="lg"
+		class="chordCard"
+		class:isPlaying
+		role="button"
+		tabindex="0"
+		onmousedown={handleMouseDown}
+	>
+		<z-row alignsX="between" alignsY="center" isFullHeight>
+			<ChordSymbolDisplay symbol={props.chord.symbol} />
 
-	<div class="actions">
-		<Button kind="ghost" isIcon onclick={addChordToProgression} title="Add to progression">
-			<Icon icon="mingcute:add-line" class="size-4" />
-		</Button>
-	</div>
-</div>
+			<z-tooltip content="Add to progression" placement="top" class="chordCardAction">
+				<z-button kind="ghost" size="sm" onclick={handleAddButtonClick} aria-label="Add to progression">
+					<Plus size={16} weight="bold" />
+				</z-button>
+			</z-tooltip>
+		</z-row>
+	</z-surface>
+</z-context-menu>
 
 <style>
 	.chordCard {
-		display: flex;
-		flex-direction: column;
-		height: 80px;
-		justify-content: center;
-		overflow: visible;
-		padding: 0 24px;
-		position: relative;
-		/* transition: all 0.1s ease-in-out; */
+		height: 5rem;
 		user-select: none;
-		z-index: 10;
-		outline: 1px solid var(--n-03);
-		outline-offset: 0px;
-		background: var(--n-01);
 	}
 
-	.chordCard:hover {
-		background-color: var(--colorWhite);
+	.chordCard.isPlaying {
+		border-color: var(--purple);
 	}
 
-	/* .chordCard.playing {
-		background-color: var(--n-03);
-	} */
-
-	.actions {
-		position: absolute;
-		top: 32px;
-		right: 16px;
+	.chordCard :global(.chordCardAction) {
 		opacity: 0;
-		transform: translateY(-8px);
-		transition: all 0.2s ease;
-		z-index: 10;
+		transition: opacity var(--motion-fast) var(--ease-enter);
 	}
 
-	.chordCard:hover .actions {
+	.chordCard:hover :global(.chordCardAction),
+	.chordCard:focus-within :global(.chordCardAction) {
 		opacity: 1;
-		transform: translateY(-4px);
 	}
 </style>

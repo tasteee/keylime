@@ -1,11 +1,5 @@
 <script lang="ts">
-	import * as Dialog from '$lib/components/ui/dialog'
-	import { Button } from '$lib/components/ui/button'
-	import { Label } from '$lib/components/ui/label'
-	import Icon from '@iconify/svelte'
-	import Input from '../ui/input/input.svelte'
-	import { Textarea } from '../ui/textarea'
-	import { Checkbox } from '../ui/checkbox'
+	import { FloppyDisk } from 'phosphor-svelte'
 	import type { useProjectEditor } from '$lib/modules/useProjectEditor'
 
 	type DialogProjectSettingsPropsT = {
@@ -14,116 +8,85 @@
 		projectEditor: ReturnType<typeof useProjectEditor>
 	}
 
-	let { isOpen = $bindable(false), onOpenChange, projectEditor }: DialogProjectSettingsPropsT = $props()
+	const props: DialogProjectSettingsPropsT = $props()
 
 	let isSaving = $state(false)
 	let localTitle = $state('')
 	let localDescription = $state('')
 	let localIsPublic = $state(false)
 
+	const saveButtonLabel = $derived(isSaving ? 'Saving…' : 'Save')
+
 	const captureInitialState = () => {
-		localTitle = projectEditor.state.project.title
-		localDescription = projectEditor.state.project.description
-		localIsPublic = projectEditor.state.project.isPublic
+		localTitle = props.projectEditor.state.project.title
+		localDescription = props.projectEditor.state.project.description
+		localIsPublic = props.projectEditor.state.project.isPublic
 	}
 
 	$effect(() => {
-		if (isOpen) {
-			captureInitialState()
-		}
+		if (props.isOpen) captureInitialState()
 	})
 
-	const handleTitleChange = (event: Event) => {
-		const target = event.target as HTMLInputElement
-		localTitle = target.value
+	const handleTitleInput = (event: CustomEvent) => {
+		localTitle = event.detail.value
 	}
 
-	const handleDescriptionChange = (event: Event) => {
-		const target = event.target as HTMLTextAreaElement
-		localDescription = target.value
+	const handleDescriptionInput = (event: CustomEvent) => {
+		localDescription = event.detail.value
+	}
+
+	const handlePublicChange = (event: CustomEvent) => {
+		localIsPublic = event.detail.checked
+	}
+
+	const handleDialogClose = () => {
+		if (!props.isOpen) return
+		props.onOpenChange(false)
+	}
+
+	const handleClose = () => {
+		props.onOpenChange(false)
 	}
 
 	const handleSave = async () => {
-		console.log('project settings dialog handleSave')
 		isSaving = true
 
-		projectEditor.updateProject({
+		props.projectEditor.updateProject({
 			title: localTitle,
 			description: localDescription,
 			isPublic: localIsPublic
 		})
 
-		const saveResult = await projectEditor.save()
-		console.log('project settings dialog result:', saveResult)
+		await props.projectEditor.save()
 		isSaving = false
-		onOpenChange(false)
-	}
-
-	const handleClose = () => {
-		onOpenChange(false)
+		props.onOpenChange(false)
 	}
 </script>
 
-<Dialog.Root open={isOpen} {onOpenChange}>
-	<Dialog.Content>
-		<Dialog.Header>
-			<Dialog.Title class="text-3xl">Project Settings</Dialog.Title>
-		</Dialog.Header>
+<z-dialog isOpen={props.isOpen} heading="Project settings" onclose={handleDialogClose}>
+	<z-column gap="md" insetY="xs">
+		<z-field label="Title">
+			<z-input value={localTitle} placeholder="Project title" oninput={handleTitleInput}></z-input>
+		</z-field>
 
-		<div class="space-y-4 pt-4 mb-4">
-			<div class="settingGroup">
-				<Label for="dialogProjectTitle" class="text-sm font-bold">Title</Label>
-				<Input
-					id="dialogProjectTitle"
-					type="text"
-					size="medium"
-					value={localTitle}
-					oninput={handleTitleChange}
-					placeholder="Project title"
-				/>
-			</div>
+		<z-field label="Description">
+			<z-textarea value={localDescription} placeholder="Project description" rows={4} oninput={handleDescriptionInput}></z-textarea>
+		</z-field>
 
-			<div class="settingGroup">
-				<Label for="dialogProjectDescription" class="text-sm font-bold">Description</Label>
-				<Textarea
-					id="dialogProjectDescription"
-					class="herInput herTextarea"
-					value={localDescription}
-					oninput={handleDescriptionChange}
-					placeholder="Project description"
-				></Textarea>
-			</div>
+		<z-checkbox
+			description="Anyone can find, play, and clone a public project."
+			isChecked={localIsPublic}
+			onchange={handlePublicChange}
+		>
+			Public project
+		</z-checkbox>
+	</z-column>
 
-			<div class="settingGroup checkboxGroup">
-				<Label for="dialogProjectPublic" class="text-sm font-bold gap-2 flex cursor-pointer items-center">
-					<Checkbox id="dialogProjectPublic" bind:isChecked={localIsPublic} />
-					Public Project
-				</Label>
-			</div>
-		</div>
-
-		<Dialog.Footer>
-			<Button size="large" isFullWidth kind="outline" onclick={handleClose} class="flex-1">
-				<Icon icon="mingcute:close-line" class="size-4" />
-				Close
-			</Button>
-			<Button size="large" isFullWidth color="brand" onclick={handleSave} class="flex-1" disabled={isSaving}>
-				<Icon icon="mingcute:save-line" class="size-4" />
-				{isSaving ? 'Saving...' : 'Save'}
-			</Button>
-		</Dialog.Footer>
-	</Dialog.Content>
-</Dialog.Root>
-
-<style>
-	.settingGroup {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-
-	.checkboxGroup {
-		flex-direction: row;
-		align-items: center;
-	}
-</style>
+	<z-row slot="footer" gap="sm" alignsX="end">
+		<z-button kind="ghost" onclick={handleClose}>Close</z-button>
+		<z-button tone="primary" isLoading={isSaving} onclick={handleSave}>
+			<FloppyDisk size={16} />
+			{saveButtonLabel}
+		</z-button>
+	</z-row>
+</z-dialog>

@@ -56,7 +56,7 @@
 	.barMarkerLine {
 		width: 1px;
 		height: 100%;
-		background-color: var(--n-06);
+		background-color: var(--color-neutral-5);
 		opacity: 0.5;
 	}
 
@@ -65,15 +65,15 @@
 		top: 0;
 		width: 1px;
 		height: 100%;
-		background-color: var(--n-06);
+		background-color: var(--color-neutral-5);
 		opacity: 0.2;
 	}
 
 	.barMarkerText {
-		font-size: 11px;
-		font-weight: 600;
-		color: var(--n-06);
-		margin-left: 8px;
+		font-size: var(--font-size-1);
+		font-weight: var(--font-weight-semibold);
+		color: var(--muted-foreground);
+		margin-left: var(--spacing-2);
 		white-space: nowrap;
 		font-family: var(--font-mono);
 	}

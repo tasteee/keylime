@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition'
-	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte'
 	import ChordCardGrid from '$lib/components/Project/ChordCardGrid.svelte'
 	import ProjectInfoBar from '$lib/components/Project/ProjectInfoBar.svelte'
 	import PatternEditor from '$lib/components/Project/PatternEditor.svelte'
@@ -10,7 +8,6 @@
 	import { browser } from '$app/environment'
 	import { onMount, onDestroy } from 'svelte'
 	import { useProjectEditor } from '$lib/modules/useProjectEditor'
-	import Box from '$lib/components/ui/box.svelte'
 	import { beforeNavigate, goto } from '$app/navigation'
 	import UnsavedChangesDialog from '$lib/components/Project/UnsavedChangesDialog.svelte'
 	import { hmu } from '$lib/modules/hitmeup'
@@ -77,7 +74,10 @@
 		const isSpaceKey = event.code === 'Space'
 		if (!isSpaceKey) return
 
-		const isTypingInInput = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement
+		// Zest fields keep their <input> inside a shadow root, so the
+		// event target is retargeted. Look through the whole path.
+		const eventPath = event.composedPath()
+		const isTypingInInput = eventPath.some((node) => node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement)
 		if (isTypingInInput) return
 
 		event.preventDefault()
@@ -166,40 +166,29 @@
 <svelte:window onkeydown={handleKeyDown} onbeforeunload={handleBeforeUnload} />
 
 <UnsavedChangesDialog
-	bind:isOpen={showUnsavedDialog}
+	isOpen={showUnsavedDialog}
 	onConfirm={handleConfirmSave}
 	onDiscard={handleDiscard}
 	onCancel={handleCancel}
 />
 
-<div class="projectView lightTheme">
+<z-column class="projectView">
 	<TopBar />
 
 	<div class="content">
 		{#if isLoading}
-			<div
-				transition:fade={{ duration: 300 }}
-				class="inset-0 p-2 absolute z-50 flex h-full w-full flex-col gap-[1px] overflow-hidden bg-[var(--n-02)]"
-			>
-				<Skeleton height={48} width="100%" />
-				<Box width="100%" height="1px" />
-				<Skeleton height={54} width="100%" />
-				<Box width="100%" height="1px" />
-
-				<div class="containerrr">
+			<z-column gap="sm" inset="md" isFullHeight class="loadingState">
+				<z-skeleton shape="rect" height="3rem"></z-skeleton>
+				<z-grid minColumnWidth="10rem" gap="sm">
 					{#each Array.from({ length: 18 }) as _}
-						<Skeleton border={1} height="100px" width="170px" />
+						<z-skeleton shape="rect" height="5rem"></z-skeleton>
 					{/each}
-				</div>
-
-				<Skeleton height={48} width="100%" />
-				<Skeleton height={96} width="100%" class="opacity-90" />
-				<Skeleton height={48} width="100%" class="opacity-80" />
-			</div>
+				</z-grid>
+			</z-column>
 		{/if}
 
 		{#if !isLoading}
-			<div class="flex h-full w-full flex-col">
+			<z-column isFullHeight>
 				<ProjectInfoBar />
 
 				{#if activeView === 'chords'}
@@ -211,23 +200,16 @@
 				{/if}
 
 				<ProgressionPanel />
-			</div>
+			</z-column>
 		{/if}
 	</div>
-</div>
+</z-column>
 
 <style>
 	.projectView {
-		display: flex;
-		flex-direction: column;
 		height: 100%;
 		overflow: hidden;
 		user-select: none;
-	}
-
-	.projectView input,
-	.projectView .selectableText {
-		user-select: text;
 	}
 
 	.content {
@@ -239,17 +221,7 @@
 		position: relative;
 	}
 
-	.containerrr {
-		align-content: start;
-		display: grid;
-		flex: 1;
-		grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+	.loadingState {
 		overflow: hidden;
-		overflow-y: auto;
-		width: 100%;
-		border-right: none;
-		border-bottom: none;
-		padding: 12px;
-		background: var(--n-02);
 	}
 </style>

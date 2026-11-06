@@ -2,12 +2,8 @@
 	import { onMount, getContext } from 'svelte'
 	import PatternEditorSignal from './PatternEditorSignal.svelte'
 	import PatternTimingHeader from './PatternTimingHeader.svelte'
-	import { Button } from '$lib/components/ui/button/index.js'
-	import Box from '$lib/components/ui/box.svelte'
-	import Divider from '../ui/divider.svelte'
-	import Icon from '@iconify/svelte'
 	import { toFractionString } from '$lib/helpers/numbers'
-	import { MagnifyingGlassPlus, MagnifyingGlassMinus } from 'phosphor-svelte'
+	import { MagnifyingGlassPlus, MagnifyingGlassMinus, MusicNotes } from 'phosphor-svelte'
 	import { SIGNAL_IDS, SIGNAL_ROWS } from '$lib/constants/signalRows'
 	import { createSignal } from '$lib/helpers/creators'
 	import { resolveSignalConflicts, getNoteFromSignalRow } from '$lib/helpers/signalRows'
@@ -676,32 +672,31 @@
 <svelte:window onclick={handleClickOutside} onkeydown={handleKeyDown} />
 
 <div class="PatternEditor">
-	<div class="patternToolbar">
-		<Box gap="16px" align="center">
-			<Icon icon="mingcute:grid-fill" width="20px" height="20px" />
+	<z-row insetX="lg" insetY="sm" gap="lg" alignsY="center" isFullWidth>
+		<z-row gap="sm" alignsY="center">
+			<MusicNotes size={20} />
 
-			<div class="titleSection">
-				<span class="herPanelTitle">Pattern</span>
-				<span class="patternBarCount text-xs font-medium text-foreground/80 whitespace-nowrap uppercase">
+			<z-column>
+				<z-subheading size="md">Pattern</z-subheading>
+				<z-text size="xs" color="muted" class="patternBarCount">
 					{toFractionString(context.state.project.patternDurationBars)}
-					{context.state.project.patternDurationBars === 1 ? 'BAR' : 'BARS'}
-				</span>
-			</div>
-		</Box>
+					{context.state.project.patternDurationBars === 1 ? 'bar' : 'bars'}
+				</z-text>
+			</z-column>
+		</z-row>
 
-		<Divider margin="24px" />
+		<z-separator isVertical></z-separator>
 
-		<Box gap="8px" align="center">
-			<Button size="small" isIcon={true} onclick={zoomOutPattern}>
+		<z-button-group>
+			<z-button kind="outline" size="sm" onclick={zoomOutPattern} aria-label="Zoom out">
 				<MagnifyingGlassMinus size={16} weight="bold" />
-			</Button>
-			<Button size="small" isIcon={true} onclick={zoomInPattern}>
+			</z-button>
+			<z-button kind="outline" size="sm" onclick={zoomInPattern} aria-label="Zoom in">
 				<MagnifyingGlassPlus size={16} weight="bold" />
-			</Button>
-		</Box>
-
-		<Divider margin="24px" />
-	</div>
+			</z-button>
+		</z-button-group>
+	</z-row>
+	<z-separator></z-separator>
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="signalGridBox" bind:this={signalGridBox}>
@@ -776,32 +771,12 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 0px;
-		padding: 0;
 		min-height: 0;
-		/* border-bottom: 1px solid var(--n-03); */
-		/* border-top: 1px solid var(--n-03); */
-	}
-
-	.patternToolbar {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		padding: 0px 24px;
-		height: 54px;
-		background-color: var(--color-panel-bg);
-		border-bottom: 1px solid var(--n-03);
-		/* border-top: 1px solid var(--n-03); */
-	}
-
-	.titleSection {
-		display: flex;
-		flex-direction: column;
 	}
 
 	.patternBarCount {
-		position: relative;
-		top: -5px;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
 	}
 
 	.signalGridBox {
@@ -810,8 +785,6 @@
 		display: flex;
 		flex-direction: row;
 		overflow: auto;
-		/* border: 1px solid var(--n-03); */
-		/* border: 1px solid #747474; */
 	}
 
 	.signalRowLabelsBox {
@@ -819,43 +792,43 @@
 		height: fit-content;
 		flex-direction: column;
 		flex-shrink: 0;
-		background: red;
-		border-right: 1px solid var(--n-03);
+		background: var(--card);
+		border-right: 1px solid var(--border);
 		z-index: 110;
 		position: sticky;
 		left: 0;
 	}
 
 	.signalRowLabelSpacer {
-		height: 32px;
+		height: 2rem;
 		width: 100%;
 		flex-shrink: 0;
-		background: var(--colorWhite);
-		border-bottom: 1px solid var(--n-03);
+		background: var(--card);
+		border-bottom: 1px solid var(--border);
 		position: sticky;
 		top: 0;
 		z-index: 120;
 	}
 
 	.signalRowLabel {
-		width: 80px;
-		min-width: 80px;
-		height: 32px;
-		padding: 0px 4px;
+		width: 5rem;
+		min-width: 5rem;
+		height: 2rem;
+		padding: 0 var(--spacing-2);
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
-		gap: 8px;
-		font-weight: 600;
-		color: var(--n-05);
-		border-bottom: 1px solid var(--n-03);
+		gap: var(--spacing-2);
+		font-weight: var(--font-weight-semibold);
+		color: var(--muted-foreground);
+		border-bottom: 1px solid var(--border);
 		flex-shrink: 0;
 		user-select: none;
-		background: var(--n-00);
+		background: var(--card);
 		transition:
-			color 0.1s,
-			background-color 0.1s;
+			color var(--motion-instant) linear,
+			background-color var(--motion-instant) linear;
 	}
 
 	.labelId {
@@ -864,13 +837,13 @@
 
 	.labelNote {
 		text-align: right;
-		color: var(--a-03);
-		font-weight: 700;
+		color: var(--purple);
+		font-weight: var(--font-weight-bold);
 	}
 
 	.signalRowLabel:hover {
-		color: var(--n-08);
-		background: var(--colorWhite);
+		color: var(--foreground);
+		background: var(--background-light);
 		cursor: pointer;
 	}
 
@@ -894,33 +867,31 @@
 		--beatsPerBar: 4;
 		--barWidth: calc(var(--beatWidth) * var(--beatsPerBar));
 
-		width: calc(var(--barWidth) * var(--barCount)); /* 6144px */
+		width: calc(var(--barWidth) * var(--barCount));
 		min-width: calc(var(--barWidth) * var(--barCount));
-		height: 32px;
-		min-height: 32px;
+		height: 2rem;
+		min-height: 2rem;
 		flex-shrink: 0;
 		position: relative;
 		background-color: transparent;
-		border-bottom: 1px solid var(--n-03);
+		border-bottom: 1px solid var(--border);
 
-		/* Alternating bar backgrounds + grid lines */
+		/* Grid lines every cell, plus alternating shading every bar. */
 		background-image:
-			/* Vertical grid lines every 16px (cell) */
 			repeating-linear-gradient(
 				to right,
 				transparent 0px,
 				transparent calc(var(--cellWidth) - 1px),
-				var(--n-03) calc(var(--cellWidth) - 1px),
-				var(--n-03) var(--cellWidth)
+				var(--border) calc(var(--cellWidth) - 1px),
+				var(--border) var(--cellWidth)
 			),
-			/* Alternating bar shading (every 2 bars) */
-				repeating-linear-gradient(
-					to right,
-					var(--n-01) 0px,
-					var(--n-01) var(--barWidth),
-					var(--n-00) var(--barWidth),
-					var(--n-00) calc(var(--barWidth) * 2)
-				);
+			repeating-linear-gradient(
+				to right,
+				var(--card) 0px,
+				var(--card) var(--barWidth),
+				var(--background) var(--barWidth),
+				var(--background) calc(var(--barWidth) * 2)
+			);
 	}
 
 	.signalGridRow:last-child {
@@ -929,23 +900,22 @@
 
 	.inactivePatternOverlay {
 		position: absolute;
-		top: 32px; /* Below header */
+		top: 2rem;
 		bottom: 0;
 		right: 0;
-		background: var(--n-03);
+		background: var(--color-neutral-3);
 		opacity: 0.5;
 		pointer-events: auto;
 		z-index: 100;
 		cursor: not-allowed;
-		/* backdrop-filter: grayscale(50%); */
 	}
 
 	.playbackCursor {
 		position: absolute;
-		top: 32px; /* Below header */
+		top: 2rem;
 		bottom: 0;
 		width: 1px;
-		background-color: var(--n-09);
+		background-color: var(--purple);
 		z-index: 105;
 		pointer-events: none;
 		will-change: transform;

@@ -1,264 +1,102 @@
 <script lang="ts">
-	import { Dialog } from 'bits-ui'
-	import { Button } from '$lib/components/ui/button'
-	import { Input } from '$lib/components/ui/input'
-	import { Label } from '$lib/components/ui/label'
-	import Box from './ui/box.svelte'
 	import { updateUserSettings } from '$lib/database/auth'
 	import { useActiveUser, useAuthUser } from '$lib/helpers/useActiveUser.svelte'
-	import { X } from 'phosphor-svelte'
 
 	type DialogUserSettingsPropsT = {
 		isOpen: boolean
-		onOpenChange: (open: boolean) => void
+		onClose: () => void
 	}
 
-	let props: DialogUserSettingsPropsT = $props()
+	const SUCCESS_CLOSE_DELAY_MS = 1200
+
+	const props: DialogUserSettingsPropsT = $props()
 
 	const activeUser = useActiveUser()
 	const authUser = useAuthUser()
 
-	let userName = $state(activeUser?.userName || '')
-	let email = $state(authUser?.email || '')
-	let bio = $state(activeUser?.bio || '')
-	let avatarUrl = $state(activeUser?.avatarUrl || '')
+	let userName = $state('')
+	let bio = $state('')
+	let avatarUrl = $state('')
 	let errorMessage = $state<string | null>(null)
 	let successMessage = $state<string | null>(null)
 	let isSubmitting = $state(false)
 
-	$effect(() => {
-		const isDialogOpen = props.isOpen
-		if (!isDialogOpen) return
-		userName = activeUser?.userName || ''
-		email = authUser?.email || ''
-		bio = activeUser?.bio || ''
-		avatarUrl = activeUser?.avatarUrl || ''
+	const email = $derived(authUser?.email ?? '')
+	const saveButtonLabel = $derived(isSubmitting ? 'Saving…' : 'Save changes')
+	const hasErrorMessage = $derived(errorMessage !== null)
+	const hasSuccessMessage = $derived(successMessage !== null)
+
+	const resetFormFromUser = () => {
+		userName = activeUser?.userName ?? ''
+		bio = activeUser?.bio ?? ''
+		avatarUrl = activeUser?.avatarUrl ?? ''
 		errorMessage = null
 		successMessage = null
+	}
+
+	$effect(() => {
+		if (props.isOpen) resetFormFromUser()
 	})
 
-	const handleSubmit = async (event: SubmitEvent) => {
-		event.preventDefault()
+	const handleUserNameInput = (event: CustomEvent) => {
+		userName = event.detail.value
+	}
+
+	const handleBioInput = (event: CustomEvent) => {
+		bio = event.detail.value
+	}
+
+	const handleAvatarUrlInput = (event: CustomEvent) => {
+		avatarUrl = event.detail.value
+	}
+
+	const handleSave = async () => {
 		errorMessage = null
 		successMessage = null
-
 		isSubmitting = true
 
-		const updateResult = await updateUserSettings({
-			userName,
-			bio,
-			avatarUrl
-		})
-
+		const updateResult = await updateUserSettings({ userName, bio, avatarUrl })
 		isSubmitting = false
 
-		const hasUpdateError = !updateResult.success
-		if (hasUpdateError) {
-			errorMessage = updateResult.error || 'Failed to update settings'
+		if (!updateResult.success) {
+			errorMessage = updateResult.error ?? 'Failed to update settings'
 			return
 		}
 
-		successMessage = 'Settings updated successfully!'
-
-		setTimeout(() => {
-			props.onOpenChange(false)
-		}, 1500)
+		successMessage = 'Settings updated.'
+		setTimeout(props.onClose, SUCCESS_CLOSE_DELAY_MS)
 	}
 </script>
 
-<Dialog.Root open={props.isOpen} onOpenChange={props.onOpenChange}>
-	<Dialog.Portal>
-		<Dialog.Overlay class="dialogOverlay" />
-		<Dialog.Content class="dialogContent">
-			<Box gap="24px" isColumn justify="stretch">
-				<Box justify="space-between" align="center">
-					<Dialog.Title class="dialogTitle">User Settings</Dialog.Title>
-					<Dialog.Close class="dialogClose">
-						<X size={24} weight="bold" />
-					</Dialog.Close>
-				</Box>
+<z-dialog isOpen={props.isOpen} heading="User settings" description="Choose how you show up on Keylime." onclose={props.onClose}>
+	<z-column gap="md" insetY="xs">
+		{#if hasErrorMessage}
+			<z-alert tone="danger">{errorMessage}</z-alert>
+		{/if}
 
-				<form class="settingsForm" onsubmit={handleSubmit}>
-					<Box gap="16px" isColumn justify="stretch">
-						{#if errorMessage}
-							<div class="errorMessage">
-								{errorMessage}
-							</div>
-						{/if}
+		{#if hasSuccessMessage}
+			<z-alert tone="success">{successMessage}</z-alert>
+		{/if}
 
-						{#if successMessage}
-							<div class="successMessage">
-								{successMessage}
-							</div>
-						{/if}
+		<z-field label="Username" isRequired>
+			<z-input value={userName} placeholder="username" isRequired oninput={handleUserNameInput}></z-input>
+		</z-field>
 
-						<div class="field">
-							<Label for="userName">Username</Label>
-							<Input
-								size="large"
-								type="text"
-								id="userName"
-								name="userName"
-								placeholder="username"
-								required
-								bind:value={userName}
-							/>
-						</div>
+		<z-field label="Email" description="Your email is private and can't be changed here.">
+			<z-input type="email" value={email} isDisabled></z-input>
+		</z-field>
 
-						<div class="field">
-							<Label for="email">Email</Label>
-							<Input size="large" type="email" id="email" name="email" value={email} disabled />
-						</div>
+		<z-field label="Bio">
+			<z-input value={bio} placeholder="Tell us about yourself" oninput={handleBioInput}></z-input>
+		</z-field>
 
-						<div class="field">
-							<Label for="bio">Bio</Label>
-							<Input size="large" type="text" id="bio" name="bio" placeholder="Tell us about yourself" bind:value={bio} />
-						</div>
+		<z-field label="Avatar URL">
+			<z-input type="url" value={avatarUrl} placeholder="https://…" oninput={handleAvatarUrlInput}></z-input>
+		</z-field>
+	</z-column>
 
-						<div class="field">
-							<Label for="avatarUrl">Avatar URL</Label>
-							<Input
-								size="large"
-								type="url"
-								id="avatarUrl"
-								name="avatarUrl"
-								placeholder="https://..."
-								bind:value={avatarUrl}
-							/>
-						</div>
-					</Box>
-
-					<Box gap="12px" class="dialogActions">
-						<Button size="large" isFullWidth type="button" kind="ghost" onclick={() => props.onOpenChange(false)}
-							>Cancel</Button
-						>
-						<Button size="large" isFullWidth type="submit" color="brand" disabled={isSubmitting}>
-							{isSubmitting ? 'Saving...' : 'Save Changes'}
-						</Button>
-					</Box>
-				</form>
-			</Box>
-		</Dialog.Content>
-	</Dialog.Portal>
-</Dialog.Root>
-
-<style>
-	:global(.dialogOverlay) {
-		position: fixed;
-		inset: 0;
-		background-color: rgba(0, 0, 0, 0.5);
-		z-index: 50;
-		animation: fadeIn 0.2s ease-out;
-	}
-
-	:global(.dialogContent) {
-		position: fixed;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		background-color: var(--colorWhite);
-		border: 1px solid var(--n-03);
-		border-radius: 12px;
-		padding: 32px;
-		width: 90vw;
-		max-width: 500px;
-		/* make it MAX 600px tall, never to exceed that */
-		max-height: calc(min(80vh, 600px));
-		overflow-y: auto;
-		z-index: 51;
-		animation: slideIn 0.2s ease-out;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-	}
-
-	/* hide scrollbar background */
-
-	:global .dialogContent::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	:global(.dialogTitle) {
-		font-size: 24px;
-		font-weight: 700;
-		color: var(--n-10);
-		margin: 0;
-	}
-
-	:global(.dialogClose) {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: transparent;
-		border: none;
-		cursor: pointer;
-		color: var(--n-07);
-		transition: color 0.2s;
-		padding: 4px;
-	}
-
-	:global(.dialogClose:hover) {
-		color: var(--n-10);
-	}
-
-	.settingsForm {
-		display: flex;
-		flex-direction: column;
-		gap: 24px;
-		align-items: stretch;
-	}
-
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.divider {
-		height: 1px;
-		background-color: var(--n-03);
-		margin: 8px 0;
-	}
-
-	.errorMessage {
-		padding: 12px 16px;
-		background-color: #fee;
-		border: 1px solid #fcc;
-		border-radius: 8px;
-		color: #c33;
-		font-size: 14px;
-	}
-
-	.successMessage {
-		padding: 12px 16px;
-		background-color: #efe;
-		border: 1px solid #cfc;
-		border-radius: 8px;
-		color: #3c3;
-		font-size: 14px;
-	}
-
-	:global(.dialogActions) {
-		display: flex;
-		justify-content: flex-end;
-		margin-top: 8px;
-	}
-
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
-	}
-
-	@keyframes slideIn {
-		from {
-			opacity: 0;
-			transform: translate(-50%, -48%);
-		}
-		to {
-			opacity: 1;
-			transform: translate(-50%, -50%);
-		}
-	}
-</style>
+	<z-row slot="footer" gap="sm" alignsX="end">
+		<z-button kind="ghost" onclick={props.onClose}>Cancel</z-button>
+		<z-button tone="primary" isLoading={isSubmitting} onclick={handleSave}>{saveButtonLabel}</z-button>
+	</z-row>
+</z-dialog>
