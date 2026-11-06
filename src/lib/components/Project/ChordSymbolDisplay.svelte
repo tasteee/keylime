@@ -25,9 +25,9 @@
 		white-space: nowrap;
 	}
 
-	/* A softer shade of the note's color. Rests have no hue,
+	/* The ink tone of the note's color. Rests have no hue,
 	   so they fall back to the plain muted tone. */
 	.chordSuffix {
-		color: color-mix(in oklch, var(--chord-hue, var(--muted-foreground)) 65%, var(--muted-foreground));
+		color: var(--chord-ink, var(--muted-foreground));
 	}
 </style>
