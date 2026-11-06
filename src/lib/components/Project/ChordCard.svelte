@@ -16,7 +16,7 @@
 	const isPlaying = $derived(playbackStore.currentlyPlayingChordId === props.chord.id)
 
 	const chordColor = $derived(
-		getChordColor({ symbol: props.chord.symbol, key: project.key, scale: project.scale })
+		getChordColor({ symbol: props.chord.symbol })
 	)
 
 	let isModifierDialogOpen = $state(false)
@@ -114,26 +114,21 @@
 	.chordCard {
 		height: 3rem;
 		user-select: none;
-		--chord-tint-start: 16%;
-		--chord-tint-end: 4%;
-		background: linear-gradient(
-			135deg,
-			color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint-start), var(--card)),
-			color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint-end), var(--card))
-		);
-		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 28%, var(--border));
-		transition: border-color var(--motion-fast) var(--ease-enter);
+		--chord-tint: 14%;
+		background: color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint), var(--card));
+		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 60%, var(--card));
+		transition:
+			background var(--motion-fast) var(--ease-enter),
+			border-color var(--motion-fast) var(--ease-enter);
 	}
 
 	.chordCard:hover {
-		--chord-tint-start: 24%;
-		--chord-tint-end: 8%;
-		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 50%, var(--border));
+		--chord-tint: 22%;
+		border-color: var(--chord-hue, var(--foreground));
 	}
 
 	.chordCard.isPlaying {
-		--chord-tint-start: 32%;
-		--chord-tint-end: 14%;
+		--chord-tint: 32%;
 		border-color: var(--chord-hue, var(--foreground));
 	}
 

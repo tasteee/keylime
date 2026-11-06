@@ -49,8 +49,7 @@
 	let isModifierDialogOpen = $state(false)
 	const isRest = $derived(props.item.type === 'rest')
 	const chordColor = $derived.by(() => {
-		const project = context.state.project
-		return getChordColor({ symbol: props.item.symbol, key: project.key, scale: project.scale })
+		return getChordColor({ symbol: props.item.symbol })
 	})
 	const isSelected = $derived(props.item.id === context.state.selectedProgressionItemId)
 	const width = $derived(`${(props.item.durationBeats ?? 0) * props.pixelsPerBeat + (props.index === 0 ? 0 : 0)}px`)
@@ -175,14 +174,9 @@
 		align-items: center;
 		justify-content: center;
 		height: auto;
-		--chord-tint-start: 16%;
-		--chord-tint-end: 4%;
-		background: linear-gradient(
-			135deg,
-			color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint-start), var(--card)),
-			color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint-end), var(--card))
-		);
-		border: 1px solid color-mix(in oklch, var(--chord-hue, var(--foreground)) 28%, var(--border));
+		--chord-tint: 14%;
+		background: color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint), var(--card));
+		border: 1px solid color-mix(in oklch, var(--chord-hue, var(--foreground)) 60%, var(--card));
 		border-radius: var(--radius-md);
 		color: var(--foreground);
 		cursor: default;
@@ -194,15 +188,13 @@
 	}
 
 	.progressionItem:hover {
-		--chord-tint-start: 24%;
-		--chord-tint-end: 8%;
+		--chord-tint: 22%;
 	}
 
 	/* Selected is one step up in tone: deeper tint, stronger border. */
 	.progressionItem.isSelected {
-		--chord-tint-start: 34%;
-		--chord-tint-end: 16%;
-		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 70%, var(--border));
+		--chord-tint: 32%;
+		border-color: var(--chord-hue, var(--foreground));
 		z-index: 20;
 	}
 
@@ -329,8 +321,7 @@
 	/* Disable hover effects on every card while one is dragged or resized. */
 	:global([data-is-dragging='true']) .progressionItem:not(.isSelected):hover,
 	:global([data-is-resizing='true']) .progressionItem:not(.isSelected):hover {
-		--chord-tint-start: 16%;
-		--chord-tint-end: 4%;
+		--chord-tint: 14%;
 	}
 
 	:global([data-is-dragging='true']) .progressionItem.isRest:hover,
