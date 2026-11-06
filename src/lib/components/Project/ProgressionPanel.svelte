@@ -512,7 +512,7 @@
 		position: absolute;
 		left: var(--spacing-3);
 		right: var(--spacing-3);
-		bottom: var(--spacing-4);
+		bottom: var(--progression-controls-offset);
 		z-index: 200;
 		display: flex;
 		flex-direction: row;
@@ -527,6 +527,8 @@
 
 	/* The same floating surface as the pattern controls. */
 	.progressionFloatingControls {
+		box-sizing: border-box;
+		min-height: var(--progression-controls-height);
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -548,7 +550,10 @@
 		--progression-gutter: var(--spacing-3);
 		--progression-chord-height: 64px;
 		--progression-pad-top: calc(var(--spacing-6) + var(--progression-gutter));
-		--progression-pad-bottom: calc(var(--spacing-7) + var(--spacing-5) + var(--progression-gutter));
+		--progression-controls-height: 3rem;
+		--progression-controls-offset: var(--spacing-4);
+		--progression-controls-gap: 1rem;
+		--progression-pad-bottom: calc(var(--progression-controls-offset) + var(--progression-controls-height) + var(--progression-controls-gap));
 		--progression-panel-height: calc(var(--progression-pad-top) + var(--progression-chord-height) + var(--progression-pad-bottom));
 		position: relative;
 		width: 100%;
