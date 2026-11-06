@@ -1,11 +1,19 @@
 <script lang="ts">
 	import { getContext, onMount } from 'svelte'
+	import PanelHeader from './PanelHeader.svelte'
 	import PatternGrid from './PatternGrid.svelte'
 	import PatternLibrarySelect from './PatternLibrarySelect.svelte'
 	import SelectPatternLength from './SelectPatternLength.svelte'
 	import { MagnifyingGlassPlus, MagnifyingGlassMinus, Gear } from 'phosphor-svelte'
 	import { createPatternEditor, type AuditionArgsT } from '$lib/midiGrid/editor'
-	import { TICKS_PER_BEAT, VELOCITY_LANE_HEIGHT } from '$lib/midiGrid/constants'
+	import {
+		MAX_CELL_PIXELS,
+		MAX_ROW_HEIGHT,
+		MIN_CELL_PIXELS,
+		MIN_ROW_HEIGHT,
+		TICKS_PER_BEAT,
+		VELOCITY_LANE_HEIGHT
+	} from '$lib/midiGrid/constants'
 	import { getRowIdForPitch } from '$lib/midiGrid/rows'
 	import {
 		convertNotesToPattern,
@@ -24,8 +32,6 @@
 	const projectEditor = useProjectEditor()
 	const playbackContext = getContext<PlaybackContextT>('playback')
 
-	const PATTERN_MIN_ZOOM = 16
-	const PATTERN_MAX_ZOOM = 48
 	const PATTERN_ZOOM_STEP = 4
 	const AUDITION_MS = 300
 	const editorStyle = `--lane-height: ${VELOCITY_LANE_HEIGHT}px`
@@ -153,17 +159,32 @@
 		editor.setLoopEndTick(loopEndTick)
 	})
 
-	// One zoom level sets the width of a cell and the height of a row.
+	// The saved zoom level is the width of a cell. It is dragged on the ruler.
 	$effect(() => {
 		const zoomLevel = project.patternZoomLevel
 		const ticksPerCell = TICKS_PER_BEAT / 4
-		editor.setView({ pxPerTick: zoomLevel / ticksPerCell, rowHeight: zoomLevel })
+		editor.setView({ pxPerTick: zoomLevel / ticksPerCell })
 	})
 
-	const changeZoom = (direction: 1 | -1) => {
-		const nextZoomLevel = project.patternZoomLevel + direction * PATTERN_ZOOM_STEP
-		const patternZoomLevel = clampNumber({ value: nextZoomLevel, min: PATTERN_MIN_ZOOM, max: PATTERN_MAX_ZOOM })
+	// Row height is dragged on the row labels. It starts level with the cell width.
+	onMount(() => {
+		const startingRowHeight = clampNumber({ value: project.patternZoomLevel, min: MIN_ROW_HEIGHT, max: MAX_ROW_HEIGHT })
+		editor.setView({ rowHeight: startingRowHeight })
+	})
+
+	const handleCellPixelsChange = (cellPixels: number) => {
+		const patternZoomLevel = clampNumber({ value: cellPixels, min: MIN_CELL_PIXELS, max: MAX_CELL_PIXELS })
 		projectEditor.updateProject({ patternZoomLevel })
+	}
+
+	// The buttons and the wheel zoom both axes together.
+	const changeZoom = (direction: 1 | -1) => {
+		const step = direction * PATTERN_ZOOM_STEP
+		handleCellPixelsChange(project.patternZoomLevel + step)
+
+		const nextRowHeight = editor.getView().rowHeight + step
+		const rowHeight = clampNumber({ value: nextRowHeight, min: MIN_ROW_HEIGHT, max: MAX_ROW_HEIGHT })
+		editor.setView({ rowHeight })
 	}
 
 	const zoomInPattern = () => changeZoom(1)
@@ -206,12 +227,15 @@
 </script>
 
 <div class="pattern-editor" style={editorStyle}>
+	<PanelHeader label="Pattern" />
+
 	<PatternGrid
 		{editor}
 		{rowNoteNames}
 		onRowPress={handleRowPress}
 		onRowRelease={stopHeldLabelNote}
 		onZoomStep={changeZoom}
+		onCellPixelsChange={handleCellPixelsChange}
 	/>
 
 	<div class="pattern-floating-controls">

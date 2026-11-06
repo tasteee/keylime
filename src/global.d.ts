@@ -87,7 +87,7 @@ type ProjectT = {
   patternSignalRows: SignalRowsT // json...
   patternDurationBars: number // 1/16 (one cell) up to 16, in steps of 1/16
   doesPatternResetOnChordChange?: boolean // restart the pattern at each chord
-  patternZoomLevel: number // between 16 - 48, steps of 4. defai;t 32
+  patternZoomLevel: number // width of a cell in px, between 8 - 96. default 32
   progressionZoomLevel: number // between 40 and 160, steps of 12, default 82
   createdAt: Date
   updatedAt: Date

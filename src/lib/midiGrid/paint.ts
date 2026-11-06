@@ -1,4 +1,4 @@
-import { ROW_COUNT, ROWS_IN_BAND, TICKS_PER_BAR, TICKS_PER_BEAT, TICKS_PER_CELL } from './constants'
+import { ROW_COUNT, ROWS_IN_BAND, TICKS_PER_BAR, TICKS_PER_BEAT } from './constants'
 import { getXAtTick, getNoteRect } from './geometry'
 import { withAlpha, type PaletteT } from './palette'
 import type { NoteT, ViewT } from './types'
@@ -75,8 +75,9 @@ export const drawTimeGrid = (args: PaintTimeGridArgsT) => {
 	const view = args.view
 	const firstTick = view.scrollTick
 	const lastTick = view.scrollTick + args.width / view.pxPerTick
-	const cellPixels = TICKS_PER_CELL * view.pxPerTick
-	const cellAlpha = clampNumber((cellPixels - 5) / 10, 0, 1)
+	const stepTicks = view.gridStepTicks
+	const stepPixels = stepTicks * view.pxPerTick
+	const stepAlpha = clampNumber((stepPixels - 5) / 10, 0, 1)
 
 	const firstBar = Math.max(0, Math.floor(firstTick / TICKS_PER_BAR))
 	const lastBar = Math.ceil(lastTick / TICKS_PER_BAR)
@@ -92,31 +93,31 @@ export const drawTimeGrid = (args: PaintTimeGridArgsT) => {
 		}
 	}
 
-	const firstCell = Math.max(0, Math.floor(firstTick / TICKS_PER_CELL))
-	const lastCell = Math.ceil(lastTick / TICKS_PER_CELL)
-	const cellsPerBeat = TICKS_PER_BEAT / TICKS_PER_CELL
-	const cellsPerBar = TICKS_PER_BAR / TICKS_PER_CELL
+	const firstStep = Math.max(0, Math.floor(firstTick / stepTicks))
+	const lastStep = Math.ceil(lastTick / stepTicks)
+	const stepsPerBeat = TICKS_PER_BEAT / stepTicks
+	const stepsPerBar = TICKS_PER_BAR / stepTicks
 
 	context.lineWidth = 1
 
-	const drawLines = (strokeStyle: string, shouldDrawCell: (cell: number) => boolean) => {
+	const drawLines = (strokeStyle: string, shouldDrawStep: (step: number) => boolean) => {
 		context.strokeStyle = strokeStyle
 		context.beginPath()
-		for (let cell = firstCell; cell <= lastCell; cell++) {
-			if (!shouldDrawCell(cell)) continue
-			const lineX = getCrispPosition(getXAtTick({ view, tick: cell * TICKS_PER_CELL }))
+		for (let step = firstStep; step <= lastStep; step++) {
+			if (!shouldDrawStep(step)) continue
+			const lineX = getCrispPosition(getXAtTick({ view, tick: step * stepTicks }))
 			context.moveTo(lineX, args.top)
 			context.lineTo(lineX, args.top + args.height)
 		}
 		context.stroke()
 	}
 
-	const isPlainCell = (cell: number) => cell % cellsPerBeat !== 0
-	const isPlainBeat = (cell: number) => cell % cellsPerBeat === 0 && cell % cellsPerBar !== 0
-	const isBar = (cell: number) => cell % cellsPerBar === 0
+	const isPlainStep = (step: number) => step % stepsPerBeat !== 0
+	const isPlainBeat = (step: number) => step % stepsPerBeat === 0 && step % stepsPerBar !== 0
+	const isBar = (step: number) => step % stepsPerBar === 0
 
-	const hasVisibleCells = cellAlpha > 0.01
-	if (hasVisibleCells) drawLines(withAlpha(palette.lineCell, cellAlpha), isPlainCell)
+	const hasVisibleSteps = stepAlpha > 0.01
+	if (hasVisibleSteps) drawLines(withAlpha(palette.lineCell, stepAlpha), isPlainStep)
 	drawLines(palette.lineBeat, isPlainBeat)
 	drawLines(palette.lineBar, isBar)
 }

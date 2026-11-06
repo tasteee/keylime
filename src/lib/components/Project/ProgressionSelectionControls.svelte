@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Minus, Plus, ArrowLeft, ArrowRight, Copy, Trash } from 'phosphor-svelte'
+	import { Copy, Trash } from 'phosphor-svelte'
 	import { toFractionString } from '$lib/helpers/numbers'
 	import { getContext } from 'svelte'
 
@@ -33,7 +33,6 @@
 	const context = getContext<ProjectEditorContextT>('projectEditor')
 
 	const BEATS_PER_BAR = 4
-	const MIN_DURATION_BEATS = 1
 
 	// Derive progressionItems with calculated startTime
 	const progressionItems = $derived.by(() => {
@@ -51,29 +50,6 @@
 		const found = progressionItems.find((item) => item.id === selectedProgressionItemId)
 		return found ?? null
 	})
-
-	const adjustDuration = (delta: number) => {
-		if (!selectedItem) return
-		const newDuration = Math.max(MIN_DURATION_BEATS, selectedItem.durationBeats + delta * 0.5)
-		context.updateProgressionItem({
-			id: selectedItem.id,
-			durationBeats: newDuration
-		})
-	}
-
-	const moveItem = (direction: number) => {
-		if (!selectedItem) return
-		const currentIndex = progressionItems.findIndex((i) => i.id === selectedItem.id)
-		if (currentIndex === -1) return
-
-		const newIndex = currentIndex + direction
-		if (newIndex < 0 || newIndex >= progressionItems.length) return
-
-		context.reorderProgressionItem({
-			itemId: selectedItem.id,
-			newIndex
-		})
-	}
 
 	const durationBars = $derived(selectedItem ? selectedItem.durationBeats / BEATS_PER_BAR : 0)
 	const durationLabel = $derived(`${toFractionString(durationBars)} ${durationBars === 1 ? 'bar' : 'bars'}`)
@@ -96,28 +72,6 @@
 
 			<z-separator isVertical></z-separator>
 
-			<z-toolbar-group label="Duration">
-				<z-button kind="ghost" size="sm" onclick={() => adjustDuration(-1)} aria-label="Decrease duration">
-					<Minus size={16} />
-				</z-button>
-				<z-button kind="ghost" size="sm" onclick={() => adjustDuration(1)} aria-label="Increase duration">
-					<Plus size={16} />
-				</z-button>
-			</z-toolbar-group>
-
-			<z-separator isVertical></z-separator>
-
-			<z-toolbar-group label="Position">
-				<z-button kind="ghost" size="sm" onclick={() => moveItem(-1)} aria-label="Move left">
-					<ArrowLeft size={16} />
-				</z-button>
-				<z-button kind="ghost" size="sm" onclick={() => moveItem(1)} aria-label="Move right">
-					<ArrowRight size={16} />
-				</z-button>
-			</z-toolbar-group>
-
-			<z-separator isVertical></z-separator>
-
 			<z-toolbar-group label="Item">
 				<z-button kind="ghost" size="sm" onclick={handleDuplicate} aria-label="Duplicate">
 					<Copy size={16} />
@@ -131,8 +85,17 @@
 {/if}
 
 <style>
+	/* The same floating surface as the other progression controls. */
 	.selectionControls {
 		margin-left: auto;
+		box-sizing: border-box;
+		min-height: var(--progression-controls-height);
+		display: flex;
+		align-items: center;
+		padding: var(--spacing-2);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-md);
 	}
 
 	.durationLabel {

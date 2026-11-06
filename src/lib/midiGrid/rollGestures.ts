@@ -1,5 +1,5 @@
 import { addNotes, buildMovedNotes, fitNoteIntoLoop, updateNotes } from './commands'
-import { DRAG_THRESHOLD_PX, MIN_NOTE_TICKS, TICKS_PER_CELL } from './constants'
+import { DRAG_THRESHOLD_PX, MIN_NOTE_TICKS } from './constants'
 import type { PatternEditorT } from './editor'
 import { getNoteRect, getPitchAtY, getTickAtX, snapTick } from './geometry'
 import { clampNumber } from './time'
@@ -72,7 +72,7 @@ export const createMoveGesture = (args: MoveGestureArgsT): GestureT => {
 		const tickShift = isAxisLocked && !isMovingMostlySideways ? 0 : rawTickShift
 		const targetPitch = isAxisLocked && isMovingMostlySideways ? originPitch : pointerPitch
 		const hasTickShift = tickShift !== 0
-		const snappedStart = snapTick({ tick: anchor.start + tickShift, isSnapOff: event.altKey })
+		const snappedStart = snapTick({ tick: anchor.start + tickShift, isSnapOff: event.altKey, stepTicks: view.gridStepTicks })
 		const ticks = hasTickShift ? snappedStart - anchor.start : 0
 		const rows = targetPitch - originPitch
 
@@ -144,9 +144,9 @@ export const createResizeGesture = (args: ResizeGestureArgsT): GestureT => {
 	const originTick = getTickAtX({ view: editor.getView(), x: args.context.getLocalPoint(downEvent).x })
 	let resized: NoteT[] = []
 
-	const getShortestDuration = (note: NoteT, isSnapOff: boolean): number => {
+	const getShortestDuration = (note: NoteT, isSnapOff: boolean, stepTicks: number): number => {
 		if (isSnapOff) return MIN_NOTE_TICKS
-		return Math.min(TICKS_PER_CELL, note.duration)
+		return Math.min(stepTicks, note.duration)
 	}
 
 	const move = (event: PointerEvent) => {
@@ -158,23 +158,23 @@ export const createResizeGesture = (args: ResizeGestureArgsT): GestureT => {
 
 		if (edge === 'end') {
 			const anchorEnd = anchor.start + anchor.duration
-			const snappedEnd = snapTick({ tick: anchorEnd + tickShift, isSnapOff })
+			const snappedEnd = snapTick({ tick: anchorEnd + tickShift, isSnapOff, stepTicks: view.gridStepTicks })
 			const delta = snappedEnd - anchorEnd
 
 			resized = notes.map((note) => {
-				const shortest = getShortestDuration(note, isSnapOff)
+				const shortest = getShortestDuration(note, isSnapOff, view.gridStepTicks)
 				const duration = Math.max(shortest, note.duration + delta)
 				return fitNoteIntoLoop({ note: { ...note, duration }, loopEndTick })
 			})
 		}
 
 		if (edge === 'start') {
-			const snappedStart = snapTick({ tick: anchor.start + tickShift, isSnapOff })
+			const snappedStart = snapTick({ tick: anchor.start + tickShift, isSnapOff, stepTicks: view.gridStepTicks })
 			const delta = snappedStart - anchor.start
 
 			resized = notes.map((note) => {
 				const endTick = note.start + note.duration
-				const shortest = getShortestDuration(note, isSnapOff)
+				const shortest = getShortestDuration(note, isSnapOff, view.gridStepTicks)
 				const start = clampNumber({ value: note.start + delta, min: 0, max: endTick - shortest })
 				return { ...note, start, duration: endTick - start }
 			})
@@ -259,7 +259,7 @@ export const createMarqueeGesture = (args: DownArgsT): GestureT => {
 
 		const view = editor.getView()
 		const clickedTick = getTickAtX({ view, x: origin.x })
-		const cursorTick = snapTick({ tick: clickedTick, mode: 'floor', isSnapOff: event.altKey })
+		const cursorTick = snapTick({ tick: clickedTick, mode: 'floor', isSnapOff: event.altKey, stepTicks: view.gridStepTicks })
 		editor.setView({ cursorTick })
 	}
 

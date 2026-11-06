@@ -1,7 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { createCanvasLayer, type CanvasLayerT, type DrawArgsT } from '$lib/midiGrid/canvasLayer'
-	import { BEATS_PER_BAR, TICKS_PER_BAR, TICKS_PER_BEAT } from '$lib/midiGrid/constants'
+	import {
+		BEATS_PER_BAR,
+		DRAG_THRESHOLD_PX,
+		MAX_CELL_PIXELS,
+		MIN_CELL_PIXELS,
+		TICKS_PER_BAR,
+		TICKS_PER_BEAT,
+		TICKS_PER_CELL
+	} from '$lib/midiGrid/constants'
 	import type { PatternEditorT } from '$lib/midiGrid/editor'
 	import { focusPatternFrame } from '$lib/midiGrid/focus'
 	import { getTickAtX, getXAtTick, snapTick } from '$lib/midiGrid/geometry'
@@ -13,6 +21,8 @@
 	type PatternRulerPropsT = {
 		editor: PatternEditorT
 		onZoomStep: (direction: 1 | -1) => void
+		// Called while dragging the ruler. Cell width in pixels.
+		onCellPixelsChange: (cellPixels: number) => void
 	}
 
 	const props: PatternRulerPropsT = $props()
@@ -21,10 +31,19 @@
 	const LOOP_STRIP_HEIGHT = 14
 	const HANDLE_REACH_PX = 8
 
+	// Dragging the ruler sideways doubles or halves the zoom
+	// for every this many pixels.
+	const ZOOM_DRAG_PX_PER_DOUBLE = 160
+
 	let canvasElement: HTMLCanvasElement
 	let layer: CanvasLayerT | null = null
 	let hoverX: number | null = null
 	let isDraggingLoop = false
+	let isPressingRuler = false
+	let isZoomDragging = false
+	let pressStartX = 0
+	let pressStartCellPixels = 0
+	let pressAnchorTick = 0
 
 	const getLocalX = (event: { clientX: number }): number => {
 		return event.clientX - canvasElement.getBoundingClientRect().left
@@ -133,7 +152,8 @@
 	}
 
 	// Drag the end of the loop bar, or click in the strip to end the
-	// pattern at that cell. Click below to move the paste cursor.
+	// pattern at that cell. Below it, click to move the paste cursor
+	// and drag sideways to zoom.
 	const handlePointerDown = (event: PointerEvent) => {
 		if (event.button !== 0) return
 		focusPatternFrame(canvasElement)
@@ -150,9 +170,43 @@
 			return
 		}
 
+		// Below the strip, a click moves the paste cursor and a drag zooms.
+		const view = props.editor.getView()
+		isPressingRuler = true
+		isZoomDragging = false
+		pressStartX = getLocalX(event)
+		pressStartCellPixels = view.pxPerTick * TICKS_PER_CELL
+		pressAnchorTick = getTickAtX({ view, x: pressStartX })
+	}
+
+	const applyZoomDrag = (event: PointerEvent) => {
+		const dragX = getLocalX(event) - pressStartX
+		const doublings = dragX / ZOOM_DRAG_PX_PER_DOUBLE
+		const rawCellPixels = pressStartCellPixels * Math.pow(2, doublings)
+		const clampedCellPixels = Math.min(MAX_CELL_PIXELS, Math.max(MIN_CELL_PIXELS, rawCellPixels))
+		const cellPixels = Math.round(clampedCellPixels)
+		const pxPerTick = cellPixels / TICKS_PER_CELL
+
+		// Keep the tick under the pointer where it was.
+		const scrollTick = pressAnchorTick - pressStartX / pxPerTick
+		props.editor.setView({ pxPerTick, scrollTick })
+		props.onCellPixelsChange(cellPixels)
+	}
+
+	const finishRulerPress = (event: PointerEvent) => {
+		const wasClick = isPressingRuler && !isZoomDragging
+		isPressingRuler = false
+		isZoomDragging = false
+		if (!wasClick) return
+
 		const view = props.editor.getView()
 		const pointerTick = getTickAtX({ view, x: getLocalX(event) })
-		const cursorTick = snapTick({ tick: pointerTick, mode: 'round', isSnapOff: event.altKey })
+		const cursorTick = snapTick({
+			tick: pointerTick,
+			mode: 'round',
+			isSnapOff: event.altKey,
+			stepTicks: view.gridStepTicks
+		})
 		props.editor.setView({ cursorTick })
 	}
 
@@ -165,11 +219,21 @@
 			return
 		}
 
+		if (isPressingRuler) {
+			const dragDistance = Math.abs(getLocalX(event) - pressStartX)
+			const hasMovedEnough = dragDistance >= DRAG_THRESHOLD_PX
+			if (hasMovedEnough) isZoomDragging = true
+			if (isZoomDragging) canvasElement.dataset.cursor = 'ew-resize'
+			if (isZoomDragging) applyZoomDrag(event)
+			return
+		}
+
 		const isEditingLoopHere = checkIsOnLoopHandle(event) || getLocalY(event) <= LOOP_STRIP_HEIGHT
 		canvasElement.dataset.cursor = isEditingLoopHere ? 'ew-resize' : 'text'
 	}
 
 	const handlePointerUp = (event: PointerEvent) => {
+		finishRulerPress(event)
 		isDraggingLoop = false
 		const hasCapture = canvasElement.hasPointerCapture(event.pointerId)
 		if (hasCapture) canvasElement.releasePointerCapture(event.pointerId)

@@ -13,6 +13,7 @@
 		onRowPress: (rowId: string) => void
 		onRowRelease: () => void
 		onZoomStep: (direction: 1 | -1) => void
+		onCellPixelsChange: (cellPixels: number) => void
 	}
 
 	const props: PatternGridPropsT = $props()
@@ -41,7 +42,11 @@
 >
 	<div class="pattern-grid-corner"></div>
 	<div class="pattern-grid-ruler">
-		<PatternRuler editor={props.editor} onZoomStep={props.onZoomStep} />
+		<PatternRuler
+				editor={props.editor}
+				onZoomStep={props.onZoomStep}
+				onCellPixelsChange={props.onCellPixelsChange}
+			/>
 	</div>
 
 	<div class="pattern-grid-labels">
@@ -68,9 +73,9 @@
 		grid-template-columns: var(--labels-width) minmax(0, 1fr);
 		grid-template-rows: var(--ruler-height) minmax(0, 1fr) var(--lane-height);
 		outline: none;
-		/* Matches the editor frame, inside its 1px border, so the
-		   corners and the focus ring follow the same curve. */
-		border-radius: calc(var(--radius-lg) - 1px);
+		/* The header sits above, so only the bottom corners follow the
+		   editor frame, inside its 1px border. */
+		border-radius: 0 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px);
 		overflow: hidden;
 	}
 

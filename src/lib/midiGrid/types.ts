@@ -23,6 +23,8 @@ export type NoteDraftT = {
 export type ViewT = {
 	pxPerTick: number
 	rowHeight: number
+	// The snap step for the current zoom. Finer when zoomed in.
+	gridStepTicks: number
 	scrollTick: number
 	// Fractional row at the top edge. Row 0 is the highest pitch.
 	scrollRow: number

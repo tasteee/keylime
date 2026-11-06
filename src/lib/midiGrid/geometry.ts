@@ -39,11 +39,13 @@ type SnapArgsT = {
 	mode?: SnapModeT
 	// Alt turns snapping off for one gesture.
 	isSnapOff?: boolean
+	// The grid step to snap to. Pass the view's gridStepTicks.
+	stepTicks?: number
 }
 
 export const snapTick = (args: SnapArgsT): number => {
 	if (args.isSnapOff) return Math.max(0, Math.round(args.tick))
-	return snapTickToCell({ tick: args.tick, mode: args.mode ?? 'round' })
+	return snapTickToCell({ tick: args.tick, mode: args.mode ?? 'round', stepTicks: args.stepTicks })
 }
 
 type HitTestArgsT = ViewArgsT & {

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import PanelHeader from './PanelHeader.svelte'
 	import ProgressionChordCard from './ProgressionChordCard.svelte'
 	import ProgressionSelectionControls from './ProgressionSelectionControls.svelte'
 	import ProgressionTimingMarkers from './ProgressionTimingMarkers.svelte'
@@ -6,6 +7,7 @@
 	import { isTypingInTextField } from '$lib/helpers/typing'
 	import { getContext } from 'svelte'
 	import GENERAL_CONFIG from '$lib/constants/general.json'
+	import { getGridStepBeats, snapBeatToGrid } from '$lib/helpers/progressionGrid'
 
 	type ProjectEditorContextT = {
 		state: {
@@ -188,12 +190,13 @@
 	// Grid layout: 4 beats per bar
 	const BEATS_PER_BAR = 4
 	const DRAG_THRESHOLD_PIXELS = 24
-	const MIN_DURATION_BEATS = 1 // Minimum item duration (1 beat)
-	const RESIZE_INCREMENT_BEATS = 0.5 // Snap to 0.5 beats when resizing
 	const MAX_MARKER_BARS = 64 // Render markers up to this many bars
 
 	// Derived: PIXELS_PER_BEAT from store
 	const PIXELS_PER_BEAT = $derived(context.state.project.progressionZoomLevel)
+
+	// Derived: the grid gets finer as the view zooms in
+	const gridStepBeats = $derived(getGridStepBeats({ pixelsPerBeat: PIXELS_PER_BEAT }))
 
 	// Derived: total duration is sum of all item durations
 	const totalBeats = $derived.by(() => {
@@ -286,12 +289,15 @@
 		if (!itemAreaElement) return
 
 		if (isResizingItem && resizingItemId) {
-			const item = context.state.project.progressionChords.find((i) => i.id === resizingItemId)
-			if (!item) return
+			const resizingItem = progressionItems.find((item) => item.id === resizingItemId)
+			if (!resizingItem) return
 
+			// Snap the right edge to the grid, not the length.
 			const deltaX = event.clientX - resizeStartX
-			const deltaBeats = Math.round(deltaX / PIXELS_PER_BEAT / RESIZE_INCREMENT_BEATS) * RESIZE_INCREMENT_BEATS
-			const newDuration = Math.max(MIN_DURATION_BEATS, resizeStartDuration + deltaBeats)
+			const deltaBeats = deltaX / PIXELS_PER_BEAT
+			const rawEndBeat = resizingItem.startTime + resizeStartDuration + deltaBeats
+			const snappedEndBeat = snapBeatToGrid({ beat: rawEndBeat, stepBeats: gridStepBeats })
+			const newDuration = Math.max(gridStepBeats, snappedEndBeat - resizingItem.startTime)
 
 			context.updateProgressionItem({
 				id: resizingItemId,
@@ -401,6 +407,7 @@
 <svelte:window onkeydown={handleKeyDown} onmousemove={handleMouseMove} onmouseup={handleMouseUp} />
 
 <z-column class="progressionPanelContainer">
+	<PanelHeader label="Progression" />
 
 	<!-- Main Progression Area -->
 	<div class="mainProgressionPanel" data-is-dragging={isDraggingItem || isResizingItem} data-is-resizing={isResizingItem}>
@@ -413,6 +420,7 @@
 						pixelsPerBeat={PIXELS_PER_BEAT}
 						beatsPerBar={BEATS_PER_BAR}
 						maxMarkerBars={MAX_MARKER_BARS}
+						gridStepBeats={gridStepBeats}
 					/>
 					{#if playbackContext.state.isPlaying}
 						<div class="playbackCursor" bind:this={cursorElement}></div>
@@ -506,7 +514,7 @@
 		position: absolute;
 		left: var(--spacing-3);
 		right: var(--spacing-3);
-		bottom: var(--spacing-3);
+		bottom: var(--progression-controls-offset);
 		z-index: 200;
 		display: flex;
 		flex-direction: row;
@@ -521,6 +529,8 @@
 
 	/* The same floating surface as the pattern controls. */
 	.progressionFloatingControls {
+		box-sizing: border-box;
+		min-height: var(--progression-controls-height);
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -539,9 +549,17 @@
 	}
 
 	.mainProgressionPanel {
+		--progression-gutter: var(--spacing-3);
+		--progression-chord-height: 64px;
+		--progression-pad-top: calc(var(--spacing-6) + var(--progression-gutter));
+		--progression-controls-height: 3rem;
+		--progression-controls-offset: var(--spacing-4);
+		--progression-controls-gap: 1rem;
+		--progression-pad-bottom: calc(var(--progression-controls-offset) + var(--progression-controls-height) + var(--progression-controls-gap));
+		--progression-panel-height: calc(var(--progression-pad-top) + var(--progression-chord-height) + var(--progression-pad-bottom));
 		position: relative;
 		width: 100%;
-		height: calc(10.5rem + var(--spacing-3));
+		height: var(--progression-panel-height);
 		flex-shrink: 0;
 		display: flex;
 		flex-direction: column;
@@ -556,11 +574,10 @@
 		flex-direction: column;
 		overflow-x: auto;
 		overflow-y: hidden;
-		max-height: calc(10.5rem + var(--spacing-3));
+		max-height: var(--progression-panel-height);
 	}
 
 	.itemArea {
-		--progression-gutter: var(--spacing-3);
 		box-sizing: border-box;
 		padding-inline: var(--progression-gutter);
 		position: relative;
@@ -570,8 +587,8 @@
 		display: flex;
 		flex-direction: row;
 		align-items: stretch;
-		padding-top: calc(var(--spacing-6) + var(--progression-gutter));
-		padding-bottom: calc(var(--spacing-7) + var(--spacing-5) + var(--progression-gutter));
+		padding-top: var(--progression-pad-top);
+		padding-bottom: var(--progression-pad-bottom);
 		left: -2px;
 	}
 

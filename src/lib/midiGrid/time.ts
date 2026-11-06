@@ -16,13 +16,16 @@ export const clampNumber = (args: { value: number; min: number; max: number }): 
 type SnapTickArgsT = {
 	tick: number
 	mode: SnapModeT
+	// The grid step to snap to. Defaults to one cell.
+	stepTicks?: number
 }
 
 export const snapTickToCell = (args: SnapTickArgsT): number => {
-	const cells = args.tick / TICKS_PER_CELL
-	if (args.mode === 'floor') return Math.max(0, Math.floor(cells) * TICKS_PER_CELL)
-	if (args.mode === 'ceil') return Math.max(0, Math.ceil(cells) * TICKS_PER_CELL)
-	return Math.max(0, Math.round(cells) * TICKS_PER_CELL)
+	const stepTicks = args.stepTicks ?? TICKS_PER_CELL
+	const steps = args.tick / stepTicks
+	if (args.mode === 'floor') return Math.max(0, Math.floor(steps) * stepTicks)
+	if (args.mode === 'ceil') return Math.max(0, Math.ceil(steps) * stepTicks)
+	return Math.max(0, Math.round(steps) * stepTicks)
 }
 
 type StepTickArgsT = {

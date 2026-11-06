@@ -7,8 +7,8 @@ import { asCleanAsync, cleanAsync, type CleanAsyncReturnT } from '$lib/modules/p
 import { type TheAwaitedReturnT } from '$lib/modules/the-awaited'
 
 const TOTAL_UNITS = 64
-const PATTERN_MIN_ZOOM = 16
-const PATTERN_MAX_ZOOM = 48
+const PATTERN_MIN_ZOOM = 8
+const PATTERN_MAX_ZOOM = 96
 const PATTERN_ZOOM_STEP = 4
 
 class ProjectStore {
