@@ -1,4 +1,5 @@
 <script lang="ts">
+	import DialogChordModifier from './DialogChordModifier.svelte'
 	import PanelHeader from './PanelHeader.svelte'
 	import ProgressionChordCard from './ProgressionChordCard.svelte'
 	import ProgressionSelectionControls from './ProgressionSelectionControls.svelte'
@@ -73,6 +74,36 @@
 			return { ...item, startTime } as ProgressionItemT
 		})
 	})
+
+	// One dialog serves every chord. It stays mounted, so a right-click
+	// only flips it open instead of building it first.
+	let isModifierDialogOpen = $state(false)
+	let modifierItemId: string | null = $state(null)
+
+	const modifierChord = $derived.by(() => {
+		const chords = progressionItems.filter((item): item is ProgressionChordT => item.type === 'chord')
+		const chosenChord = chords.find((chord) => chord.id === modifierItemId)
+		return chosenChord ?? chords[0]
+	})
+
+	const handleOpenModifier = (item: ProgressionItemT) => {
+		modifierItemId = item.id
+		isModifierDialogOpen = true
+	}
+
+	const handleModifierClose = () => {
+		isModifierDialogOpen = false
+	}
+
+	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: VoicingT }) => {
+		if (!modifierChord) return
+		context.updateProgressionItem({
+			id: modifierChord.id,
+			octaveOffset: args.octaveOffset,
+			inversion: args.inversion,
+			voicing: args.voicing
+		})
+	}
 
 	// Derive total duration
 	const getProgressionTotalDuration = (): number => {
@@ -470,6 +501,7 @@
 						selectItem={handleItemClick}
 						onItemMouseDown={handleItemMouseDown}
 						onResizeMouseDown={handleResizeMouseDown}
+						onOpenModifier={handleOpenModifier}
 					/>
 				{/each}
 			</div>
@@ -529,6 +561,16 @@
 			<ProgressionSelectionControls />
 		</div>
 	</div>
+
+	{#if modifierChord}
+		<DialogChordModifier
+			isOpen={isModifierDialogOpen}
+			chord={modifierChord}
+			projectOctave={context.state.project.octave}
+			onClose={handleModifierClose}
+			onSave={handleModifierSave}
+		/>
+	{/if}
 </z-column>
 
 <style>
