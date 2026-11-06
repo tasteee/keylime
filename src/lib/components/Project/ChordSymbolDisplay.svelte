@@ -16,7 +16,7 @@
 </script>
 
 <z-text size="sm" weight={700} color={rootColor} class="chordSymbol">
-	{symbolParts.root}<z-inline weight={400} class="chordSuffix">{symbolParts.suffix}</z-inline>
+	<z-inline class="chordRoot">{symbolParts.root}</z-inline><z-inline weight={400} class="chordSuffix">{symbolParts.suffix}</z-inline>
 </z-text>
 
 <style>
@@ -25,9 +25,13 @@
 		white-space: nowrap;
 	}
 
-	/* The ink tone of the note's color. Rests have no hue,
+	.chordRoot {
+		color: var(--chord-root, inherit);
+	}
+
+	/* The suffix tone of the note's color. Rests have no hue,
 	   so they fall back to the plain muted tone. */
 	.chordSuffix {
-		color: var(--chord-ink, var(--muted-foreground));
+		color: var(--chord-suffix, var(--muted-foreground));
 	}
 </style>
