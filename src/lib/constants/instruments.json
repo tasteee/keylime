@@ -4,34 +4,46 @@
 			"label": "Piano",
 			"value": "Piano"
 		},
-		"salamanderPiano": {
-			"label": "Salamander Grand",
-			"value": "SalamanderPiano",
-			"sf2File": "SalamanderGrandPiano.sf2",
-			"sf2PresetName": "Piano"
+		"salC5Piano": {
+			"label": "SalC5 Light",
+			"value": "SalC5Piano",
+			"sf2File": "SalC5Light2.sf2",
+			"sf2PresetName": ""
+		},
+		"wiiPiano": {
+			"label": "Wii Grand",
+			"value": "WiiPiano",
+			"sf2File": "Wii_Grand_Piano.sf2",
+			"sf2PresetName": ""
+		},
+		"soundtrapPiano": {
+			"label": "Soundtrap Grand",
+			"value": "SoundtrapPiano",
+			"sf2File": "Soundtrap_Grand_Piano.sf2",
+			"sf2PresetName": ""
 		},
 		"brightPiano": {
 			"label": "Bright Piano",
 			"value": "BrightPiano",
-			"sf2File": "GeneralUser-GS.sf2",
+			"sf2File": "GeneralUser_GS_v1.471.sf2",
 			"sf2PresetName": "Bright Acoustic Piano"
 		},
 		"honkyTonkPiano": {
 			"label": "Honky-Tonk Piano",
 			"value": "HonkyTonkPiano",
-			"sf2File": "GeneralUser-GS.sf2",
+			"sf2File": "GeneralUser_GS_v1.471.sf2",
 			"sf2PresetName": "Honky-tonk Piano"
 		},
 		"electricPiano": {
 			"label": "Electric Piano",
 			"value": "ElectricPiano",
-			"sf2File": "GeneralUser-GS.sf2",
+			"sf2File": "GeneralUser_GS_v1.471.sf2",
 			"sf2PresetName": "Electric Piano 1"
 		},
 		"rhodesPiano": {
 			"label": "Rhodes",
 			"value": "RhodesPiano",
-			"sf2File": "GeneralUser-GS.sf2",
+			"sf2File": "GeneralUser_GS_v1.471.sf2",
 			"sf2PresetName": "Electric Piano 2"
 		},
 		"guitar": {

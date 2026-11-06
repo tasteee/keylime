@@ -87,6 +87,7 @@ const createSf2Instrument = async (args: {
 
 	const wantedName = args.config.sf2PresetName ?? ''
 	const presetName = findPresetName({ presetNames: sampler.instrumentNames, wantedName })
+	console.log('SF2 presets', { file: args.config.sf2File, presetNames: sampler.instrumentNames, chosen: presetName })
 	if (presetName) sampler.loadInstrument(presetName)
 	return sampler
 }
