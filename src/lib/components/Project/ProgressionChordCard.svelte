@@ -95,6 +95,7 @@
 		// Only play chords, not rests
 		if (props.item.type === 'chord') {
 			playbackStore.previewChord(props.item as ProgressionChordT, context.state.project)
+			window.addEventListener('mouseup', playbackStore.stopChordPreview, { once: true })
 		}
 	}
 

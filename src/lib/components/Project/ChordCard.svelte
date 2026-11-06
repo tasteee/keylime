@@ -65,6 +65,7 @@
 		event.preventDefault()
 		event.stopPropagation()
 		playbackStore.previewChord(props.chord, project)
+		window.addEventListener('mouseup', playbackStore.stopChordPreview, { once: true })
 	}
 </script>
 

@@ -215,18 +215,20 @@ class PlaybackStore {
 
 	private patternPreviewTimeouts: ReturnType<typeof setTimeout>[] = []
 	private patternPreviewNotes = new Set<number>()
+	private patternPreviewRunId = 0
 
-	private stopPatternPreview = () => {
+	// Stops a pattern preview right away. Safe to call when none is playing.
+	stopChordPreview = () => {
+		this.patternPreviewRunId += 1
 		this.patternPreviewTimeouts.forEach((timeoutId) => clearTimeout(timeoutId))
 		this.patternPreviewTimeouts = []
 		this.patternPreviewNotes.forEach((note) => this.stopNote({ note }))
 		this.patternPreviewNotes.clear()
 	}
 
-	// Plays the project's pattern over one chord, once through.
+	// Plays the project's pattern over one chord. It loops
+	// until stopChordPreview is called (mouse up).
 	private playChordWithPattern = async (chord: ChordT, project: PerformProjectArgsT) => {
-		this.stopPatternPreview()
-
 		const patternLengthBeats = project.patternDurationBars * 4
 		const previewChord: ProgressionChordT = {
 			...chord,
@@ -250,26 +252,40 @@ class PlaybackStore {
 		const hasNoNotes = notes.length === 0
 		if (hasNoNotes) return this.playChord(chord, project.octave)
 
+		const runId = this.patternPreviewRunId
 		const msPerBeat = 60000 / project.bpm
-		for (const note of notes) {
-			const startMs = note.startBeat * msPerBeat
-			const stopMs = (note.startBeat + note.durationBeats) * msPerBeat
-			const startId = setTimeout(() => {
-				this.playNote({ note: note.midiNote })
-				this.patternPreviewNotes.add(note.midiNote)
-			}, startMs)
-			const stopId = setTimeout(() => {
-				this.stopNote({ note: note.midiNote })
-				this.patternPreviewNotes.delete(note.midiNote)
-			}, stopMs)
-			this.patternPreviewTimeouts.push(startId, stopId)
+		const loopMs = patternLengthBeats * msPerBeat
+
+		const scheduleLoop = () => {
+			const wasStopped = runId !== this.patternPreviewRunId
+			if (wasStopped) return
+
+			for (const note of notes) {
+				const startMs = note.startBeat * msPerBeat
+				const stopMs = (note.startBeat + note.durationBeats) * msPerBeat
+				const startId = setTimeout(() => {
+					this.playNote({ note: note.midiNote })
+					this.patternPreviewNotes.add(note.midiNote)
+				}, startMs)
+				const stopId = setTimeout(() => {
+					this.stopNote({ note: note.midiNote })
+					this.patternPreviewNotes.delete(note.midiNote)
+				}, stopMs)
+				this.patternPreviewTimeouts.push(startId, stopId)
+			}
+
+			const nextLoopId = setTimeout(scheduleLoop, loopMs)
+			this.patternPreviewTimeouts.push(nextLoopId)
 		}
+
+		scheduleLoop()
 	}
 
-	// Clicking a chord: plays it outright or through the pattern,
-	// depending on the chord preview mode in the bottom bar.
+	// Mouse down on a chord: plays it outright, or through the pattern
+	// while the button is held, depending on the bottom bar's preview mode.
+	// Call stopChordPreview on mouse up.
 	previewChord = async (chord: ChordT, project: PerformProjectArgsT) => {
-		this.stopPatternPreview()
+		this.stopChordPreview()
 		const isPatternMode = output.chordPreviewMode === 'pattern'
 		if (isPatternMode) return this.playChordWithPattern(chord, project)
 		return this.playChord(chord, project.octave)
