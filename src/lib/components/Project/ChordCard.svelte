@@ -111,7 +111,7 @@
 	}
 
 	.chordCard.isPlaying {
-		border-color: var(--purple);
+		border-color: var(--foreground);
 	}
 
 	.chordCard :global(.chordCardAction) {

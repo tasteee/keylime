@@ -129,7 +129,7 @@
 		bottom: 0;
 		width: 2px;
 		margin-left: -1px;
-		background-color: var(--purple);
+		background-color: var(--foreground);
 		pointer-events: none;
 	}
 

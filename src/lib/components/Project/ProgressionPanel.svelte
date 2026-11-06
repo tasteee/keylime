@@ -632,7 +632,7 @@
 		z-index: 1000;
 		background: var(--popover);
 		color: var(--popover-foreground);
-		border: 1px solid var(--purple);
+		border: 1px solid var(--foreground);
 		border-radius: var(--radius-md);
 		padding: var(--spacing-2) var(--spacing-4);
 		font-size: var(--font-size-2);
@@ -649,7 +649,7 @@
 		top: 0;
 		bottom: 0;
 		width: 1px;
-		background-color: var(--purple);
+		background-color: var(--foreground);
 		z-index: 100;
 		pointer-events: none;
 		will-change: transform;

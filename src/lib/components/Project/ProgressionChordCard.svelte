@@ -214,7 +214,7 @@
 	.modifiedIndicator {
 		font-size: var(--font-size-4);
 		font-weight: var(--font-weight-bold);
-		color: var(--purple);
+		color: var(--foreground);
 		position: relative;
 		top: -4px;
 	}
@@ -241,7 +241,7 @@
 
 	.dragHandle:hover {
 		opacity: 1 !important;
-		color: var(--purple);
+		color: var(--foreground);
 	}
 
 	.dragHandle:active {
@@ -279,7 +279,7 @@
 
 	.resizeHandle:hover .resizeHandleBar {
 		opacity: 1;
-		background-color: var(--purple);
+		background-color: var(--foreground);
 	}
 
 	.progressionItem:hover .resizeHandle {
