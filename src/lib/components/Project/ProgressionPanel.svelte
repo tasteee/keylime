@@ -2,16 +2,18 @@
 	import ProgressionChordCard from './ProgressionChordCard.svelte'
 	import ProgressionSelectionControls from './ProgressionSelectionControls.svelte'
 	import ProgressionTimingMarkers from './ProgressionTimingMarkers.svelte'
-	import Icon from '@iconify/svelte'
 	import { exportPerformanceAsMidi, exportChordsAsMidi } from '$lib/helpers/midiExport'
 	import { toFractionString } from '$lib/helpers/numbers'
-	import { DownloadSimple, Plus, MagnifyingGlassPlus, MagnifyingGlassMinus } from 'phosphor-svelte'
-	import { Button } from '../ui/button'
-	import BottomBar from './BottomBar.svelte'
-	import Divider from '../ui/divider.svelte'
-	import Box from '$lib/components/ui/box.svelte'
+	import {
+		DownloadSimple,
+		Plus,
+		MagnifyingGlassPlus,
+		MagnifyingGlassMinus,
+		Play,
+		Stop,
+		ArrowRight
+	} from 'phosphor-svelte'
 	import mainStore from '$lib/stores/main.svelte'
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
 	import { getContext } from 'svelte'
 	import GENERAL_CONFIG from '$lib/constants/general.json'
 
@@ -63,7 +65,6 @@
 	let itemAreaElement: HTMLElement | null = $state(null)
 	let ghostItemMouseX = $state(0)
 	let ghostItemMouseY = $state(0)
-	let isDownloadPopoverOpen = $state(false)
 
 	let cursorElement: HTMLElement | null = $state(null)
 	let animationFrameId: number
@@ -421,7 +422,6 @@
 			progressionChords: progressionItems
 		}
 		exportPerformanceAsMidi(projectWithStartTimes)
-		isDownloadPopoverOpen = false
 	}
 
 	const handleDownloadChords = () => {
@@ -432,11 +432,21 @@
 			progressionChords: progressionItems
 		}
 		exportChordsAsMidi(projectWithStartTimes)
-		isDownloadPopoverOpen = false
 	}
 
 	const toggleFollow = () => {
 		isFollowEnabled = !isFollowEnabled
+	}
+
+	const downloadMenuItems = [
+		{ value: 'chords', label: 'Chords' },
+		{ value: 'performance', label: 'Performance' }
+	]
+
+	const handleDownloadSelect = (event: CustomEvent) => {
+		const selectedValue: string = event.detail.value
+		if (selectedValue === 'chords') handleDownloadChords()
+		if (selectedValue === 'performance') handleDownloadMidi()
 	}
 
 	const zoomIn = () => {
@@ -452,77 +462,66 @@
 
 <svelte:window onkeydown={handleKeyDown} onmousemove={handleMouseMove} onmouseup={handleMouseUp} />
 
-<div class="progressionPanelContainer">
-	<!-- Toolbar -->
-	<div class="progressionToolbar">
-		<Box gap="16px" align="center">
-			<Button onclick={togglePlayback} size="large" color="neutral" isIcon={true}>
-				{#if playbackContext.state.isPlaying}
-					<Icon icon="mingcute:stop-fill" width="20px" height="20px" />
-				{:else}
-					<Icon icon="mingcute:play-fill" width="20px" height="20px" />
-				{/if}
-			</Button>
-
-			<div class="titleSection">
-				<span class="herPanelTitle">Progression</span>
-				<span class="progressionBarCount text-xs font-medium text-foreground/80 whitespace-nowrap uppercase">
-					{toFractionString(totalBars)}
-					{totalBars === 1 ? 'BAR' : 'BARS'}
-				</span>
-			</div>
-		</Box>
-		<Divider margin="24px" />
-
-		<Box gap="16px" align="center">
-			<DropdownMenu.Root bind:open={isDownloadPopoverOpen}>
-				<DropdownMenu.Trigger>
-					<Button size="small">
-						<DownloadSimple size={16} weight="bold" />
-						<span>Download</span>
-					</Button>
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content class="w-48">
-					<DropdownMenu.Item onclick={handleDownloadChords}>
-						<span>Chords</span>
-					</DropdownMenu.Item>
-					<DropdownMenu.Item onclick={handleDownloadMidi}>
-						<span>Performance</span>
-					</DropdownMenu.Item>
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
-
-			<Button size="small" onclick={handleAddRest}>
-				<Plus size={16} weight="bold" />
-				<span>Add Rest</span>
-			</Button>
-
-			<Button
-				size="small"
-				onclick={toggleFollow}
-				kind={isFollowEnabled ? 'outline' : 'solid'}
-				color={isFollowEnabled ? 'brand' : 'neutral'}
+<z-column class="progressionPanelContainer">
+	<z-separator></z-separator>
+	<z-row insetX="lg" insetY="sm" gap="lg" alignsY="center" isFullWidth>
+		<z-row gap="md" alignsY="center">
+			<z-button
+				tone="primary"
+				onclick={togglePlayback}
+				aria-label={playbackContext.state.isPlaying ? 'Stop' : 'Play'}
 			>
-				<Icon icon="mingcute:arrow-right-line" width="16px" height="16px" />
-				<span>Follow</span>
-			</Button>
-		</Box>
+				{#if playbackContext.state.isPlaying}
+					<Stop size={18} weight="fill" />
+				{:else}
+					<Play size={18} weight="fill" />
+				{/if}
+			</z-button>
 
-		<Divider margin="24px" />
+			<z-column>
+				<z-subheading size="md">Progression</z-subheading>
+				<z-text size="xs" color="muted" class="progressionBarCount">
+					{toFractionString(totalBars)}
+					{totalBars === 1 ? 'bar' : 'bars'}
+				</z-text>
+			</z-column>
+		</z-row>
 
-		<Box gap="8px" align="center">
-			<Button size="small" isIcon={true} onclick={zoomOut}>
+		<z-separator isVertical></z-separator>
+
+		<z-row gap="sm" alignsY="center">
+			<z-menu items={downloadMenuItems} onselect={handleDownloadSelect}>
+				<z-button slot="trigger" kind="outline" size="sm">
+					<DownloadSimple size={16} weight="bold" />
+					Download
+				</z-button>
+			</z-menu>
+
+			<z-button kind="outline" size="sm" onclick={handleAddRest}>
+				<Plus size={16} weight="bold" />
+				Add rest
+			</z-button>
+
+			<z-toggle-button kind="outline" tone="primary" size="sm" isPressed={isFollowEnabled} onpress={toggleFollow}>
+				<ArrowRight size={16} />
+				Follow
+			</z-toggle-button>
+		</z-row>
+
+		<z-separator isVertical></z-separator>
+
+		<z-button-group>
+			<z-button kind="outline" size="sm" onclick={zoomOut} aria-label="Zoom out">
 				<MagnifyingGlassMinus size={16} weight="bold" />
-			</Button>
-			<Button size="small" isIcon={true} onclick={zoomIn}>
+			</z-button>
+			<z-button kind="outline" size="sm" onclick={zoomIn} aria-label="Zoom in">
 				<MagnifyingGlassPlus size={16} weight="bold" />
-			</Button>
-		</Box>
-
-		<Divider margin="24px" />
+			</z-button>
+		</z-button-group>
 
 		<ProgressionSelectionControls />
-	</div>
+	</z-row>
+	<z-separator></z-separator>
 
 	<!-- Main Progression Area -->
 	<div class="mainProgressionPanel" data-is-dragging={isDraggingItem || isResizingItem} data-is-resizing={isResizingItem}>
@@ -572,41 +571,18 @@
 		{/if}
 	</div>
 
-	<!-- <BottomBar /> -->
-</div>
+</z-column>
 
 <style>
 	.progressionPanelContainer {
-		width: 100vw;
-		position: relative;
-		left: 50%;
-		right: 50%;
-		margin-left: -50vw;
-		margin-right: -50vw;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.progressionToolbar {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		/* gap: 16px; */
-		padding: 0px 24px;
-		height: 54px;
-		background-color: var(--color-panel-bg);
-		border-bottom: 1px solid var(--n-03);
-		border-top: 1px solid var(--n-03);
-	}
-
-	.titleSection {
-		display: flex;
-		flex-direction: column;
+		width: 100%;
+		flex-shrink: 0;
+		background: var(--card);
 	}
 
 	.mainProgressionPanel {
 		width: 100%;
-		height: 115px;
+		height: 7.5rem;
 		flex-shrink: 0;
 		display: flex;
 		flex-direction: column;
@@ -615,16 +591,13 @@
 
 	.middle {
 		flex: 1;
-		border-radius: 0px;
-		background-color: var(--n-00);
+		background-color: var(--background);
 		position: relative;
 		display: flex;
 		flex-direction: column;
 		overflow-x: auto;
 		overflow-y: hidden;
-		max-height: 115px;
-		overflow-y: hidden;
-		/* box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px; */
+		max-height: 7.5rem;
 	}
 
 	.itemArea {
@@ -632,14 +605,10 @@
 		flex: 1;
 		min-width: 100%;
 		overflow: hidden;
-		/* Add a subtle grid pattern */
-		/* background-image: linear-gradient(to right, var(--timeline-grid) 1px, transparent 1px); */
-		/* background-size: 82px 100%; */
-		/* Matches PIXELS_PER_BEAT */
 		display: flex;
 		flex-direction: row;
 		align-items: flex-start;
-		padding-top: 24px;
+		padding-top: var(--spacing-6);
 		left: -2px;
 	}
 
@@ -650,11 +619,11 @@
 		z-index: 1000;
 		background: var(--popover);
 		color: var(--popover-foreground);
-		border: var(--border-thick);
-		border-radius: 0px;
-		padding: 8px 16px;
-		font-size: 14px;
-		font-weight: 600;
+		border: 1px solid var(--purple);
+		border-radius: var(--radius-md);
+		padding: var(--spacing-2) var(--spacing-4);
+		font-size: var(--font-size-2);
+		font-weight: var(--font-weight-semibold);
 		opacity: 0.95;
 	}
 
@@ -667,14 +636,14 @@
 		top: 0;
 		bottom: 0;
 		width: 1px;
-		background-color: var(--n-09);
+		background-color: var(--purple);
 		z-index: 100;
 		pointer-events: none;
 		will-change: transform;
 	}
 
 	.progressionBarCount {
-		position: relative;
-		top: -5px;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
 	}
 </style>

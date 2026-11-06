@@ -1,19 +1,13 @@
 <script lang="ts">
-	import '../styles/variables.css'
+	import '@tasteee/zest'
+	import '@tasteee/zest/ink.css'
+	import '@tasteee/zest/fonts.css'
 	import '@fontsource-variable/saira/wdth-italic.css'
-	import '../lib/styles/theme.css'
-	import '../lib/styles/global.css'
-	import 'overlayscrollbars/overlayscrollbars.css'
 	import '../app.css'
-	import '../lib/styles/shared.css'
-	import '../lib/styles/animations.css'
 
-	import { OverlayScrollbars, ClickScrollPlugin } from 'overlayscrollbars'
-	import { ModeWatcher } from 'mode-watcher'
 	import { page } from '$app/stores'
 	import { base } from '$app/paths'
 	import favicon from '$lib/assets/favicon.svg'
-	import DialogChordModifier from '$lib/components/Project/DialogChordModifier.svelte'
 	import PlaybackContextFrame from '$lib/components/PlaybackContextFrame.svelte'
 	import BottomBar from '$lib/components/Project/BottomBar.svelte'
 	import { setContext } from 'svelte'
@@ -22,8 +16,6 @@
 
 	setContext('activeUser', () => data.activeUser)
 	setContext('authUser', () => data.authUser)
-
-	OverlayScrollbars.plugin(ClickScrollPlugin)
 
 	const currentPath = $derived($page.url.pathname.replace(base, '') || '/')
 	const isRootPath = $derived(currentPath === '/')
@@ -35,17 +27,15 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<ModeWatcher />
-
 {#if shouldShowBottomBar}
-	<div class="authLayoutContainer">
+	<z-column class="authLayout">
 		<div class="authLayoutContent">
 			<PlaybackContextFrame>
 				{@render children?.()}
 			</PlaybackContextFrame>
 		</div>
 		<BottomBar />
-	</div>
+	</z-column>
 {:else}
 	<PlaybackContextFrame>
 		{@render children?.()}
@@ -53,9 +43,7 @@
 {/if}
 
 <style>
-	.authLayoutContainer {
-		display: flex;
-		flex-direction: column;
+	.authLayout {
 		height: 100vh;
 		width: 100%;
 		overflow: hidden;

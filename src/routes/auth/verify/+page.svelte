@@ -15,12 +15,9 @@
 	})
 </script>
 
-<p class="verifyMessage">Signing you in...</p>
-
-<style>
-	.verifyMessage {
-		display: grid;
-		place-items: center;
-		min-height: 100vh;
-	}
-</style>
+<z-center doesCenterBoth minHeight="100vh">
+	<z-column gap="md" alignsX="center">
+		<z-skeleton shape="circle" width="2.5rem"></z-skeleton>
+		<z-text color="muted">Signing you in…</z-text>
+	</z-column>
+</z-center>

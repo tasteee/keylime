@@ -145,59 +145,54 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		border: 1px solid #020617;
-		border-radius: 2px;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
 		cursor: pointer;
-	}
-
-	.qwertyLabel {
-		font-size: 14px;
-		/* font-weight: bold; */
-	}
-
-	.noteLabel {
-		font-size: 14px;
+		font-size: var(--font-size-2);
+		user-select: none;
+		transition:
+			background var(--motion-instant) linear,
+			color var(--motion-instant) linear;
 	}
 
 	.normalKey,
 	.functionalKey {
-		background: var(--color-zinc-900);
-		color: var(--color-zinc-100);
+		background: var(--card);
+		color: var(--foreground);
 	}
 
 	.normalKey.pressedKey,
 	.functionalKey.pressedKey {
-		background: var(--color-zinc-700);
-		color: var(--color-zinc-100);
+		background: var(--purple);
+		color: var(--on-accent);
+		border-color: var(--purple);
 	}
 
 	.sharpKey {
-		background: var(--color-zinc-800);
-		color: var(--color-zinc-100);
+		background: var(--color-neutral-3);
+		color: var(--foreground);
 	}
 
 	.sharpKey.pressedKey {
-		background: var(--color-zinc-600);
-		color: var(--color-zinc-100);
+		background: var(--purple);
+		color: var(--on-accent);
+		border-color: var(--purple);
 	}
 
 	.octaveNotePressed .noteLabel,
 	.octaveNotePressed .qwertyLabel {
-		/* font-weight: bold; */
-		font-size: 16px;
-		color: var(--color-zinc-500);
+		color: var(--purple);
+		font-weight: var(--font-weight-semibold);
 	}
 
 	.functionalKey.octaveNotePressed .noteLabel {
-		font-weight: normal;
-		font-size: 14px;
-		color: var(--color-zinc-100);
+		font-weight: var(--font-weight-regular);
+		color: var(--foreground);
 	}
 
 	.pressedKey.octaveNotePressed .noteLabel,
 	.pressedKey.octaveNotePressed .qwertyLabel {
-		font-weight: normal;
-		font-size: 14px;
-		color: var(--color-zinc-100);
+		font-weight: var(--font-weight-regular);
+		color: var(--on-accent);
 	}
 </style>

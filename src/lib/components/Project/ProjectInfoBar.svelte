@@ -1,15 +1,11 @@
 <script lang="ts">
+	import { FloppyDisk, Gear, PencilSimple } from 'phosphor-svelte'
 	import { useProjectEditor } from '$lib/modules/useProjectEditor'
+	import { goToPath } from '$lib/modules/navigate'
+	import { awaited } from '$lib/modules/the-awaited'
 	import SelectBpm from './SelectBpm.svelte'
 	import SelectOctave from './SelectOctave.svelte'
 	import DialogProjectSettings from './DialogProjectSettings.svelte'
-	import { Button } from '$lib/components/ui/button'
-	import Box from '$lib/components/ui/box.svelte'
-	import Divider from '../ui/divider.svelte'
-	import { FloppyDisk, Download, Gear, PencilSimple } from 'phosphor-svelte'
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
-	import { goToPath } from '$lib/modules/navigate'
-	import { awaited } from '$lib/modules/the-awaited'
 
 	const projectEditor = useProjectEditor()
 	const project = $derived(projectEditor.state.project)
@@ -18,7 +14,13 @@
 	let isSettingsOpen = $state(false)
 	let isSaving = $state(false)
 
-	const dirtyIndicatorText = $derived(isDirty ? '●' : '')
+	const saveButtonTone = $derived(isDirty ? 'primary' : 'neutral')
+	const saveButtonKind = $derived(isDirty ? 'solid' : 'outline')
+
+	const saveMenuItems = [
+		{ value: 'save', label: 'Save', shortcut: '⌘S' },
+		{ value: 'clone', label: 'Clone & save' }
+	]
 
 	const openSettings = () => {
 		isSettingsOpen = true
@@ -29,17 +31,13 @@
 	}
 
 	const handleSave = async () => {
-		console.log('project bar save icon action clicked')
 		isSaving = true
 
 		try {
-			console.log('About to call projectEditor.save()')
-			const saveResult = await projectEditor.save()
-			console.log('project bar save success', saveResult)
+			await projectEditor.save()
 		} catch (error) {
 			console.error('project bar save failed', error)
 		} finally {
-			console.log('project bar save finally block')
 			isSaving = false
 		}
 	}
@@ -47,100 +45,78 @@
 	const handleSaveClone = async () => {
 		isSaving = true
 		const saveCloneResult = await awaited(projectEditor.saveClone())
+		isSaving = false
 
 		if (saveCloneResult.error) {
 			console.error('Failed to save clone:', saveCloneResult.error)
-			isSaving = false
 			return
 		}
 
-		isSaving = false
+		if (saveCloneResult.data) goToPath(`/project/${saveCloneResult.data.newProjectId}`)
+	}
 
-		if (saveCloneResult.data) {
-			goToPath(`/project/${saveCloneResult.data.newProjectId}`)
-		}
+	const handleSaveMenuSelect = async (event: CustomEvent) => {
+		const selectedValue: string = event.detail.value
+		if (selectedValue === 'save') await handleSave()
+		if (selectedValue === 'clone') await handleSaveClone()
 	}
 </script>
 
-<Box class="ProjectInfoBar" padding="0 12px" height="48px" align="center" justify="between">
-	<Box gap="4px" align="center">
-		<span class="herPanelTitle">Project</span>
-		{#if dirtyIndicatorText}
-			<span class="dirtyIndicator">{dirtyIndicatorText}</span>
-		{/if}
-		<Button
-			maxWidth="250px"
-			align="left"
-			kind="ghost"
-			size="small"
-			onclick={openSettings}
-			aria-label="Edit project settings"
-		>
-			<PencilSimple size={14} weight="regular" />
-			<span class="projectTitle">{project.title}</span>
-		</Button>
-	</Box>
+<z-column>
+	<z-row insetX="lg" insetY="sm" alignsX="between" alignsY="center" gap="lg" isFullWidth>
+		<z-row gap="sm" alignsY="center" class="projectTitleRow">
+			<z-eyebrow label="Project" tone="neutral"></z-eyebrow>
+			{#if isDirty}
+				<z-status-dot status="away" doesPulse label="Unsaved"></z-status-dot>
+			{/if}
+			<z-button kind="ghost" size="sm" onclick={openSettings} aria-label="Edit project settings">
+				<PencilSimple size={14} />
+				<span class="projectTitle">{project.title}</span>
+			</z-button>
+		</z-row>
 
-	<Box gap="8px" align="center" height="100%">
-		<SelectBpm />
-		<SelectOctave />
+		<z-row gap="md" alignsY="center">
+			<SelectBpm />
+			<SelectOctave />
 
-		<Divider margin="24px" />
+			<z-separator isVertical></z-separator>
 
-		<Button isIcon onclick={openSettings} aria-label="Project Settings">
-			<Gear size={16} />
-		</Button>
+			<z-tooltip content="Project settings" placement="bottom">
+				<z-button kind="outline" size="sm" onclick={openSettings} aria-label="Project settings">
+					<Gear size={16} />
+				</z-button>
+			</z-tooltip>
 
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger>
-				<Button color={isDirty ? 'brand' : undefined} isIcon aria-label="Save Options" ondblclick={handleSave}>
+			<z-menu items={saveMenuItems} align="end" onselect={handleSaveMenuSelect}>
+				<z-button
+					slot="trigger"
+					kind={saveButtonKind}
+					tone={saveButtonTone}
+					size="sm"
+					isLoading={isSaving}
+					aria-label="Save options"
+					ondblclick={handleSave}
+				>
 					<FloppyDisk size={16} />
-				</Button>
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content align="end">
-				<DropdownMenu.Item onclick={handleSave}>
 					Save
-					<FloppyDisk size={16} class="mr-2" />
-				</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={handleSaveClone}>
-					Clone & Save
-					<FloppyDisk size={16} class="mr-2" />
-				</DropdownMenu.Item>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
-	</Box>
-</Box>
+				</z-button>
+			</z-menu>
+		</z-row>
+	</z-row>
+	<z-separator></z-separator>
+</z-column>
 
 <DialogProjectSettings isOpen={isSettingsOpen} onOpenChange={handleSettingsOpenChange} {projectEditor} />
 
 <style>
-	:global(.ProjectInfoBar) {
-		background: var(--colorWhite);
-		border-bottom: 1px solid var(--n-03);
-		/* border-top: 1px solid var(--n-03); */
-	}
-
-	.dirtyIndicator {
-		color: var(--a);
-		font-size: 12px;
-		line-height: 1;
-		animation: pulse 2s ease-in-out infinite;
-	}
-
-	@keyframes pulse {
-		0%,
-		100% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0.5;
-		}
+	.projectTitleRow {
+		min-width: 0;
 	}
 
 	.projectTitle {
-		font-size: 14px;
-		color: #525252;
+		max-width: 16rem;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 </style>

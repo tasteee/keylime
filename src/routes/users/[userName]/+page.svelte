@@ -1,14 +1,11 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button'
-	import Icon from '@iconify/svelte'
+	import { UserCircle, Clock, MusicNotes, FunnelSimple } from 'phosphor-svelte'
 	import { goToPath } from '$lib/modules/navigate'
 	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
-	import { fade } from 'svelte/transition'
-	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
+	import PageLayout from '$lib/components/PageLayout.svelte'
 	import { cloneProjectById } from '$lib/modules/database'
 	import ProjectCard from '$lib/components/ProjectCard.svelte'
 	import ProjectsBrowserBar from '$lib/components/ProjectsBrowserBar.svelte'
-	import Box from '$lib/components/ui/box.svelte'
 	import dayjs from 'dayjs'
 	import relativeTime from 'dayjs/plugin/relativeTime'
 	import { browser } from '$app/environment'
@@ -178,208 +175,78 @@
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 	}
 
+	const handlePaginationChange = (event: CustomEvent) => {
+		handlePageChange(event.detail.page)
+	}
+
+	const hasMultiplePages = $derived(filteredProjects.length > itemsPerPage)
+	const hasNoMatchingProjects = $derived(paginatedProjects.length === 0 && projects.length > 0)
+	const hasNoProjects = $derived(projects.length === 0)
+	const projectCountLabel = $derived(filteredProjects.length === 1 ? 'project' : 'projects')
+	const isFiltered = $derived(filteredProjects.length !== projects.length)
+
 	const isOwnProfile = $derived.by(() => {
 		return activeUser?.userName === userProfile?.userName
 	})
 </script>
 
-<div class="pageContainer" in:fade>
-	<TopBar />
+<PageLayout>
+	{#if !userProfile}
+		<z-empty-state heading="User not found" description="The user could not be found." isBordered>
+			<z-box slot="icon" isInline><UserCircle size={32} /></z-box>
+			<z-button tone="primary" onclick={handleGoBack}>Back to users</z-button>
+		</z-empty-state>
+	{:else}
+		<z-row gap="lg" alignsY="center">
+			<z-avatar name={userProfile.userName} src={userProfile.avatarUrl ?? undefined} size="xl"></z-avatar>
+			<z-column gap="xs">
+				<z-heading size="sm">@{userProfile.userName}</z-heading>
+				<z-text color="muted">{userProfile.bio || 'No bio yet'}</z-text>
+				<z-row gap="xs" alignsY="center">
+					<Clock size={14} />
+					<z-text size="sm" color="muted">Joined {formatDate(userProfile.createdAt)}</z-text>
+				</z-row>
+			</z-column>
+		</z-row>
 
-	<main data-page-content-scrollable class="pageMainContent">
-		{#if !userProfile}
-			<div class="error-state">
-				<Icon icon="mingcute:user-3-line" class="size-16 mb-4 opacity-30" />
-				<h2>User Not Found</h2>
-				<p>The user could not be found.</p>
-				<Button onclick={handleGoBack} class="mt-4">Back to Users</Button>
-			</div>
+		<ProjectsBrowserBar onsubmit={handleFilterSubmit} />
+
+		<z-column gap="2xs">
+			<z-subheading size="xl">Public projects</z-subheading>
+			<z-text size="sm" color="muted">
+				{filteredProjects.length}
+				{projectCountLabel}
+				{#if isFiltered}
+					(filtered from {projects.length} total)
+				{/if}
+			</z-text>
+		</z-column>
+
+		{#if hasNoMatchingProjects}
+			<z-empty-state heading="No matches" description="No projects match your filters." isBordered>
+				<z-box slot="icon" isInline><FunnelSimple size={32} /></z-box>
+			</z-empty-state>
+		{:else if hasNoProjects}
+			<z-empty-state heading="No public projects yet" description="Nothing to show here." isBordered>
+				<z-box slot="icon" isInline><MusicNotes size={32} /></z-box>
+			</z-empty-state>
 		{:else}
-			<Box class="pageHeader" isColumn>
-				<Box isFullWidth justify="start" align="center" gap="24px" class="pageHeaderRow">
-					<div class="header-avatar">
-						{#if userProfile.avatarUrl}
-							<img src={userProfile.avatarUrl} alt={userProfile.userName} />
-						{:else}
-							<Icon icon="mingcute:user-3-line" class="size-12" />
-						{/if}
-					</div>
-					<Box isColumn gap="8px">
-						<h1 class="pageTitle">@{userProfile.userName}</h1>
-						<p class="pageBio">{userProfile.bio || 'No bio yet'}</p>
-						<p class="pageJoined">
-							<Icon icon="mingcute:time-line" class="inline-icon" />
-							Joined {formatDate(userProfile.createdAt)}
-						</p>
-					</Box>
-				</Box>
-			</Box>
-
-			<ProjectsBrowserBar onsubmit={handleFilterSubmit} />
-
-			<Box isColumn class="section-header">
-				<h2 class="section-title">Public Projects</h2>
-				<p class="section-subtitle">
-					{filteredProjects.length}
-					{filteredProjects.length === 1 ? 'project' : 'projects'}
-					{#if filteredProjects.length !== projects.length}
-						(filtered from {projects.length} total)
-					{/if}
-				</p>
-			</Box>
-
-			{#if paginatedProjects.length === 0 && projects.length > 0}
-				<div class="empty-state">
-					<Icon icon="mingcute:filter-2-line" class="size-12 mb-4 opacity-30" />
-					<p>No projects match your filters.</p>
-				</div>
-			{:else if projects.length === 0}
-				<div class="empty-state">
-					<Icon icon="mingcute:music-2-line" class="size-12 mb-4 opacity-30" />
-					<p>No public projects yet</p>
-				</div>
-			{:else}
-				<div class="projects-grid">
-					{#each paginatedProjects as project (project.id)}
-						<ProjectCard
-							project={project as any}
-							daysAgo={daysAgo(project.updatedAt)}
-							onOpenProject={handleOpenProject}
-							onCloneProject={handleCloneProject}
-						/>
-					{/each}
-				</div>
-			{/if}
-
-			{#if filteredProjects.length > itemsPerPage}
-				<Box justify="center" gap="8px" class="mt-6">
-					<Button
-						onclick={() => handlePageChange(currentPage - 1)}
-						disabled={currentPage === 1}
-						kind="outline"
-						size="medium"
-					>
-						<Icon icon="mingcute:left-line" class="size-4" />
-					</Button>
-					<span class="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</span>
-					<Button
-						onclick={() => handlePageChange(currentPage + 1)}
-						disabled={currentPage >= totalPages}
-						kind="outline"
-						size="medium"
-					>
-						<Icon icon="mingcute:right-line" class="size-4" />
-					</Button>
-				</Box>
-			{/if}
+			<z-grid minColumnWidth="20rem" gap="lg">
+				{#each paginatedProjects as project (project.id)}
+					<ProjectCard
+						project={project as any}
+						daysAgo={daysAgo(project.updatedAt)}
+						onOpenProject={handleOpenProject}
+						onCloneProject={handleCloneProject}
+					/>
+				{/each}
+			</z-grid>
 		{/if}
-	</main>
-</div>
 
-<style>
-	.pageContainer {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		overflow: hidden;
-	}
-
-	.header-avatar {
-		width: 96px;
-		height: 96px;
-		border-radius: 50%;
-		background-color: var(--n-01);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-		color: var(--n-05);
-		flex-shrink: 0;
-		border: 2px solid var(--n-03);
-	}
-
-	.header-avatar img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.pageTitle {
-		font-size: 32px;
-		font-weight: 700;
-		margin: 0;
-		color: var(--n-09);
-	}
-
-	.pageBio {
-		font-size: 15px;
-		color: var(--n-07);
-		margin: 0;
-		line-height: 1.5;
-	}
-
-	.pageJoined {
-		font-size: 13px;
-		color: var(--n-06);
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-	}
-
-	.section-title {
-		font-size: 20px;
-		font-weight: 700;
-		margin: 0;
-		color: var(--n-09);
-	}
-
-	.section-subtitle {
-		font-size: 14px;
-		color: var(--n-06);
-		margin: 4px 0 0 0;
-	}
-
-	.projects-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		gap: 24px;
-		margin-bottom: 32px;
-	}
-
-	.error-state,
-	.empty-state {
-		text-align: center;
-		padding: 60px;
-		color: var(--n-05);
-	}
-
-	.error-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		background: var(--colorWhite);
-		border-radius: 12px;
-		border: 1px solid var(--n-03);
-	}
-
-	.error-state h2 {
-		font-size: 24px;
-		font-weight: 700;
-		margin: 0 0 8px 0;
-		color: var(--n-09);
-	}
-
-	.error-state p {
-		color: var(--n-06);
-	}
-
-	.empty-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		background: var(--colorWhite);
-		border-radius: 12px;
-		border: 1px solid var(--n-03);
-	}
-</style>
+		{#if hasMultiplePages}
+			<z-row alignsX="center">
+				<z-pagination page={currentPage} total={totalPages} onchange={handlePaginationChange}></z-pagination>
+			</z-row>
+		{/if}
+	{/if}
+</PageLayout>

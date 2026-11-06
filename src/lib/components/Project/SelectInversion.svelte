@@ -1,30 +1,26 @@
 <script lang="ts">
-	import * as Select from '$lib/components/ui/select'
+	import SelectControl from './SelectControl.svelte'
 
 	type SelectInversionPropsT = {
 		value: number
 		onValueChange: (value: string | undefined) => void
 	}
 
-	let { value, onValueChange }: SelectInversionPropsT = $props()
+	const props: SelectInversionPropsT = $props()
 
 	const inversionOptions = [
-		{ value: 0, label: 'Root Position' },
-		{ value: 1, label: '1st Inversion' },
-		{ value: 2, label: '2nd Inversion' },
-		{ value: 3, label: '3rd Inversion' }
+		{ value: '0', label: 'Root position' },
+		{ value: '1', label: '1st inversion' },
+		{ value: '2', label: '2nd inversion' },
+		{ value: '3', label: '3rd inversion' }
 	]
-
-	const currentInversionLabel = $derived(
-		inversionOptions.find((option) => option.value === value)?.label || 'Root Position'
-	)
 </script>
 
-<Select.Root type="single" {onValueChange} value={value.toString()}>
-	<Select.Trigger isFullWidth size="small" label="Inversion" value={currentInversionLabel} />
-	<Select.Content>
-		{#each inversionOptions as option}
-			<Select.Item value={option.value.toString()}>{option.label}</Select.Item>
-		{/each}
-	</Select.Content>
-</Select.Root>
+<SelectControl
+	label="Inversion"
+	labelPlacement="top"
+	isFullWidth
+	value={String(props.value)}
+	options={inversionOptions}
+	onValueChange={props.onValueChange}
+/>

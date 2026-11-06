@@ -1,9 +1,9 @@
 <script lang="ts">
-	type PropsT = {
+	type ChordSymbolDisplayPropsT = {
 		symbol: string
 	}
 
-	const props: PropsT = $props()
+	const props: ChordSymbolDisplayPropsT = $props()
 
 	const symbolParts = $derived.by(() => {
 		const match = props.symbol.match(/^([A-G][b#]?)(.*)$/)
@@ -12,31 +12,15 @@
 	})
 
 	const isRest = $derived(props.symbol === 'REST')
-	const isRestClass = $derived(isRest ? 'isRest' : '')
+	const rootColor = $derived(isRest ? 'muted' : 'strong')
 </script>
 
-<div class="ChordSymbolDisplay {isRestClass}">
-	{symbolParts.root}<span class="variation">{symbolParts.suffix}</span>
-</div>
+<z-text size="xl" weight={700} color={rootColor} class="chordSymbol">
+	{symbolParts.root}<z-inline color="muted" weight={400}>{symbolParts.suffix}</z-inline>
+</z-text>
 
 <style>
-	.ChordSymbolDisplay {
-		color: #131313;
-		font-weight: 700;
+	.chordSymbol {
 		letter-spacing: -0.01em;
-		font-family: var(--font-display);
-		font-size: 18px;
-	}
-
-	.ChordSymbolDisplay.isRest {
-		letter-spacing: 0.5px;
-		color: var(--n-04);
-		font-weight: 600;
-	}
-
-	.variation {
-		font-weight: 400;
-		opacity: 0.75;
-		margin-left: 2px;
 	}
 </style>

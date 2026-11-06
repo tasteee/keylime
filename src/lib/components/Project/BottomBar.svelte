@@ -9,53 +9,36 @@
 
 	const isInstrument = $derived(output.type === 'Instrument')
 	const isMidi = $derived(output.type === 'MIDI')
-	const isMidiDeviceSelected = $derived(isMidi && output.midiDeviceName)
-	const titleClasses = 'outputTitle'
+	const isMidiDeviceSelected = $derived(isMidi && Boolean(output.midiDeviceName))
 </script>
 
-<div class="BottomBar progressionPanel">
-	<div class="left">
-		<SelectVelocity />
-		<SelectOutputType />
+<z-column class="bottomBar">
+	<z-separator></z-separator>
+	<z-row insetX="lg" insetY="sm" alignsX="between" alignsY="center" gap="lg" isFullWidth>
+		<z-row gap="lg" alignsY="center" doesWrap>
+			<SelectVelocity />
+			<SelectOutputType />
 
-		{#if isInstrument}
-			<SelectInstrument />
-		{/if}
+			{#if isInstrument}
+				<SelectInstrument />
+			{/if}
 
-		{#if isMidi}
-			<SelectMidiDevice />
-		{/if}
+			{#if isMidi}
+				<SelectMidiDevice />
+			{/if}
 
-		{#if isMidiDeviceSelected}
-			<SelectMidiChannel />
-		{/if}
-	</div>
-	<div class="right">
+			{#if isMidiDeviceSelected}
+				<SelectMidiChannel />
+			{/if}
+		</z-row>
+
 		<SelectVolume />
-	</div>
-</div>
+	</z-row>
+</z-column>
 
 <style>
-	.BottomBar {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
-		gap: 16px;
-		padding: 8px 16px;
-		/* height: 36px; */
-		width: 100%;
+	.bottomBar {
 		flex-shrink: 0;
-		border-top: 1px solid var(--n-03);
-		background: var(--n-01);
-		background: var(--n-00);
-	}
-
-	.left,
-	.right {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 16px;
+		background: var(--card);
 	}
 </style>

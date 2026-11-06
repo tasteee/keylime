@@ -1,12 +1,15 @@
 <script lang="ts">
-	import * as Select from '$lib/components/ui/select/index.js'
+	import SelectControl from './SelectControl.svelte'
 	import output from '../../stores/output.svelte'
+
+	const outputTypeOptions = [
+		{ value: 'Instrument', label: 'Instrument' },
+		{ value: 'MIDI', label: 'MIDI' }
+	]
+
+	const handleSelect = (value: string) => {
+		output.type = value
+	}
 </script>
 
-<Select.Root type="single" bind:value={output.type}>
-	<Select.Trigger size="small" label="Destination" value={output.type} />
-	<Select.Content>
-		<Select.Item value="Instrument">Instrument</Select.Item>
-		<Select.Item value="MIDI">MIDI</Select.Item>
-	</Select.Content>
-</Select.Root>
+<SelectControl label="Destination" value={output.type} options={outputTypeOptions} onValueChange={handleSelect} />

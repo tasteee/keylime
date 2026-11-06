@@ -1,40 +1,19 @@
 <script lang="ts">
-	import Badge from '$lib/components/ui/badge/badge.svelte'
-
-	type ChordBadgePropsT = ProgressionChordT
+	type ChordBadgePropsT = {
+		item: ProgressionItemT
+	}
 
 	const props: ChordBadgePropsT = $props()
 
-	const hasOctaveModifier = $derived(props.octaveOffset != 0)
-	const hasInversionModifier = $derived(props.inversion != 0)
-	const hasVoicingModifier = $derived(props.voicing !== 'closed')
+	const isRest = $derived(props.item.type === 'rest')
+	const hasOctaveModifier = $derived(props.item.type === 'chord' && props.item.octaveOffset != 0)
+	const hasInversionModifier = $derived(props.item.type === 'chord' && props.item.inversion != 0)
+	const hasVoicingModifier = $derived(props.item.type === 'chord' && props.item.voicing !== 'closed')
 	const isModified = $derived(hasOctaveModifier || hasInversionModifier || hasVoicingModifier)
-	const className = $derived(`ChordBadge ${isModified ? 'isModified' : ''}`)
+
+	const badgeKind = $derived(isRest ? 'outline' : 'soft')
+	const badgeTone = $derived(isModified ? 'primary' : 'neutral')
+	const badgeLabel = $derived(isModified ? `${props.item.symbol}*` : props.item.symbol)
 </script>
 
-<Badge kind="solid" color="dark" size="small" class={className}>
-	{props.symbol}
-	{#if isModified}
-		<span class="chordModifierAsterisk">*</span>
-	{/if}
-</Badge>
-
-<style>
-	:global .ChordBadge {
-		position: relative;
-	}
-
-	:global .ChordBadge.isModified {
-		color: var(--a-01) !important;
-	}
-
-	:global .chordModifierAsterisk {
-		color: var(--a-05);
-		font-weight: 500;
-		font-size: 1.1em;
-		font-size: 24px;
-		position: absolute;
-		right: -1px;
-		top: -5px;
-	}
-</style>
+<z-badge kind={badgeKind} tone={badgeTone} size="sm" label={badgeLabel}></z-badge>

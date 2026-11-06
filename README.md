@@ -47,6 +47,16 @@ npm run api:dev                                # Worker on localhost:8787
 npm run dev                                    # app on localhost:3124
 ```
 
+## UI
+
+The UI is built with [Zest](https://github.com/tasteee/zest), our design system. It is installed from GitHub (`github:tasteee/zest#build`) until it is published to npm.
+
+- Use Zest elements (`z-row`, `z-column`, `z-button`, `z-dialog`, `z-menu`, ...) for layout and controls. Avoid raw `div`, `button` and `input`.
+- Colors, spacing, radii and type come from Zest tokens (`var(--card)`, `var(--border)`, `var(--spacing-4)`, ...). Do not hardcode them.
+- Set element props in camelCase (`isFullWidth`, `alignsX`). Listen with lowercase handlers (`onchange`, `onselect`). Event data is on `event.detail`.
+- `src/zest.d.ts` types every Zest element for Svelte. It is generated. Run `node scripts/generateZestSvelteTypes.mjs` after updating Zest.
+- `src/app.css` holds a small shim that stops nested `z-row` and `z-column` inheriting each other's gap and padding.
+
 ## Saving
 
 Edits are kept in this browser (localStorage) while you work. The server is only written to when you press save or Ctrl/Cmd+S, so editing makes no requests. Unsaved work survives a reload and is dropped if the project changed on the server in the meantime.

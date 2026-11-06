@@ -15,7 +15,7 @@
 
 	const props: PatternEditorSignalPropsT = $props()
 
-	const backgroundColor = $derived('#131313')
+	const backgroundColor = $derived('var(--purple)')
 	// Convert beat-based timing to pixel positions
 	// startTime is in beats, beatsPerCell tells us how many beats per cell
 	const leftPosition = $derived((props.signal.startTime / props.beatsPerCell) * props.cellWidth)
@@ -64,19 +64,14 @@
 	[data-is-dragging='true'] {
 		cursor: grabbing;
 		z-index: 999;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-		transform: scale(1.005);
+		outline: 2px solid var(--foreground);
 	}
 
 	.signal {
-		border-radius: 3px;
+		border-radius: var(--radius-sm);
 		cursor: grab;
 		position: relative;
-		transition:
-			background-color 0.1s,
-			transform 0.1s,
-			box-shadow 0.1s;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+		transition: filter var(--motion-instant) linear;
 	}
 
 	.signal:hover {
@@ -84,9 +79,8 @@
 	}
 
 	.signal.selected {
-		box-shadow:
-			0 0 0 1px var(--background),
-			0 0 0 2px var(--primary);
+		outline: 2px solid var(--foreground);
+		outline-offset: 1px;
 		z-index: 10;
 	}
 
@@ -97,33 +91,33 @@
 	.resizeHandle {
 		position: absolute;
 		top: 0;
-		width: 6px; /* Wider handle for easier grabbing */
+		width: 6px;
 		height: 100%;
 		z-index: 10;
 		opacity: 0;
-		transition: opacity 0.1s;
+		transition: opacity var(--motion-instant) linear;
 	}
 
 	.resizeHandleLeft {
 		left: 0;
 		cursor: ew-resize;
-		border-top-left-radius: 3px;
-		border-bottom-left-radius: 3px;
+		border-top-left-radius: var(--radius-sm);
+		border-bottom-left-radius: var(--radius-sm);
 	}
 
 	.resizeHandleRight {
 		right: 0;
 		cursor: ew-resize;
-		border-top-right-radius: 3px;
-		border-bottom-right-radius: 3px;
+		border-top-right-radius: var(--radius-sm);
+		border-bottom-right-radius: var(--radius-sm);
 	}
 
 	.signal:hover .resizeHandle {
 		opacity: 1;
-		background: rgba(255, 255, 255, 0.2);
+		background: color-mix(in oklch, var(--background) 25%, transparent);
 	}
 
 	.resizeHandle:hover {
-		background: rgba(255, 255, 255, 0.5) !important;
+		background: color-mix(in oklch, var(--background) 55%, transparent) !important;
 	}
 </style>

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import QwertyKeyboard from '$lib/components/Keyboard/QwertyKeyboard.svelte'
 	import output from '$lib/stores/output.svelte'
 	import SelectKey from '$lib/components/Project/SelectKey.svelte'
@@ -13,20 +13,20 @@
 
 	const isInstrument = $derived(output.type === 'Instrument')
 	const isMidi = $derived(output.type === 'MIDI')
-	const isMidiDeviceSelected = $derived(isMidi && output.midiDeviceName)
+	const isMidiDeviceSelected = $derived(isMidi && Boolean(output.midiDeviceName))
 </script>
 
-<div class="app lightTheme">
-	<div class="controls">
-		<div class="controlsRow">
+<z-column gap="lg" alignsY="end" isFullHeight inset="lg" class="keyboardPage">
+	<z-column gap="sm" isFullWidth>
+		<z-row gap="lg" doesWrap alignsY="center">
 			<SelectKey />
 			<SelectScale />
 			<SelectOctave />
 			<SelectKeymap />
 			<SelectVelocity />
-		</div>
+		</z-row>
 
-		<div class="controlsRow">
+		<z-row gap="lg" doesWrap alignsY="center">
 			<SelectOutputType />
 
 			{#if isInstrument}
@@ -40,31 +40,14 @@
 			{#if isMidiDeviceSelected}
 				<SelectMidiChannel />
 			{/if}
-		</div>
-	</div>
+		</z-row>
+	</z-column>
+
 	<QwertyKeyboard layout="standard" />
-</div>
+</z-column>
 
 <style>
-	.app {
-		display: flex;
-		flex-direction: column;
-		justify-content: end;
-		align-items: center;
+	.keyboardPage {
 		height: 100vh;
-		gap: 16px;
-	}
-
-	.controls {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		width: 100%;
-	}
-
-	.controlsRow {
-		width: 100%;
-		display: flex;
-		gap: 8px;
 	}
 </style>

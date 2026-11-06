@@ -1,16 +1,10 @@
 <script lang="ts">
-	import * as Avatar from '$lib/components/ui/avatar'
-	import Icon from '@iconify/svelte'
-	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
-	import Badge from '$lib/components/ui/badge/badge.svelte'
-	import Box from '$lib/components/ui/box.svelte'
-	import Button from '$lib/components/ui/button/button.svelte'
-	import ChordBadge from '$lib/components/ChordBadge.svelte'
-	import * as Dialog from '$lib/components/ui/dialog'
-	import { goToPath } from '$lib/modules/navigate'
 	import { getContext } from 'svelte'
+	import { Play, Stop, Trash, FolderOpen, CopySimple, MusicNotes, Clock } from 'phosphor-svelte'
+	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
+	import { goToPath } from '$lib/modules/navigate'
 	import { calculateStartTimes } from '$lib/helpers/progression'
-	import ConfirmDeleteDialog from './Dashboard/ConfirmDeleteDialog.svelte'
+	import ChordBadge from '$lib/components/ChordBadge.svelte'
 
 	type ProjectCardPropsT = {
 		project: {
@@ -24,7 +18,9 @@
 			chordSymbols: string[]
 			updatedAt: Date
 			userId: string
-			progressionChords: ProgressionChordT[]
+			userName?: string
+			avatarUrl?: string | null
+			progressionChords: ProgressionItemT[]
 			patternSignals: SignalT[]
 			patternSignalRows: SignalRowsT
 			patternDurationBars: number
@@ -34,46 +30,48 @@
 		daysAgo: string
 		onOpenProject: (projectId: string) => void
 		onCloneProject?: (projectId: string) => Promise<void>
-		onDeleteProject?: (projectId: string) => Promise<void>
+		onDeleteProject?: (projectId: string) => void
 	}
 
 	const props: ProjectCardPropsT = $props()
 	const playbackContext = getContext<PlaybackContextT>('playback')
 	const activeUser = useActiveUser()
 
-	let isDeleteDialogOpen = $state(false)
-
 	const isOwnedByCurrentUser = $derived(props.project.userId === activeUser?.id)
+	const canDelete = $derived(isOwnedByCurrentUser && Boolean(props.onDeleteProject))
 	const isPlayingThisProject = $derived(
 		playbackContext.state.isPlaying && playbackContext.state.currentProjectId === props.project.id
 	)
+	const authorName = $derived(props.project.userName ?? activeUser?.userName ?? 'user')
+	const authorAvatarUrl = $derived(props.project.avatarUrl ?? (isOwnedByCurrentUser ? activeUser?.avatarUrl : null))
+	const primaryActionLabel = $derived(isOwnedByCurrentUser ? 'Open' : 'Clone')
+	const keyAndScaleLabel = $derived(`${props.project.key} ${props.project.scale}`)
+	const bpmLabel = $derived(`${props.project.bpm} BPM`)
+	const hasChords = $derived(props.project.progressionChords.length > 0)
 
-	const handleClick = () => {
+	const handleCardClick = () => {
 		props.onOpenProject(props.project.id)
 	}
 
-	const handleKeyDown = (event: KeyboardEvent) => {
+	const handleCardKeyDown = (event: KeyboardEvent) => {
 		const isEnterKey = event.key === 'Enter'
 		if (!isEnterKey) return
 		props.onOpenProject(props.project.id)
 	}
 
-	const handleUserClick = (event: MouseEvent) => {
+	const handleAuthorClick = (event: MouseEvent) => {
 		event.stopPropagation()
-		const userName = activeUser?.userName
-		if (userName) goToPath(`/users/${userName}`)
+		goToPath(`/users/${authorName}`)
 	}
 
 	const handlePlayToggle = async (event: MouseEvent) => {
 		event.stopPropagation()
 
-		const isCurrentlyPlaying = isPlayingThisProject
-		if (isCurrentlyPlaying) {
+		if (isPlayingThisProject) {
 			playbackContext.stop()
 			return
 		}
 
-		// Calculate startTimes for progression chords
 		const progressionWithStartTimes = calculateStartTimes({ items: props.project.progressionChords })
 
 		await playbackContext.perform({
@@ -92,191 +90,95 @@
 	const handleOpenOrClone = async (event: MouseEvent) => {
 		event.stopPropagation()
 
-		const shouldOpen = isOwnedByCurrentUser
-		if (shouldOpen) {
+		if (isOwnedByCurrentUser) {
 			goToPath(`/project/${props.project.id}`)
 			return
 		}
 
-		// Clone functionality
-		if (props.onCloneProject) {
-			await props.onCloneProject(props.project.id)
-		}
+		await props.onCloneProject?.(props.project.id)
 	}
 
 	const handleDeleteClick = (event: MouseEvent) => {
 		event.stopPropagation()
-		isDeleteDialogOpen = true
-	}
-
-	const handleConfirmDelete = async () => {
-		await props.onDeleteProject?.(props.project.id)
-		isDeleteDialogOpen = false
+		props.onDeleteProject?.(props.project.id)
 	}
 </script>
 
-<Box class="userProjectCard" role="button" tabIndex={0} onclick={handleClick} onkeydown={handleKeyDown}>
-	<Box gap="12px" isColumn justify="stretch" width="100%" class="userProjectCardContent">
-		{#if isOwnedByCurrentUser}
-			<Button class="deleteButton" onclick={handleDeleteClick} size="small" color="neutral" isIcon={true}>
-				<Icon icon="mingcute:delete-2-line" width="16px" height="16px" />
-			</Button>
+<z-card isReactive role="button" tabindex="0" gap="md" onclick={handleCardClick} onkeydown={handleCardKeyDown} class="projectCard">
+	<z-row alignsY="center" alignsX="between" gap="sm">
+		<z-row alignsY="center" gap="sm" class="projectCardAuthor">
+			<z-button kind="plain" size="sm" onclick={handleAuthorClick} aria-label={`View ${authorName}`}>
+				<z-avatar name={authorName} src={authorAvatarUrl ?? undefined} size="sm"></z-avatar>
+			</z-button>
+			<z-column>
+				<z-text size="lg" weight={600} color="strong" class="projectCardTitle">{props.project.title}</z-text>
+				<z-text size="xs" color="muted">{props.daysAgo}</z-text>
+			</z-column>
+		</z-row>
+
+		{#if canDelete}
+			<z-tooltip content="Delete project" placement="left">
+				<z-button kind="ghost" tone="danger" size="sm" onclick={handleDeleteClick} aria-label="Delete project">
+					<Trash size={16} />
+				</z-button>
+			</z-tooltip>
 		{/if}
+	</z-row>
 
-		<Box class="timeAgo" paddingLeft="44px">
-			<p class="days-ago">{props.daysAgo}</p>
-		</Box>
+	<z-row gap="xs" doesWrap>
+		<z-badge kind="outline" tone="neutral" size="sm">
+			<z-box slot="prefix" isInline><MusicNotes size={12} /></z-box>
+			{keyAndScaleLabel}
+		</z-badge>
+		<z-badge kind="outline" tone="neutral" size="sm">
+			<z-box slot="prefix" isInline><Clock size={12} /></z-box>
+			{bpmLabel}
+		</z-badge>
+	</z-row>
 
-		<Box align="center" gap="12px">
-			<Avatar.Root class="userProjectCardAvatar size-8" onclick={handleUserClick}>
-				<Avatar.Fallback class="logoFont">
-					{activeUser?.userName?.slice(0, 2).toUpperCase() || 'U'}
-				</Avatar.Fallback>
-			</Avatar.Root>
-			<h3 class="projectTitle">{props.project.title}</h3>
-		</Box>
-
-		<Box gap="0px" class="userProjectCardFooter">
-			<Badge color="neutral" size="small" kind="ghost">
-				<Icon icon="mingcute:music-line" class="size-3 mr-1" />
-				{props.project.key}
-				{props.project.scale}
-			</Badge>
-			<Badge color="neutral" size="small" kind="ghost">
-				<Icon icon="mingcute:time-line" class="size-3 mr-1" />
-				{props.project.bpm} BPM
-			</Badge>
-		</Box>
-
-		<Box padding="8px" gap="12px" class="userProjectCardChordSymbols">
-			{#each props.project.progressionChords as chord (chord.id)}
-				<ChordBadge {...chord} />
+	<z-surface level="1" kind="soft" inset="sm" radius="md" isFullWidth class="projectCardChords">
+		<z-row gap="xs" doesWrap>
+			{#each props.project.progressionChords as item (item.id)}
+				<ChordBadge {item} />
 			{/each}
-		</Box>
+			{#if !hasChords}
+				<z-text size="xs" color="muted">No chords yet</z-text>
+			{/if}
+		</z-row>
+	</z-surface>
 
-		<Box gap="8px" paddingTop="8px" class="projectCardActions">
-			<Button onclick={handlePlayToggle} size="medium" color="neutral" isIcon={true}>
-				{#if isPlayingThisProject}
-					<Icon icon="mingcute:stop-fill" width="18px" height="18px" />
-				{:else}
-					<Icon icon="mingcute:play-fill" width="18px" height="18px" />
-				{/if}
-			</Button>
+	<z-row gap="sm" alignsY="center">
+		<z-button kind="soft" onclick={handlePlayToggle} aria-label={isPlayingThisProject ? 'Stop' : 'Play'}>
+			{#if isPlayingThisProject}
+				<Stop size={18} weight="fill" />
+			{:else}
+				<Play size={18} weight="fill" />
+			{/if}
+		</z-button>
 
-			<Button onclick={handleOpenOrClone} size="medium" color="brand" class="flex-1">
-				{#if isOwnedByCurrentUser}
-					<Icon icon="mingcute:folder-open-line" class="size-4 mr-1" />
-					Open
-				{:else}
-					<Icon icon="mingcute:copy-2-line" class="size-4 mr-1" />
-					Clone
-				{/if}
-			</Button>
-		</Box>
-	</Box>
-</Box>
-
-{#if isDeleteDialogOpen}
-	{#if isDeleteDialogOpen}
-		<ConfirmDeleteDialog
-			isOpen
-			projectTitle={props.project.title}
-			onConfirm={handleConfirmDelete}
-			onOpenChange={(open) => {
-				isDeleteDialogOpen = open
-			}}
-		/>
-	{/if}
-{/if}
+		<z-button tone="primary" isFullWidth onclick={handleOpenOrClone}>
+			{#if isOwnedByCurrentUser}
+				<FolderOpen size={16} />
+			{:else}
+				<CopySimple size={16} />
+			{/if}
+			{primaryActionLabel}
+		</z-button>
+	</z-row>
+</z-card>
 
 <style>
-	:global .userProjectCardContent {
-		padding: 24px;
-		padding-top: 14px;
-		position: relative;
-	}
-
-	:global .userProjectCardContent .deleteButton {
-		position: absolute;
-		top: 12px;
-		right: 12px;
-		z-index: 10;
-		opacity: 0.6;
-		transition: opacity 0.2s ease;
-	}
-
-	:global .userProjectCardContent .deleteButton:hover {
-		opacity: 1;
-	}
-
-	:global .userProjectCardContent .userProjectCardChordSymbols {
-		background: var(--n-01);
-		border: 1px solid var(--n-03);
-		border-radius: 4px;
-		flex-wrap: wrap;
-	}
-
-	:global .userProjectCardContent .projectCardActions {
-		display: flex;
-		align-items: center;
-		border-top: 1px solid var(--n-03);
-		padding-top: 12px !important;
-	}
-
-	:global .userProjectCardContent .timeAgo {
-		position: absolute;
-		font-style: italic;
-		top: 36px;
-		font-size: 12px;
-		color: var(--n-05);
-	}
-
-	:global .userProjectCardAvatar {
-		position: relative;
-		top: 10px;
-	}
-
-	:global .userProjectCard {
-		background: var(--colorWhite);
-		border-radius: 8px;
-		box-shadow: 0 2px 8px var(--n-alpha-1);
-		transition: all 0.2s ease;
+	.projectCard {
 		cursor: pointer;
-		border: 1px solid var(--n-03);
-		overflow: hidden;
 	}
 
-	:global .userProjectCard:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 8px 16px var(--n-alpha-2);
-		border-color: var(--n-04);
+	.projectCardAuthor {
+		min-width: 0;
 	}
 
-	:global .userProjectCardHeader {
-		display: flex;
-		align-items: flex-start;
-		gap: 12px;
-		margin-bottom: 12px;
-	}
-
-	.projectTitle {
-		font-size: 18px;
-		font-weight: 600;
-		margin: 0;
-		color: var(--n-09);
-		white-space: nowrap;
+	.projectCardTitle {
 		overflow: hidden;
 		text-overflow: ellipsis;
-	}
-
-	:global .userProjectCardDescription {
-		font-size: 14px;
-		color: var(--n-06);
-		margin: 0 0 16px 0;
-		line-height: 1.4;
-	}
-
-	:global .userProjectCardFooter {
-		padding-top: 8px;
+		white-space: nowrap;
 	}
 </style>

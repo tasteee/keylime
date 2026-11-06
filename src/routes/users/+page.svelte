@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { Input } from '$lib/components/ui/input'
-	import Icon from '@iconify/svelte'
+	import { MagnifyingGlass, UsersThree, Clock } from 'phosphor-svelte'
 	import { daysAgo } from '$lib/modules/dateTime'
 	import { goToPath } from '$lib/modules/navigate'
-	import { fade } from 'svelte/transition'
-	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
 	import { getPublicUsers } from '$lib/modules/database'
-	import Box from '$lib/components/ui/box.svelte'
+	import PageLayout from '$lib/components/PageLayout.svelte'
+	import PageHeader from '$lib/components/PageHeader.svelte'
 
 	let users = $state<UserT[]>([])
 	let isLoading = $state(false)
@@ -48,173 +46,63 @@
 		goToPath(`/users/${userName}`)
 	}
 
-	const handleSearch = (event: Event) => {
-		const target = event.target as HTMLInputElement
-		searchText = target.value
+	const handleSearch = (event: CustomEvent) => {
+		searchText = event.detail.value
 		loadPublicUsers({ searchText })
 	}
+
+	const handleUserKeyDown = (event: KeyboardEvent, userName: string) => {
+		const isEnterKey = event.key === 'Enter'
+		if (isEnterKey) handleUserClick(userName)
+	}
+
+	const hasNoUsers = $derived(users.length === 0)
 
 	$effect(() => {
 		loadPublicUsers()
 	})
 </script>
 
-<div class="pageContainer" in:fade>
-	<TopBar />
+<PageLayout>
+	<PageHeader title="Discover creators" subtitle="Explore musicians and their chord progressions." />
 
-	<main data-page-content-scrollable class="pageMainContent">
-		<Box isColumn class="pageContentHeader">
-			<h1 class="pageTitle">Discover Creators</h1>
-			<p class="pageSubtitle">Explore musicians and their chord progressions</p>
-		</Box>
+	<z-input type="search" value={searchText} placeholder="Search users…" label="Search users" oninput={handleSearch}>
+		<z-box slot="prefix" isInline><MagnifyingGlass size={16} /></z-box>
+	</z-input>
 
-		<div class="search-bar">
-			<Input size="large" type="text" value={searchText} oninput={handleSearch} placeholder="Search users...">
-				{#snippet startIcon()}
-					<Icon icon="mingcute:search-line" />
-				{/snippet}
-			</Input>
-		</div>
-
-		{#if isLoading}
-			<div class="loading-state">
-				<p>Loading users...</p>
-			</div>
-		{:else if users.length === 0}
-			<div class="empty-state">
-				<Icon icon="mingcute:group-line" class="size-16 mb-4 opacity-30" />
-				<p>No users found</p>
-			</div>
-		{:else}
-			<div class="users-grid">
-				{#each users as user (user.id)}
-					<div
-						class="user-card"
-						onclick={() => handleUserClick(user.userName)}
-						role="button"
-						tabindex="0"
-						onkeydown={(event) => event.key === 'Enter' && handleUserClick(user.userName)}
-					>
-						<div class="user-avatar">
-							{#if user.avatarUrl}
-								<img src={user.avatarUrl} alt={user.userName} />
-							{:else}
-								<Icon icon="mingcute:user-3-line" class="size-12" />
-							{/if}
-						</div>
-						<h3 class="user-name-display">{user.userName}</h3>
-						<p class="user-bio">{user.bio || 'No bio yet'}</p>
-						<div class="user-metadata">
-							<span class="metadata-item">
-								<Icon icon="mingcute:time-line" class="metadata-icon" />
-								Joined {daysAgo(user.createdAt)}
-							</span>
-						</div>
-					</div>
-				{/each}
-			</div>
-		{/if}
-	</main>
-</div>
-
-<style>
-	.search-bar {
-		margin-bottom: 32px;
-	}
-
-	.users-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-		gap: 24px;
-		margin-top: 24px;
-	}
-
-	.user-card {
-		background: var(--colorWhite);
-		border-radius: 12px;
-		padding: 32px 24px;
-		text-align: center;
-		cursor: pointer;
-		border: 1px solid var(--n-03);
-		transition: all 0.2s ease;
-		box-shadow: 0 2px 8px var(--n-alpha-1);
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.user-card:hover {
-		transform: translateY(-4px);
-		box-shadow: 0 8px 16px var(--n-alpha-2);
-		border-color: var(--n-04);
-	}
-
-	.user-avatar {
-		width: 80px;
-		height: 80px;
-		border-radius: 50%;
-		margin-bottom: 16px;
-		background-color: var(--n-01);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-		color: var(--n-05);
-	}
-
-	.user-avatar img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.user-name-display {
-		font-size: 18px;
-		font-weight: 600;
-		margin: 0 0 8px 0;
-		color: var(--n-09);
-	}
-
-	.user-bio {
-		font-size: 14px;
-		color: var(--n-06);
-		margin: 0 0 16px 0;
-		line-height: 1.5;
-		flex-grow: 1;
-	}
-
-	.user-metadata {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 12px;
-		width: 100%;
-		padding-top: 12px;
-		border-top: 1px solid var(--n-02);
-	}
-
-	.metadata-item {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		font-size: 12px;
-		color: var(--n-05);
-	}
-
-	.metadata-icon {
-		font-size: 14px;
-	}
-
-	.loading-state,
-	.empty-state {
-		text-align: center;
-		padding: 60px;
-		color: var(--n-05);
-	}
-
-	.empty-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-</style>
+	{#if isLoading}
+		<z-grid minColumnWidth="16rem" gap="lg">
+			{#each Array.from({ length: 6 }) as _}
+				<z-skeleton shape="rect" height="12rem"></z-skeleton>
+			{/each}
+		</z-grid>
+	{:else if hasNoUsers}
+		<z-empty-state heading="No users found" description="Try a different name." isBordered>
+			<z-box slot="icon" isInline><UsersThree size={32} /></z-box>
+		</z-empty-state>
+	{:else}
+		<z-grid minColumnWidth="16rem" gap="lg">
+			{#each users as user (user.id)}
+				<z-card
+					isReactive
+					role="button"
+					tabindex="0"
+					gap="sm"
+					onclick={() => handleUserClick(user.userName)}
+					onkeydown={(event: KeyboardEvent) => handleUserKeyDown(event, user.userName)}
+				>
+					<z-column gap="sm" alignsX="center">
+						<z-avatar name={user.userName} src={user.avatarUrl ?? undefined} size="xl"></z-avatar>
+						<z-text size="xl" weight={600} color="strong">{user.userName}</z-text>
+						<z-text size="sm" color="muted">{user.bio || 'No bio yet'}</z-text>
+					</z-column>
+					<z-separator></z-separator>
+					<z-row gap="xs" alignsX="center" alignsY="center">
+						<Clock size={14} />
+						<z-text size="xs" color="muted">Joined {daysAgo(user.createdAt)}</z-text>
+					</z-row>
+				</z-card>
+			{/each}
+		</z-grid>
+	{/if}
+</PageLayout>

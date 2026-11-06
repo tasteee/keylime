@@ -1,30 +1,30 @@
 <script lang="ts">
-	import * as Dialog from '$lib/components/ui/dialog'
-	import { Button } from '$lib/components/ui/button'
-
 	type UnsavedChangesDialogPropsT = {
 		isOpen: boolean
-		onOpenChange?: (open: boolean) => void
 		onConfirm: () => void
 		onDiscard: () => void
 		onCancel: () => void
 	}
 
-	let { isOpen = $bindable(false), onOpenChange, onConfirm, onDiscard, onCancel }: UnsavedChangesDialogPropsT = $props()
+	const props: UnsavedChangesDialogPropsT = $props()
+
+	// The dialog also reports closes that we caused ourselves.
+	// Only a close while we still think it is open is a dismissal.
+	const handleDialogClose = () => {
+		if (!props.isOpen) return
+		props.onCancel()
+	}
 </script>
 
-<Dialog.Root bind:open={isOpen} {onOpenChange}>
-	<Dialog.Content class="sm:max-w-[425px]">
-		<Dialog.Header>
-			<Dialog.Title>Unsaved Changes</Dialog.Title>
-			<Dialog.Description>
-				You have unsaved changes in your project. Do you want to save them before leaving?
-			</Dialog.Description>
-		</Dialog.Header>
-		<Dialog.Footer>
-			<Button color="red" kind="outline" onclick={onDiscard}>Discard & Leave</Button>
-			<!-- <Button kind="outline" onclick={onCancel}>Keep Editing</Button> -->
-			<Button onclick={onConfirm}>Save & Leave</Button>
-		</Dialog.Footer>
-	</Dialog.Content>
-</Dialog.Root>
+<z-dialog
+	isOpen={props.isOpen}
+	heading="Unsaved changes"
+	description="You have unsaved changes in your project. Do you want to save them before leaving?"
+	onclose={handleDialogClose}
+>
+	<z-row slot="footer" gap="sm" alignsX="end" doesWrap>
+		<z-button kind="ghost" onclick={props.onCancel}>Keep editing</z-button>
+		<z-button kind="outline" tone="danger" onclick={props.onDiscard}>Discard & leave</z-button>
+		<z-button tone="primary" onclick={props.onConfirm}>Save & leave</z-button>
+	</z-row>
+</z-dialog>

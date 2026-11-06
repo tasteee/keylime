@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button'
-	import Icon from '@iconify/svelte'
+	import { MusicNotes } from 'phosphor-svelte'
 	import { daysAgo } from '$lib/modules/dateTime'
 	import { goToPath } from '$lib/modules/navigate'
-	import { fade } from 'svelte/transition'
-	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
 	import { getPublicProjects, cloneProjectById } from '$lib/modules/database'
-	import Box from '$lib/components/ui/box.svelte'
+	import PageLayout from '$lib/components/PageLayout.svelte'
+	import PageHeader from '$lib/components/PageHeader.svelte'
 	import ProjectCard from '$lib/components/ProjectCard.svelte'
 	import ProjectsBrowserBar from '$lib/components/ProjectsBrowserBar.svelte'
 	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
@@ -104,80 +102,47 @@
 		}
 	}
 
-	const handlePreviousPage = () => {
-		loadPublicProjects(currentFilterOptions, currentPage - 1)
+	const handlePaginationChange = (event: CustomEvent) => {
+		const nextPage: number = event.detail.page
+		loadPublicProjects(currentFilterOptions, nextPage)
 	}
 
-	const handleNextPage = () => {
-		loadPublicProjects(currentFilterOptions, currentPage + 1)
-	}
+	const totalPages = $derived(Math.ceil(totalCount / itemsPerPage))
+	const hasMultiplePages = $derived(totalCount > itemsPerPage)
+	const hasNoProjects = $derived(projects.length === 0)
 </script>
 
-<div class="pageContainer" in:fade>
-	<TopBar />
+<PageLayout>
+	<PageHeader title="Discover projects" subtitle="Explore projects from the community and what-not." />
 
-	<main data-page-content-scrollable class="pageMainContent">
-		<Box isColumn class="pageContentHeader">
-			<h1 class="pageTitle">Discover Projects</h1>
-			<p class="pageSubtitle">Explore projects from the community and what-not.</p>
-		</Box>
+	<ProjectsBrowserBar onsubmit={handleFilterSubmit} />
 
-		<ProjectsBrowserBar onsubmit={handleFilterSubmit} />
+	{#if isLoading}
+		<z-grid minColumnWidth="20rem" gap="lg">
+			{#each Array.from({ length: 6 }) as _}
+				<z-skeleton shape="rect" height="16rem"></z-skeleton>
+			{/each}
+		</z-grid>
+	{:else if hasNoProjects}
+		<z-empty-state heading="No projects found" description="Try a different search or loosen your filters." isBordered>
+			<z-box slot="icon" isInline><MusicNotes size={32} /></z-box>
+		</z-empty-state>
+	{:else}
+		<z-grid minColumnWidth="20rem" gap="lg">
+			{#each projects as project (project.id)}
+				<ProjectCard
+					{project}
+					daysAgo={daysAgo(project.updatedAt)}
+					onOpenProject={handleOpenProject}
+					onCloneProject={handleCloneProject}
+				/>
+			{/each}
+		</z-grid>
+	{/if}
 
-		{#if isLoading}
-			<div class="loading-state" in:fade>
-				<p>Loading projects...</p>
-			</div>
-		{:else if projects.length === 0}
-			<div class="empty-state" in:fade>
-				<Icon icon="mingcute:music-2-line" class="size-16 mb-4 opacity-30" />
-				<p>No projects found</p>
-			</div>
-		{:else}
-			<div class="projects-grid" in:fade>
-				{#each projects as project (project.id)}
-					<ProjectCard
-						{project}
-						daysAgo={daysAgo(project.updatedAt)}
-						onOpenProject={handleOpenProject}
-						onCloneProject={handleCloneProject}
-					/>
-				{/each}
-			</div>
-		{/if}
-
-		{#if totalCount > itemsPerPage}
-			<Box justify="center" gap="8px" class="mt-6">
-				<Button onnclick={handlePreviousPage} disabled={currentPage === 1 || isLoading} kind="outline" size="medium">
-					<Icon icon="mingcute:left-line" class="size-4" />
-				</Button>
-				<span class="text-sm text-muted-foreground">
-					Page {currentPage} of {Math.ceil(totalCount / itemsPerPage)}
-				</span>
-				<Button
-					onnclick={handleNextPage}
-					disabled={currentPage >= Math.ceil(totalCount / itemsPerPage) || isLoading}
-					kind="outline"
-					size="medium"
-				>
-					<Icon icon="mingcute:right-line" class="size-4" />
-				</Button>
-			</Box>
-		{/if}
-	</main>
-</div>
-
-<style>
-	.loading-state,
-	.empty-state {
-		text-align: center;
-		padding: 60px;
-		color: var(--n-05);
-	}
-
-	.empty-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-</style>
+	{#if hasMultiplePages}
+		<z-row alignsX="center">
+			<z-pagination page={currentPage} total={totalPages} onchange={handlePaginationChange}></z-pagination>
+		</z-row>
+	{/if}
+</PageLayout>

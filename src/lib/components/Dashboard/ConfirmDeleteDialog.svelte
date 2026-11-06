@@ -1,41 +1,23 @@
 <script lang="ts">
-	import * as Dialog from '$lib/components/ui/dialog'
-	import { Button } from '$lib/components/ui/button'
-
 	type ConfirmDeleteDialogPropsT = {
 		isOpen: boolean
-		onOpenChange?: (open: boolean) => void
-		onConfirm: () => void
 		projectTitle: string
+		onConfirm: () => void
+		onCancel: () => void
 	}
 
 	const props: ConfirmDeleteDialogPropsT = $props()
 
-	const handleCancel = () => {
-		if (props.onOpenChange) {
-			props.onOpenChange(false)
-		}
-	}
-
-	const handleConfirm = () => {
-		props.onConfirm()
-		if (props.onOpenChange) {
-			props.onOpenChange(false)
-		}
-	}
+	const dialogDescription = $derived(`"${props.projectTitle}" will be deleted for good. This can't be undone.`)
 </script>
 
-<Dialog.Root open={props.isOpen} onOpenChange={props.onOpenChange}>
-	<Dialog.Content class="sm:max-w-[425px]">
-		<Dialog.Header>
-			<Dialog.Title>Delete Project</Dialog.Title>
-			<Dialog.Description>
-				Are you sure you want to delete "{props.projectTitle}"? This action cannot be undone.
-			</Dialog.Description>
-		</Dialog.Header>
-		<Dialog.Footer>
-			<Button kind="outline" onclick={handleCancel}>Cancel</Button>
-			<Button color="red" onclick={handleConfirm}>Delete</Button>
-		</Dialog.Footer>
-	</Dialog.Content>
-</Dialog.Root>
+<z-alert-dialog
+	isOpen={props.isOpen}
+	heading="Delete this project?"
+	description={dialogDescription}
+	confirmLabel="Delete project"
+	cancelLabel="Keep it"
+	tone="danger"
+	onconfirm={props.onConfirm}
+	oncancel={props.onCancel}
+></z-alert-dialog>
