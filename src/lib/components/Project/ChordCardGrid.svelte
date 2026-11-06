@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte'
 	import ChordCard from './ChordCard.svelte'
+	import PanelHeader from './PanelHeader.svelte'
 
 	type ProjectEditorContextT = {
 		gridChords: ChordT[]
@@ -39,19 +40,36 @@
 	})
 </script>
 
-<z-scroll class="chordCardScroll" direction="both" inset="md">
-	<z-row gap="sm" class="chordColumns">
-		{#each chordColumns as column (column.root)}
-			<z-column gap="sm" class="chordColumn">
-				{#each column.chords as chord (chord.id)}
-					<ChordCard {chord} />
-				{/each}
-			</z-column>
-		{/each}
-	</z-row>
-</z-scroll>
+<div class="chordGrid">
+	<PanelHeader label="Chords" />
+
+	<z-scroll class="chordCardScroll" direction="both" inset="md">
+		<z-row gap="sm" class="chordColumns">
+			{#each chordColumns as column (column.root)}
+				<z-column gap="sm" class="chordColumn">
+					{#each column.chords as chord (chord.id)}
+						<ChordCard {chord} />
+					{/each}
+				</z-column>
+			{/each}
+		</z-row>
+	</z-scroll>
+</div>
 
 <style>
+	/* A rounded segment of the page, like the pattern editor. */
+	.chordGrid {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+		margin: var(--spacing-3) var(--spacing-4) 0;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		background: var(--card);
+		overflow: hidden;
+	}
+
 	.chordCardScroll {
 		flex: 1 1 0;
 		min-height: 0;
