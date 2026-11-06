@@ -56,7 +56,7 @@
 	}
 </script>
 
-<z-popover placement="bottom-start" isOpen={isOpen} ontoggle={handleToggle}>
+<z-popover class="pattern-library-popover" placement="bottom-start" isOpen={isOpen} ontoggle={handleToggle}>
 	<z-button slot="trigger" kind="outline" size="sm" aria-label="Pattern library">
 		<Books size={16} weight="bold" />
 		Library
@@ -106,6 +106,10 @@
 </z-popover>
 
 <style>
+	.pattern-library-popover {
+		--z-overlay-max-width: none;
+	}
+
 	.pattern-library {
 		display: grid;
 		grid-template-columns: repeat(3, max-content);
