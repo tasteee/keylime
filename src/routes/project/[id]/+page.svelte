@@ -12,6 +12,7 @@
 	import UnsavedChangesDialog from '$lib/components/Project/UnsavedChangesDialog.svelte'
 	import { hmu } from '$lib/modules/hitmeup'
 	import { calculateStartTimes } from '$lib/helpers/progression'
+	import { isTypingInTextField } from '$lib/helpers/typing'
 
 	const projectEditor = useProjectEditor()
 	const project = $derived(projectEditor.state.project)
@@ -74,11 +75,7 @@
 		const isSpaceKey = event.code === 'Space'
 		if (!isSpaceKey) return
 
-		// Zest fields keep their <input> inside a shadow root, so the
-		// event target is retargeted. Look through the whole path.
-		const eventPath = event.composedPath()
-		const isTypingInInput = eventPath.some((node) => node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement)
-		if (isTypingInInput) return
+		if (isTypingInTextField(event)) return
 
 		event.preventDefault()
 

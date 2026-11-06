@@ -13,7 +13,7 @@
 		Stop,
 		ArrowRight
 	} from 'phosphor-svelte'
-	import mainStore from '$lib/stores/main.svelte'
+	import { isTypingInTextField } from '$lib/helpers/typing'
 	import { getContext } from 'svelte'
 	import GENERAL_CONFIG from '$lib/constants/general.json'
 
@@ -233,8 +233,8 @@
 	})
 
 	const handleKeyDown = (event: KeyboardEvent) => {
-		// If an input is focused, dont handle keydown for progression items.
-		if (mainStore.isInputFocused) return
+		// While typing in a field, keys belong to the field.
+		if (isTypingInTextField(event)) return
 		const isDeleteKey = event.key === 'Delete' || event.key === 'Backspace'
 		if (isDeleteKey && context.state.selectedProgressionItemId) {
 			context.removeProgressionItem(context.state.selectedProgressionItemId)
