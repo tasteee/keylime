@@ -6,6 +6,10 @@ on:
     paths: [worker/**, migrations/**]
   workflow_dispatch:
 
+concurrency:
+  group: api-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
