@@ -39,36 +39,36 @@ z-toggle-button-group-item > svg {
    Components tint with color-mix, so they stay flat in both themes. */
 :root,
 :root[data-theme='dark'] {
-	--chord-d: oklch(0.78 0.13 300);
-	--chord-d-sharp: oklch(0.56 0.2 300);
-	--chord-e: oklch(0.82 0.11 350);
-	--chord-f: oklch(0.62 0.21 350);
-	--chord-f-sharp: oklch(0.82 0.11 350);
-	--chord-g: oklch(0.56 0.21 25);
-	--chord-g-sharp: oklch(0.74 0.15 25);
-	--chord-a: oklch(0.64 0.18 55);
-	--chord-a-sharp: oklch(0.82 0.13 55);
-	--chord-b: oklch(0.74 0.15 95);
-	--chord-c: oklch(0.9 0.12 95);
-	--chord-c-sharp: oklch(0.56 0.16 150);
+	--chord-d: oklch(0.68 0.18 55);
+	--chord-d-sharp: oklch(0.6 0.21 25);
+	--chord-e: oklch(0.84 0.12 350);
+	--chord-f: oklch(0.84 0.14 60);
+	--chord-f-sharp: oklch(0.78 0.16 95);
+	--chord-g: oklch(0.76 0.16 25);
+	--chord-g-sharp: oklch(0.6 0.17 150);
+	--chord-a: oklch(0.64 0.21 350);
+	--chord-a-sharp: oklch(0.84 0.12 350);
+	--chord-b: oklch(0.8 0.14 300);
+	--chord-c: oklch(0.6 0.2 300);
+	--chord-c-sharp: oklch(0.92 0.14 100);
 
 	/* The live part of the pattern: the chosen duration. */
 	--active-accent: oklch(0.64 0.17 250);
 }
 
 :root[data-theme='light'] {
-	--chord-d: oklch(0.72 0.14 300);
-	--chord-d-sharp: oklch(0.46 0.2 300);
-	--chord-e: oklch(0.76 0.13 350);
-	--chord-f: oklch(0.52 0.21 350);
-	--chord-f-sharp: oklch(0.76 0.13 350);
-	--chord-g: oklch(0.48 0.2 25);
-	--chord-g-sharp: oklch(0.68 0.16 25);
-	--chord-a: oklch(0.56 0.16 55);
-	--chord-a-sharp: oklch(0.78 0.14 60);
-	--chord-b: oklch(0.64 0.14 95);
-	--chord-c: oklch(0.84 0.14 100);
-	--chord-c-sharp: oklch(0.46 0.14 150);
+	--chord-d: oklch(0.58 0.17 55);
+	--chord-d-sharp: oklch(0.5 0.2 25);
+	--chord-e: oklch(0.76 0.14 350);
+	--chord-f: oklch(0.78 0.15 60);
+	--chord-f-sharp: oklch(0.66 0.15 95);
+	--chord-g: oklch(0.68 0.17 25);
+	--chord-g-sharp: oklch(0.48 0.14 150);
+	--chord-a: oklch(0.54 0.21 350);
+	--chord-a-sharp: oklch(0.76 0.14 350);
+	--chord-b: oklch(0.72 0.15 300);
+	--chord-c: oklch(0.48 0.2 300);
+	--chord-c-sharp: oklch(0.84 0.15 100);
 
 	--active-accent: oklch(0.54 0.17 250);
 }
