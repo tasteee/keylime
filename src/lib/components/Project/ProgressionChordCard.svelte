@@ -175,7 +175,7 @@
 		justify-content: center;
 		height: auto;
 		background: var(--color-neutral-1);
-		border: 1px solid var(--chord-hue, var(--border));
+		border: 1px solid var(--chord-rest, var(--border));
 		border-radius: var(--radius-sm);
 		color: var(--foreground);
 		cursor: default;
@@ -184,6 +184,11 @@
 		transition:
 			background var(--motion-fast) var(--ease-enter),
 			border-color var(--motion-fast) var(--ease-enter);
+	}
+
+	.progressionItem:hover,
+	.progressionItem.isSelected {
+		border-color: var(--chord-hue, var(--border));
 	}
 
 	.progressionItem.isSelected {

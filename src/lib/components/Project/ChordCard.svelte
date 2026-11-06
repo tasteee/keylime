@@ -115,10 +115,15 @@
 		height: 3rem;
 		user-select: none;
 		background: var(--color-neutral-1) !important;
-		border-color: var(--chord-hue, var(--border)) !important;
+		border-color: var(--chord-rest, var(--border)) !important;
 		transition:
 			background var(--motion-fast) var(--ease-enter),
 			border-color var(--motion-fast) var(--ease-enter);
+	}
+
+	.chordCard:hover,
+	.chordCard.isPlaying {
+		border-color: var(--chord-hue, var(--border)) !important;
 	}
 
 	.chordCard :global(.chordCardAction) {

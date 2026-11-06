@@ -33,68 +33,117 @@ z-toggle-button-group-item > svg {
 	--purple: var(--foreground);
 }
 
-/* Chord palette. Seven families, four tones each:
-   1 deep, 2 vivid, 3 soft, 4 pale. */
+/* Chord palette. Seven families, eight tones each:
+   1 darkest to 8 lightest. */
 :root {
-	--palette-red-1: #c12d1c;
-	--palette-red-2: #ec5843;
-	--palette-red-3: #ff7f68;
-	--palette-red-4: #ffa78e;
+	--palette-red-1: #6b0100;
+	--palette-red-2: #971103;
+	--palette-red-3: #c12d1c;
+	--palette-red-4: #ec5843;
+	--palette-red-5: #ff7f68;
+	--palette-red-6: #ffa78e;
+	--palette-red-7: #ffc4b4;
+	--palette-red-8: #ffdbd1;
 
-	--palette-orange-1: #c75a08;
-	--palette-orange-2: #f27d0c;
-	--palette-orange-3: #ffa44a;
-	--palette-orange-4: #ffc98c;
+	--palette-orange-1: #732f00;
+	--palette-orange-2: #9c4400;
+	--palette-orange-3: #c75a08;
+	--palette-orange-4: #f27d0c;
+	--palette-orange-5: #ffa44a;
+	--palette-orange-6: #ffc98c;
+	--palette-orange-7: #ffe3c4;
+	--palette-orange-8: #fff7ef;
 
-	--palette-yellow-1: #bf7c00;
-	--palette-yellow-2: #e7a200;
-	--palette-yellow-3: #ffc949;
-	--palette-yellow-4: #fff176;
+	--palette-yellow-1: #734800;
+	--palette-yellow-2: #986201;
+	--palette-yellow-3: #bf7c00;
+	--palette-yellow-4: #e7a200;
+	--palette-yellow-5: #ffc949;
+	--palette-yellow-6: #fff176;
+	--palette-yellow-7: #fffcdb;
+	--palette-yellow-8: #fffde8;
 
-	--palette-green-1: #008532;
-	--palette-green-2: #36aa56;
-	--palette-green-3: #62d17b;
-	--palette-green-4: #8af9a1;
+	--palette-green-1: #004415;
+	--palette-green-2: #006423;
+	--palette-green-3: #008532;
+	--palette-green-4: #36aa56;
+	--palette-green-5: #62d17b;
+	--palette-green-6: #8af9a1;
+	--palette-green-7: #cdffd4;
+	--palette-green-8: #f5fff6;
 
-	--palette-blue-1: #0b5fc9;
-	--palette-blue-2: #2f8cff;
-	--palette-blue-3: #6bb3ff;
-	--palette-blue-4: #a3d3ff;
+	--palette-blue-1: #002b69;
+	--palette-blue-2: #004499;
+	--palette-blue-3: #0b5fc9;
+	--palette-blue-4: #2f8cff;
+	--palette-blue-5: #6bb3ff;
+	--palette-blue-6: #a3d3ff;
+	--palette-blue-7: #c9e5fe;
+	--palette-blue-8: #e7f3fe;
 
-	--palette-purple-1: #7a31ca;
-	--palette-purple-2: #ab78f8;
-	--palette-purple-3: #ce92ff;
-	--palette-purple-4: #dbb1ff;
+	--palette-purple-1: #3d0070;
+	--palette-purple-2: #5c149f;
+	--palette-purple-3: #7a31ca;
+	--palette-purple-4: #ab78f8;
+	--palette-purple-5: #ce92ff;
+	--palette-purple-6: #dbb1ff;
+	--palette-purple-7: #e7cdfe;
+	--palette-purple-8: #f1e3ff;
 
-	--palette-pink-1: #c10064;
-	--palette-pink-2: #ff5399;
-	--palette-pink-3: #ff80be;
-	--palette-pink-4: #ffa5d0;
+	--palette-pink-1: #640031;
+	--palette-pink-2: #910049;
+	--palette-pink-3: #c10064;
+	--palette-pink-4: #ff5399;
+	--palette-pink-5: #ff80be;
+	--palette-pink-6: #ffa5d0;
+	--palette-pink-7: #ffc6df;
+	--palette-pink-8: #ffdfed;
 }
 
-/* Each note has its own tone. Light tones are 3, dark tones are 1.
+/* Each note has its own tone. Light tones are 5, dark tones are 3.
    D light purple, D# dark red, E light yellow, F dark purple,
    F# light orange, G light pink, G# light red, A dark orange,
    A# dark yellow, B light pink, C dark green, C# dark pink. */
 :root {
-	--chord-c: var(--palette-green-1);
-	--chord-c-sharp: var(--palette-pink-1);
-	--chord-d: var(--palette-purple-3);
-	--chord-d-sharp: var(--palette-red-1);
-	--chord-e: var(--palette-yellow-3);
-	--chord-f: var(--palette-purple-1);
-	--chord-f-sharp: var(--palette-orange-3);
-	--chord-g: var(--palette-pink-3);
-	--chord-g-sharp: var(--palette-red-3);
-	--chord-a: var(--palette-orange-1);
-	--chord-a-sharp: var(--palette-yellow-1);
-	--chord-b: var(--palette-pink-3);
+	--chord-c: var(--palette-green-3);
+	--chord-c-sharp: var(--palette-pink-3);
+	--chord-d: var(--palette-purple-5);
+	--chord-d-sharp: var(--palette-red-3);
+	--chord-e: var(--palette-yellow-5);
+	--chord-f: var(--palette-purple-3);
+	--chord-f-sharp: var(--palette-orange-5);
+	--chord-g: var(--palette-pink-5);
+	--chord-g-sharp: var(--palette-red-5);
+	--chord-a: var(--palette-orange-3);
+	--chord-a-sharp: var(--palette-yellow-3);
+	--chord-b: var(--palette-pink-5);
 }
 
 /* Ink is the tone used for small text, so it must read on the
-   surface: soft on dark, deep on light. */
+   surface: soft on dark, deep on light. Rest is the quiet card
+   border: dark on dark surfaces, pale on light ones. */
 :root,
 :root[data-theme='dark'] {
+	--ink-red: var(--palette-red-5);
+	--ink-orange: var(--palette-orange-5);
+	--ink-yellow: var(--palette-yellow-5);
+	--ink-green: var(--palette-green-5);
+	--ink-blue: var(--palette-blue-5);
+	--ink-purple: var(--palette-purple-5);
+	--ink-pink: var(--palette-pink-5);
+
+	--rest-red: var(--palette-red-2);
+	--rest-orange: var(--palette-orange-2);
+	--rest-yellow: var(--palette-yellow-2);
+	--rest-green: var(--palette-green-2);
+	--rest-blue: var(--palette-blue-2);
+	--rest-purple: var(--palette-purple-2);
+	--rest-pink: var(--palette-pink-2);
+
+	--active-accent: oklch(0.64 0.17 250);
+}
+
+:root[data-theme='light'] {
 	--ink-red: var(--palette-red-3);
 	--ink-orange: var(--palette-orange-3);
 	--ink-yellow: var(--palette-yellow-3);
@@ -103,17 +152,13 @@ z-toggle-button-group-item > svg {
 	--ink-purple: var(--palette-purple-3);
 	--ink-pink: var(--palette-pink-3);
 
-	--active-accent: oklch(0.64 0.17 250);
-}
-
-:root[data-theme='light'] {
-	--ink-red: var(--palette-red-1);
-	--ink-orange: var(--palette-orange-1);
-	--ink-yellow: var(--palette-yellow-1);
-	--ink-green: var(--palette-green-1);
-	--ink-blue: var(--palette-blue-1);
-	--ink-purple: var(--palette-purple-1);
-	--ink-pink: var(--palette-pink-1);
+	--rest-red: var(--palette-red-7);
+	--rest-orange: var(--palette-orange-7);
+	--rest-yellow: var(--palette-yellow-7);
+	--rest-green: var(--palette-green-7);
+	--rest-blue: var(--palette-blue-7);
+	--rest-purple: var(--palette-purple-7);
+	--rest-pink: var(--palette-pink-7);
 
 	--active-accent: oklch(0.54 0.17 250);
 }
@@ -121,59 +166,71 @@ z-toggle-button-group-item > svg {
 [data-chord-color='c'] {
 	--chord-hue: var(--chord-c);
 	--chord-ink: var(--ink-green);
+	--chord-rest: var(--rest-green);
 }
 
 [data-chord-color='c-sharp'] {
 	--chord-hue: var(--chord-c-sharp);
 	--chord-ink: var(--ink-pink);
+	--chord-rest: var(--rest-pink);
 }
 
 [data-chord-color='d'] {
 	--chord-hue: var(--chord-d);
 	--chord-ink: var(--ink-purple);
+	--chord-rest: var(--rest-purple);
 }
 
 [data-chord-color='d-sharp'] {
 	--chord-hue: var(--chord-d-sharp);
 	--chord-ink: var(--ink-red);
+	--chord-rest: var(--rest-red);
 }
 
 [data-chord-color='e'] {
 	--chord-hue: var(--chord-e);
 	--chord-ink: var(--ink-yellow);
+	--chord-rest: var(--rest-yellow);
 }
 
 [data-chord-color='f'] {
 	--chord-hue: var(--chord-f);
 	--chord-ink: var(--ink-purple);
+	--chord-rest: var(--rest-purple);
 }
 
 [data-chord-color='f-sharp'] {
 	--chord-hue: var(--chord-f-sharp);
 	--chord-ink: var(--ink-orange);
+	--chord-rest: var(--rest-orange);
 }
 
 [data-chord-color='g'] {
 	--chord-hue: var(--chord-g);
 	--chord-ink: var(--ink-pink);
+	--chord-rest: var(--rest-pink);
 }
 
 [data-chord-color='g-sharp'] {
 	--chord-hue: var(--chord-g-sharp);
 	--chord-ink: var(--ink-red);
+	--chord-rest: var(--rest-red);
 }
 
 [data-chord-color='a'] {
 	--chord-hue: var(--chord-a);
 	--chord-ink: var(--ink-orange);
+	--chord-rest: var(--rest-orange);
 }
 
 [data-chord-color='a-sharp'] {
 	--chord-hue: var(--chord-a-sharp);
 	--chord-ink: var(--ink-yellow);
+	--chord-rest: var(--rest-yellow);
 }
 
 [data-chord-color='b'] {
 	--chord-hue: var(--chord-b);
 	--chord-ink: var(--ink-pink);
+	--chord-rest: var(--rest-pink);
 }
