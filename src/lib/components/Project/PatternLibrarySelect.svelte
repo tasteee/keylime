@@ -108,11 +108,12 @@
 <style>
 	.pattern-library {
 		display: grid;
-		grid-template-columns: 9rem 11rem 14rem;
+		grid-template-columns: repeat(3, max-content);
 		gap: var(--spacing-2);
 	}
 
 	.pattern-library-column {
-		min-width: 0;
+		min-width: 9rem;
+		white-space: nowrap;
 	}
 </style>
