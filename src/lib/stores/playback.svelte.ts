@@ -85,6 +85,31 @@ const createPlaybackInstrument = async (args: { context: AudioContext }): Promis
 	}).load
 }
 
+const BEATS_PER_BAR = 4
+const METRONOME_ACCENT_HZ = 1500
+const METRONOME_BEAT_HZ = 1000
+const METRONOME_CLICK_SECONDS = 0.05
+const METRONOME_MAX_GAIN = 0.6
+
+// A short sine blip. The first beat of each bar is higher pitched.
+const playMetronomeClick = (args: { context: AudioContext; isAccent: boolean }) => {
+	const volumeFraction = output.metronomeVolume / 100
+	const peakGain = volumeFraction * METRONOME_MAX_GAIN
+	const frequency = args.isAccent ? METRONOME_ACCENT_HZ : METRONOME_BEAT_HZ
+	const startTime = args.context.currentTime
+	const endTime = startTime + METRONOME_CLICK_SECONDS
+
+	const oscillator = args.context.createOscillator()
+	const gainNode = args.context.createGain()
+	oscillator.frequency.value = frequency
+	gainNode.gain.setValueAtTime(peakGain, startTime)
+	gainNode.gain.exponentialRampToValueAtTime(0.0001, endTime)
+	oscillator.connect(gainNode)
+	gainNode.connect(args.context.destination)
+	oscillator.start(startTime)
+	oscillator.stop(endTime)
+}
+
 class PlaybackStore {
 	context = $state(null) as unknown as AudioContext
 	piano = $state(null) as PlaybackInstrumentT | null
@@ -106,6 +131,9 @@ class PlaybackStore {
 	currentBpm = $state(120)
 	currentOctave = $state(3)
 	currentProgressionDuration = $state(0)
+
+	// Counts up on every metronome tick so the UI can react to each one.
+	metronomeTickCount = $state(0)
 
 	isSelectedInstrumentLoaded = () => {
 		const selectedInstrumentKey = getSelectedInstrumentKey()
@@ -450,6 +478,28 @@ class PlaybackStore {
 		this.activeNoteInstances.clear()
 	}
 
+	handleMetronomeTick = (beatIndex: number) => {
+		if (!this.isPlaying) return
+		if (!output.isMetronomeEnabled) return
+		const isAccent = beatIndex % BEATS_PER_BAR === 0
+		if (this.context) playMetronomeClick({ context: this.context, isAccent })
+		this.metronomeTickCount += 1
+	}
+
+	scheduleMetronomeTicks = (args: { msPerBeat: number }) => {
+		const totalBeats = Math.ceil(this.currentProgressionDuration)
+		const beatIndexes = Array.from({ length: totalBeats }, (_, beatIndex) => beatIndex)
+
+		for (const beatIndex of beatIndexes) {
+			const tickMs = beatIndex * args.msPerBeat
+			const tickTimeoutId = setTimeout(() => {
+				this.scheduledNotes.delete(`tick-${beatIndex}`)
+				this.handleMetronomeTick(beatIndex)
+			}, tickMs)
+			this.scheduledNotes.set(`tick-${beatIndex}`, tickTimeoutId)
+		}
+	}
+
 	runPlaybackLoop = () => {
 		if (!this.isPlaying) return
 		const hasNoPerformance = this.currentPerformance.length === 0
@@ -458,6 +508,7 @@ class PlaybackStore {
 		// Convert beats to milliseconds for actual playback
 		const msPerBeat = 60000 / this.currentBpm
 		this.loopStartTime = performance.now()
+		this.scheduleMetronomeTicks({ msPerBeat })
 
 		this.currentPerformance.forEach((performanceNote) => {
 			// Convert beat-based timing to milliseconds

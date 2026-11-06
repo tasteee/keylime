@@ -23,6 +23,19 @@ const getInitialChordPreviewMode = (): ChordPreviewModeT => {
   return storedMode === 'pattern' ? 'pattern' : 'chord'
 }
 
+const DEFAULT_METRONOME_VOLUME = 50
+
+const getInitialIsMetronomeEnabled = (): boolean => {
+  const storedValue = store.get('output.isMetronomeEnabled')
+  return storedValue === true
+}
+
+const getInitialMetronomeVolume = (): number => {
+  const storedVolume = store.get('output.metronomeVolume')
+  const isValidVolume = typeof storedVolume === 'number'
+  return isValidVolume ? storedVolume : DEFAULT_METRONOME_VOLUME
+}
+
 class OutputStore {
   // What clicking a chord plays: the chord outright, or the pattern over it.
   chordPreviewMode = $state(getInitialChordPreviewMode()) as ChordPreviewModeT;
@@ -33,6 +46,8 @@ class OutputStore {
   minVelocity = $state(getInitialMinVelocity()) as number;
   maxVelocity = $state(getInitialMaxVelocity()) as number;
   volume = $state(70) as number;
+  isMetronomeEnabled = $state(getInitialIsMetronomeEnabled()) as boolean;
+  metronomeVolume = $state(getInitialMetronomeVolume()) as number;
 }
 
 const output = new OutputStore();

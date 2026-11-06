@@ -3,6 +3,7 @@
 	import { MagnifyingGlass, Plus, X } from 'phosphor-svelte'
 	import { getAllChordSymbols, getScaleChordSymbols } from '$lib/music'
 	import SelectControl from '$lib/components/Project/SelectControl.svelte'
+	import ValuePopoverButton from '$lib/components/ValuePopoverButton.svelte'
 
 	type FilterOptionsT = {
 		searchText: string
@@ -63,7 +64,8 @@
 	const hasNoVisibleChords = $derived(visibleChords.length === 0)
 
 	const isBpmRangeActive = $derived(bpmRange[0] !== BPM_MIN || bpmRange[1] !== BPM_MAX)
-	const bpmRangeLabel = $derived(`${bpmRange[0]}–${bpmRange[1]}`)
+	const bpmRangeValue = $derived(`${bpmRange[0]}–${bpmRange[1]}`)
+	const bpmRangeLabel = $derived(isBpmRangeActive ? bpmRangeValue : 'Any')
 
 	const hasActiveFilters = $derived.by(() => {
 		const hasSearch = searchText.trim().length > 0
@@ -183,20 +185,17 @@
 	<SelectControl label="Key" value={selectedKey} options={keyOptions} onValueChange={handleKeyChange} />
 	<SelectControl label="Scale" value={selectedScale} options={scaleOptions} onValueChange={handleScaleChange} />
 
-	<z-row gap="xs" alignsY="center" class="bpmFilter">
-		<z-text size="xs" color="muted" weight={600} class="filterLabel">BPM</z-text>
-		<div class="bpmRange">
-			<z-range
-				min={BPM_MIN}
-				max={BPM_MAX}
-				step={1}
-				value={bpmRange}
-				label="BPM range"
-				onchange={handleBpmRangeChange}
-			></z-range>
-		</div>
-		<z-text size="xs" color="strong" weight={600} class="bpmValue">{bpmRangeLabel}</z-text>
-	</z-row>
+	<ValuePopoverButton label="BPM range" eyebrowLabel="BPM" valueLabel={bpmRangeLabel} isActive={isBpmRangeActive}>
+		<z-range
+			min={BPM_MIN}
+			max={BPM_MAX}
+			step={1}
+			value={bpmRange}
+			label="BPM range"
+			doesShowValue
+			onchange={handleBpmRangeChange}
+		></z-range>
+	</ValuePopoverButton>
 
 	<z-row gap="xs" alignsY="center" doesWrap>
 		<z-text size="xs" color="muted" weight={600} class="filterLabel">Chords</z-text>
@@ -286,15 +285,6 @@
 		white-space: nowrap;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
-	}
-
-	.bpmRange {
-		width: 9rem;
-	}
-
-	.bpmValue {
-		min-width: 4.5rem;
-		font-variant-numeric: tabular-nums;
 	}
 
 	.chordChip {
