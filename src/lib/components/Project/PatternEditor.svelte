@@ -2,6 +2,7 @@
 	import { onMount, getContext } from 'svelte'
 	import PatternEditorSignal from './PatternEditorSignal.svelte'
 	import PatternTimingHeader from './PatternTimingHeader.svelte'
+	import PatternLibrarySelect from './PatternLibrarySelect.svelte'
 	import { toFractionString } from '$lib/helpers/numbers'
 	import { MagnifyingGlassPlus, MagnifyingGlassMinus, MusicNotes } from 'phosphor-svelte'
 	import { SIGNAL_IDS, SIGNAL_ROWS } from '$lib/constants/signalRows'
@@ -34,6 +35,11 @@
 		updatePatternSignal: (signalId: string, updates: Partial<SignalT>) => void
 		removePatternSignal: (signalId: string) => void
 		movePatternSignalToRow: (args: MoveSignalToRowOptionsT) => void
+		replacePattern: (pattern: {
+			patternSignals: SignalT[]
+			patternSignalRows: SignalRowsT
+			patternDurationBars: number
+		}) => void
 		save: () => Promise<{ didSucceed: boolean }>
 		saveClone: () => Promise<{ didSucceed: boolean; newProjectId: string }>
 		checkIsDirty: () => boolean
@@ -692,6 +698,8 @@
 				<MagnifyingGlassPlus size={16} weight="bold" />
 			</z-button>
 		</z-button-group>
+
+		<PatternLibrarySelect />
 
 		<z-spacer canGrow></z-spacer>
 

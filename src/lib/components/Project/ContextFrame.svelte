@@ -22,6 +22,12 @@
 		voicing: VoicingT
 	}
 
+	type PatternSnapshotT = {
+		patternSignals: SignalT[]
+		patternSignalRows: SignalRowsT
+		patternDurationBars: number
+	}
+
 	type GridChordMapT = {
 		[chordId: string]: GridChordModifiersT
 	}
@@ -52,6 +58,9 @@
 		updatePatternSignal: (signalId: string, updates: Partial<SignalT>) => void
 		removePatternSignal: (signalId: string) => void
 		movePatternSignalToRow: (args: MoveSignalToRowOptionsT) => void
+		replacePattern: (pattern: PatternSnapshotT) => void
+		undoPatternChange: () => boolean
+		redoPatternChange: () => boolean
 		getGridChord: (chordId: string) => ChordT | undefined
 		updateGridChordModifiers: (args: {
 			chordId: string
@@ -183,8 +192,90 @@
 		return currentSnapshot !== editorState.cleanProjectSnapshot
 	}
 
+	// Undo history for the pattern. Every snapshot is a deep copy taken
+	// AFTER a change, so edits that mutate rows in place cannot leak
+	// into older entries. "baseline" is the pattern as it is right now.
+	const HISTORY_LIMIT = 100
+	// Edits this close together (a drag, a resize) count as one step.
+	const HISTORY_GROUP_MS = 400
+	let undoStack: PatternSnapshotT[] = []
+	let redoStack: PatternSnapshotT[] = []
+	let lastPatternEditAt = 0
+	let isRestoringHistory = false
+
+	const takePatternSnapshot = (): PatternSnapshotT => {
+		const project = editorState.project
+		return structuredClone({
+			patternSignals: $state.snapshot(project.patternSignals),
+			patternSignalRows: $state.snapshot(project.patternSignalRows),
+			patternDurationBars: project.patternDurationBars
+		})
+	}
+
+	let baseline: PatternSnapshotT | null = null
+
+	const resetPatternHistory = () => {
+		undoStack = []
+		redoStack = []
+		lastPatternEditAt = 0
+		baseline = takePatternSnapshot()
+	}
+
+	resetPatternHistory()
+
+	type RecordPatternChangeOptionsT = { shouldStartNewStep: boolean }
+
+	const recordPatternChange = (options: RecordPatternChangeOptionsT) => {
+		const now = Date.now()
+		const isSameStep = now - lastPatternEditAt < HISTORY_GROUP_MS
+		lastPatternEditAt = now
+
+		const previousPattern = baseline
+		baseline = takePatternSnapshot()
+		const shouldKeepPrevious = previousPattern !== null && (options.shouldStartNewStep || !isSameStep)
+		if (!shouldKeepPrevious) return
+
+		undoStack.push(previousPattern)
+		if (undoStack.length > HISTORY_LIMIT) undoStack.shift()
+		redoStack = []
+	}
+
+	const restorePattern = (pattern: PatternSnapshotT) => {
+		isRestoringHistory = true
+		updateProject(structuredClone(pattern))
+		isRestoringHistory = false
+		baseline = takePatternSnapshot()
+		lastPatternEditAt = 0
+	}
+
+	const undoPatternChange = (): boolean => {
+		const previousPattern = undoStack.pop()
+		if (!previousPattern) return false
+		if (baseline) redoStack.push(baseline)
+		restorePattern(previousPattern)
+		return true
+	}
+
+	const redoPatternChange = (): boolean => {
+		const nextPattern = redoStack.pop()
+		if (!nextPattern) return false
+		if (baseline) undoStack.push(baseline)
+		restorePattern(nextPattern)
+		return true
+	}
+
+	const getIsPatternUpdate = (updates: Partial<ProjectT>): boolean => {
+		const hasSignals = updates.patternSignals !== undefined
+		const hasRows = updates.patternSignalRows !== undefined
+		const hasDuration = updates.patternDurationBars !== undefined
+		return hasSignals || hasRows || hasDuration
+	}
+
 	const updateProject = (updates: Partial<ProjectT>) => {
 		editorState.project = { ...editorState.project, ...updates }
+
+		const shouldRecordHistory = getIsPatternUpdate(updates) && !isRestoringHistory
+		if (shouldRecordHistory) recordPatternChange({ shouldStartNewStep: false })
 
 		// Recalculate progressionDurationBars if progressionChords changed
 		const hasProgressionChordsUpdate = updates.progressionChords !== undefined
@@ -318,6 +409,14 @@
 		toRow.signalIds = [...toRow.signalIds, args.signalId]
 
 		updateProject({ patternSignalRows: updatedSignalRows })
+	}
+
+	// Swaps the whole pattern for another one as a single undo step.
+	const replacePattern = (pattern: PatternSnapshotT) => {
+		isRestoringHistory = true
+		updateProject(pattern)
+		isRestoringHistory = false
+		recordPatternChange({ shouldStartNewStep: true })
 	}
 
 	const getDefaultGridChordModifiers = (): GridChordModifiersT => {
@@ -525,6 +624,7 @@
 		}
 
 		editorState.project = loadedProject
+		resetPatternHistory()
 		editorState.cleanProjectSnapshot = createCleanSnapshot(loadedProject)
 		editorState.isDirty = false
 		editorState.isLoading = false
@@ -534,6 +634,7 @@
 		if (isOtherUsersProject) {
 			const clonedTitle = `${loadedProject.title} (Clone)`
 			editorState.project = { ...loadedProject, title: clonedTitle }
+			resetPatternHistory()
 			editorState.isDirty = true
 		}
 
@@ -561,6 +662,9 @@
 		updatePatternSignal,
 		removePatternSignal,
 		movePatternSignalToRow,
+		replacePattern,
+		undoPatternChange,
+		redoPatternChange,
 		getGridChord,
 		updateGridChordModifiers,
 		getGridChordIdForName,
@@ -598,7 +702,35 @@
 		const draft = readDraft(serverProject.id, serverProject.updatedAt)
 		if (!draft) return
 		editorState.project = parseProjectData(draft)
+		resetPatternHistory()
 		editorState.isDirty = checkIsDirty()
+	}
+
+	const getIsTypingTarget = (target: EventTarget | null): boolean => {
+		const element = target as HTMLElement | null
+		if (!element) return false
+		const tagName = element.tagName ?? ''
+		const isFormField = ['INPUT', 'TEXTAREA', 'SELECT', 'Z-INPUT', 'Z-TEXTAREA'].includes(tagName)
+		return isFormField || Boolean(element.isContentEditable)
+	}
+
+	// Ctrl/Cmd+Z undoes the last pattern change. Shift+Z (or Ctrl+Y) redoes it.
+	const handleHistoryShortcut = (event: KeyboardEvent) => {
+		const hasModifier = event.ctrlKey || event.metaKey
+		if (!hasModifier) return
+		if (getIsTypingTarget(event.target)) return
+
+		const pressedKey = event.key.toLowerCase()
+		const isUndoKey = pressedKey === 'z' && !event.shiftKey
+		const isRedoKey = (pressedKey === 'z' && event.shiftKey) || pressedKey === 'y'
+		if (!isUndoKey && !isRedoKey) return
+
+		const isPatternView = editorState.activeView === 'pattern'
+		if (!isPatternView) return
+
+		event.preventDefault()
+		if (isUndoKey) undoPatternChange()
+		if (isRedoKey) redoPatternChange()
 	}
 
 	onMount(() => {
@@ -606,8 +738,10 @@
 
 		restoreDraft()
 		isDraftReady = true
+		window.addEventListener('keydown', handleHistoryShortcut)
 
 		return () => {
+			window.removeEventListener('keydown', handleHistoryShortcut)
 			clearTimeout(draftTimer)
 			// when user navigates away, stop playback from PlaybackContextFrame context
 			const playbackContext = getContext<PlaybackContextT>('playback')
