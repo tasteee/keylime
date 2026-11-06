@@ -7,8 +7,8 @@
 		"dev": "vite dev --port 3124",
 		"build": "vite build",
 		"preview": "vite preview --port 3125",
-		"api:dev": "wrangler dev --config worker/wrangler.toml --port 8787",
-		"api:deploy": "wrangler deploy --config worker/wrangler.toml",
+		"api:dev": "npx wrangler dev --config worker/wrangler.toml --port 8787",
+		"api:deploy": "npx wrangler deploy --config worker/wrangler.toml",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -17,8 +17,8 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright test",
-		"db:migrate:local": "wrangler d1 migrations apply keylime-db --local --config worker/wrangler.toml",
-		"db:migrate:remote": "wrangler d1 migrations apply keylime-db --remote --config worker/wrangler.toml"
+		"db:migrate:local": "npx wrangler d1 migrations apply keylime-db --local --config worker/wrangler.toml",
+		"db:migrate:remote": "npx wrangler d1 migrations apply keylime-db --remote --config worker/wrangler.toml"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20260702.1",

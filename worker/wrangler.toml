@@ -14,6 +14,5 @@ APP_ORIGIN = "https://tasteee.github.io"
 [[d1_databases]]
 binding = "DB"
 database_name = "keylime-db"
-# Replace with the id printed by `npx wrangler d1 create keylime-db`.
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "46bac077-1657-47de-9bd7-6fa48ba4f337"
 migrations_dir = "../migrations"
