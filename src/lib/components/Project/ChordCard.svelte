@@ -86,7 +86,7 @@
 
 <style>
 	.chordCard {
-		height: 5rem;
+		height: 3.5rem;
 		user-select: none;
 	}
 
