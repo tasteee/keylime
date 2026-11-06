@@ -64,6 +64,8 @@ const getPattern = (args: GeneratePerformanceArgsT): ScaledT.PerformancePatternT
     const hasNoDuration = signal.duration <= 0
     if (hasNoDuration) continue
 
+    if (signal.isMuted) continue
+
     events.push({
       id: signal.id,
       startBeat: signal.startTime,
@@ -75,14 +77,30 @@ const getPattern = (args: GeneratePerformanceArgsT): ScaledT.PerformancePatternT
   return { id: 'keylime-pattern', name: 'Keylime pattern', durationBeats: args.patternLengthBeats, events }
 }
 
-// scaled plays every note at a fixed velocity. Keylime wants each note
-// somewhere between the project's min and max.
-const withRandomVelocity = (args: {
+// 0 - 1 on a signal becomes 1 - 127. Never 0, because a note-on with
+// velocity 0 means note-off.
+const getMidiVelocityFromSignal = (velocity: number): number => {
+  const midiVelocity = Math.round(velocity * 127)
+  return Math.max(1, Math.min(127, midiVelocity))
+}
+
+// scaled plays every note at a fixed velocity. A signal with its own
+// velocity (set in the pattern editor) plays at that velocity. Older
+// signals have none: they land somewhere between the project's min and max.
+const withSignalVelocity = (args: {
   notes: readonly ScaledT.PerformanceNoteT[]
+  signals: SignalT[]
   minVelocity: number
   maxVelocity: number
 }): PerformanceNoteT[] => {
+  const signalsById = new Map<string, SignalT>()
+  for (const signal of args.signals) signalsById.set(signal.id, signal)
+
   return args.notes.map((note) => {
+    const signal = signalsById.get(note.eventId)
+    const hasOwnVelocity = signal?.velocity !== undefined
+    if (hasOwnVelocity) return { ...note, velocity: getMidiVelocityFromSignal(signal?.velocity as number) }
+
     const velocity = getRandomBetween({ min: args.minVelocity, max: args.maxVelocity })
     return { ...note, velocity }
   })
@@ -134,7 +152,7 @@ export const generatePerformance = (args: GeneratePerformanceArgsT): Performance
     notes.push(...applyPerformanceSafely({ progression, performance: pattern }))
   }
 
-  const velocityNotes = withRandomVelocity({ notes, minVelocity, maxVelocity })
+  const velocityNotes = withSignalVelocity({ notes, signals: args.signals, minVelocity, maxVelocity })
   return velocityNotes.sort((noteA, noteB) => noteA.startBeat - noteB.startBeat)
 }
 
