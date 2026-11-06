@@ -63,7 +63,9 @@ type PlaybackInstrumentConfigT = {
 }
 
 // Where the .sf2 files are hosted (e.g. a Cloudflare R2 bucket).
-const SOUNDFONT_BASE_URL = (import.meta.env.VITE_SOUNDFONT_BASE_URL ?? '/soundfonts') as string
+// No default: the env var must be set. A trailing slash is trimmed.
+const rawSoundfontBaseUrl = (import.meta.env.VITE_SOUNDFONT_BASE_URL ?? '') as string
+const SOUNDFONT_BASE_URL = rawSoundfontBaseUrl.replace(/\/+$/, '')
 
 const findPresetName = (args: { presetNames: string[]; wantedName: string }): string | undefined => {
 	const wantedLowerCase = args.wantedName.toLowerCase()
@@ -78,6 +80,8 @@ const createSf2Instrument = async (args: {
 	context: AudioContext
 	config: PlaybackInstrumentConfigT
 }): Promise<Soundfont2Sampler> => {
+	const hasBaseUrl = SOUNDFONT_BASE_URL.length > 0
+	if (!hasBaseUrl) throw new Error('VITE_SOUNDFONT_BASE_URL is not set')
 	const soundfontUrl = `${SOUNDFONT_BASE_URL}/${args.config.sf2File}`
 
 	const sampler = await new Soundfont2Sampler(args.context, {
