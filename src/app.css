@@ -33,6 +33,17 @@ z-toggle-button-group-item > svg {
 	--purple: var(--foreground);
 }
 
+/* Selected notes in the pattern editor use Zest's purple. The
+   neutral overrides above do not touch the palette tones. */
+:root,
+:root[data-theme='dark'] {
+	--note-selected: var(--palette-purple-800);
+}
+
+:root[data-theme='light'] {
+	--note-selected: var(--palette-purple-900);
+}
+
 /* The accent for the pattern editor: marquee, focus ring, loop bar. */
 :root,
 :root[data-theme='dark'] {

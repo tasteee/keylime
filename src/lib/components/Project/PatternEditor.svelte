@@ -10,6 +10,7 @@
 		MAX_CELL_PIXELS,
 		MIN_CELL_PIXELS,
 		TICKS_PER_BEAT,
+		VELOCITY_LANE_COLLAPSED_HEIGHT,
 		VELOCITY_LANE_HEIGHT
 	} from '$lib/midiGrid/constants'
 	import { getRowIdForPitch } from '$lib/midiGrid/rows'
@@ -32,7 +33,19 @@
 
 	const PATTERN_ZOOM_STEP = 4
 	const AUDITION_MS = 300
-	const editorStyle = `--lane-height: ${VELOCITY_LANE_HEIGHT}px`
+	let laneHeight = $state(VELOCITY_LANE_HEIGHT)
+	let isLaneCollapsed = $state(false)
+
+	const visibleLaneHeight = $derived(isLaneCollapsed ? VELOCITY_LANE_COLLAPSED_HEIGHT : laneHeight)
+	const editorStyle = $derived(`--lane-height: ${visibleLaneHeight}px`)
+
+	const handleLaneHeightChange = (nextHeight: number) => {
+		laneHeight = nextHeight
+	}
+
+	const handleLaneCollapsedChange = (isCollapsed: boolean) => {
+		isLaneCollapsed = isCollapsed
+	}
 
 	const project = $derived(projectEditor.state.project)
 	const doesPatternReset = $derived(Boolean(project.doesPatternResetOnChordChange))
@@ -226,6 +239,10 @@
 		onRowRelease={stopHeldLabelNote}
 		onZoomStep={changeZoom}
 		onCellPixelsChange={handleCellPixelsChange}
+		laneHeight={laneHeight}
+		isLaneCollapsed={isLaneCollapsed}
+		onLaneHeightChange={handleLaneHeightChange}
+		onLaneCollapsedChange={handleLaneCollapsedChange}
 	/>
 
 	<div class="pattern-floating-controls">

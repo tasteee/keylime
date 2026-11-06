@@ -217,7 +217,8 @@ const drawNote = (args: PaintNoteArgsT) => {
 	const insetY = rect.y + 1
 	const noteHeight = Math.max(2, rect.height - 2)
 	const noteWidth = rect.width - 1
-	const fillBase = args.look.isPlaying ? palette.accent : palette.text
+	const idleFill = args.look.isSelected ? palette.noteSelected : palette.noteIdle
+	const fillBase = args.look.isPlaying ? palette.accent : idleFill
 	const opacity = getNoteOpacity({ note: args.note, look: args.look })
 
 	context.globalAlpha = opacity
@@ -238,7 +239,7 @@ const drawNote = (args: PaintNoteArgsT) => {
 
 	if (args.look.isSelected) {
 		context.lineWidth = 1.5
-		context.strokeStyle = palette.accent
+		context.strokeStyle = palette.noteSelected
 		drawRoundedRect({ context, x: rect.x + 1.25, y: insetY + 0.75, width: noteWidth - 1.5, height: noteHeight - 1.5, radius: NOTE_RADIUS })
 		context.stroke()
 	}

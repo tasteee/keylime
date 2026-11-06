@@ -35,6 +35,11 @@ export const CELLS_PER_BEAT = 4
 
 export const RULER_HEIGHT = 32
 export const VELOCITY_LANE_HEIGHT = 88
+export const VELOCITY_LANE_MAX_HEIGHT = 240
+// Dragging the lane shorter than this snaps it closed.
+export const VELOCITY_LANE_SNAP_HEIGHT = 56
+// Only the label strip shows when the lane is closed.
+export const VELOCITY_LANE_COLLAPSED_HEIGHT = 32
 export const ROW_LABELS_WIDTH = 80
 export const DRAG_THRESHOLD_PX = 3
 
