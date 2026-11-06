@@ -338,7 +338,9 @@
 		// Calculate which item position we're hovering over
 		const items = progressionItems
 		const rect = itemAreaElement.getBoundingClientRect()
-		const mouseX = event.clientX - rect.left
+		const itemAreaStyle = getComputedStyle(itemAreaElement)
+		const gutterWidth = parseFloat(itemAreaStyle.paddingLeft)
+		const mouseX = event.clientX - rect.left - gutterWidth
 		const mousePositionBeats = mouseX / PIXELS_PER_BEAT
 
 		// Find the index where the dragged item should be inserted
@@ -541,15 +543,17 @@
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div class="middle" bind:this={middleElement} onclick={handleMiddleClick} onwheel={handleWheel}>
-			<div class="itemArea" bind:this={itemAreaElement} style="width: {itemAreaWidth}px;">
-				<ProgressionTimingMarkers
-					pixelsPerBeat={PIXELS_PER_BEAT}
-					beatsPerBar={BEATS_PER_BAR}
-					maxMarkerBars={MAX_MARKER_BARS}
-				/>
-				{#if playbackContext.state.isPlaying}
-					<div class="playbackCursor" bind:this={cursorElement}></div>
-				{/if}
+			<div class="itemArea" bind:this={itemAreaElement} style="width: calc({itemAreaWidth}px + 2 * var(--progression-gutter));">
+				<div class="gridLayer">
+					<ProgressionTimingMarkers
+						pixelsPerBeat={PIXELS_PER_BEAT}
+						beatsPerBar={BEATS_PER_BAR}
+						maxMarkerBars={MAX_MARKER_BARS}
+					/>
+					{#if playbackContext.state.isPlaying}
+						<div class="playbackCursor" bind:this={cursorElement}></div>
+					{/if}
+				</div>
 				{#each progressionItems as item, index (item.id)}
 					<ProgressionChordCard
 						{item}
@@ -614,6 +618,9 @@
 	}
 
 	.itemArea {
+		--progression-gutter: var(--spacing-3);
+		box-sizing: border-box;
+		padding-inline: var(--progression-gutter);
 		position: relative;
 		flex: 1;
 		min-width: 100%;
@@ -623,6 +630,16 @@
 		align-items: flex-start;
 		padding-top: var(--spacing-6);
 		left: -2px;
+	}
+
+	/* Same origin as the chord cards: starts after the left gutter. */
+	.gridLayer {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: var(--progression-gutter);
+		right: 0;
+		pointer-events: none;
 	}
 
 	.ghostItem {
