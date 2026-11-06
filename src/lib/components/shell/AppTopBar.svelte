@@ -46,23 +46,45 @@
 
 <z-column>
 	<z-row insetX="lg" insetY="sm" gap="xl" alignsY="center" isFullWidth>
-		<Logo />
+		<div class="topBarStart">
+			<Logo />
 
-		{#if shouldShowNavigation}
-			<z-nav-menu items={navigationItems} value={activeNavigationValue} onselect={handleNavigationSelect}></z-nav-menu>
-		{/if}
+			{#if shouldShowNavigation}
+				<z-nav-menu items={navigationItems} value={activeNavigationValue} onselect={handleNavigationSelect}></z-nav-menu>
+			{/if}
+		</div>
 
-		{#if hasChildren}
-			<z-row gap="md" alignsY="center">
+		<div class="topBarCenter">
+			{#if hasChildren}
 				{@render props.children?.()}
-			</z-row>
-		{/if}
+			{/if}
+		</div>
 
-		<z-spacer canGrow></z-spacer>
-
-		<UserMenu onOpenSettings={handleOpenSettings} />
+		<div class="topBarEnd">
+			<UserMenu onOpenSettings={handleOpenSettings} />
+		</div>
 	</z-row>
 	<z-separator></z-separator>
 </z-column>
 
 <DialogUserSettings isOpen={isSettingsDialogOpen} onClose={handleCloseSettings} />
+
+<style>
+	.topBarStart,
+	.topBarCenter,
+	.topBarEnd {
+		flex: 1 1 0;
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-6);
+		min-width: 0;
+	}
+
+	.topBarCenter {
+		justify-content: center;
+	}
+
+	.topBarEnd {
+		justify-content: flex-end;
+	}
+</style>

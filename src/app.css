@@ -22,3 +22,13 @@ z-toggle-button-group-item > svg {
 	position: relative;
 	top: -1px;
 }
+
+/* Neutral-only palette: Zest's primary tone becomes a high-contrast
+   neutral (foreground on background) instead of purple. */
+:root {
+	--primary: var(--foreground);
+	--primary-foreground: var(--background);
+	--accent: var(--foreground);
+	--on-accent: var(--background);
+	--purple: var(--foreground);
+}

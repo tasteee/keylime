@@ -163,9 +163,9 @@
 
 	.normalKey.pressedKey,
 	.functionalKey.pressedKey {
-		background: var(--purple);
-		color: var(--on-accent);
-		border-color: var(--purple);
+		background: var(--foreground);
+		color: var(--background);
+		border-color: var(--foreground);
 	}
 
 	.sharpKey {
@@ -174,14 +174,14 @@
 	}
 
 	.sharpKey.pressedKey {
-		background: var(--purple);
-		color: var(--on-accent);
-		border-color: var(--purple);
+		background: var(--foreground);
+		color: var(--background);
+		border-color: var(--foreground);
 	}
 
 	.octaveNotePressed .noteLabel,
 	.octaveNotePressed .qwertyLabel {
-		color: var(--purple);
+		color: var(--foreground);
 		font-weight: var(--font-weight-semibold);
 	}
 
@@ -193,6 +193,6 @@
 	.pressedKey.octaveNotePressed .noteLabel,
 	.pressedKey.octaveNotePressed .qwertyLabel {
 		font-weight: var(--font-weight-regular);
-		color: var(--on-accent);
+		color: var(--background);
 	}
 </style>

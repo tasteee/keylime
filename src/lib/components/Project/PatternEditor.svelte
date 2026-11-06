@@ -848,7 +848,7 @@
 
 	.labelNote {
 		text-align: right;
-		color: var(--purple);
+		color: var(--foreground);
 		font-weight: var(--font-weight-bold);
 	}
 
@@ -926,7 +926,7 @@
 		top: 2rem;
 		bottom: 0;
 		width: 1px;
-		background-color: var(--purple);
+		background-color: var(--foreground);
 		z-index: 105;
 		pointer-events: none;
 		will-change: transform;
