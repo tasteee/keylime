@@ -389,6 +389,12 @@
 
 	const handleWheel = (event: WheelEvent) => {
 		if (!middleElement) return
+
+		// A touchpad swipe is mostly horizontal. Leave it to the browser,
+		// which scrolls the area natively. Only a vertical wheel is redirected.
+		const isHorizontalGesture = Math.abs(event.deltaX) > Math.abs(event.deltaY)
+		if (isHorizontalGesture) return
+
 		event.preventDefault()
 		middleElement.scrollLeft += event.deltaY
 	}
