@@ -217,6 +217,7 @@ type PlaybackContextT = {
   load: () => Promise<void>
   playNote: (args: PlayNoteArgsT) => Promise<void>
   playChord: (chord: ChordT, octave: number, durationMs?: number) => Promise<void>
+  previewChord: (chord: ChordT, project: PerformProjectArgsT) => Promise<void>
   stopNote: (args: PlayNoteArgsT) => void
   stopChord: (chord: ChordT) => void
   perform: (project: PerformProjectArgsT) => Promise<void>

@@ -94,7 +94,7 @@
 
 		// Only play chords, not rests
 		if (props.item.type === 'chord') {
-			playbackStore.playChord(props.item as ProgressionChordT, context.state.project.octave)
+			playbackStore.previewChord(props.item as ProgressionChordT, context.state.project)
 		}
 	}
 

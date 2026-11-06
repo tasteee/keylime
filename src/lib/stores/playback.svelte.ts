@@ -213,6 +213,68 @@ class PlaybackStore {
 		}, durationMs)
 	}
 
+	private patternPreviewTimeouts: ReturnType<typeof setTimeout>[] = []
+	private patternPreviewNotes = new Set<number>()
+
+	private stopPatternPreview = () => {
+		this.patternPreviewTimeouts.forEach((timeoutId) => clearTimeout(timeoutId))
+		this.patternPreviewTimeouts = []
+		this.patternPreviewNotes.forEach((note) => this.stopNote({ note }))
+		this.patternPreviewNotes.clear()
+	}
+
+	// Plays the project's pattern over one chord, once through.
+	private playChordWithPattern = async (chord: ChordT, project: PerformProjectArgsT) => {
+		this.stopPatternPreview()
+
+		const patternLengthBeats = project.patternDurationBars * 4
+		const previewChord: ProgressionChordT = {
+			...chord,
+			type: 'chord',
+			startTime: 0,
+			durationBeats: patternLengthBeats
+		}
+
+		const notes = generatePerformance({
+			chords: [previewChord],
+			signals: project.patternSignals,
+			signalRows: project.patternSignalRows,
+			patternLengthBeats,
+			progressionLengthBeats: patternLengthBeats,
+			doesPatternResetOnChordChange: project.doesPatternResetOnChordChange,
+			octave: project.octave,
+			minVelocity: project.minVelocity,
+			maxVelocity: project.maxVelocity
+		})
+
+		const hasNoNotes = notes.length === 0
+		if (hasNoNotes) return this.playChord(chord, project.octave)
+
+		const msPerBeat = 60000 / project.bpm
+		for (const note of notes) {
+			const startMs = note.startBeat * msPerBeat
+			const stopMs = (note.startBeat + note.durationBeats) * msPerBeat
+			const startId = setTimeout(() => {
+				this.playNote({ note: note.midiNote })
+				this.patternPreviewNotes.add(note.midiNote)
+			}, startMs)
+			const stopId = setTimeout(() => {
+				this.stopNote({ note: note.midiNote })
+				this.patternPreviewNotes.delete(note.midiNote)
+			}, stopMs)
+			this.patternPreviewTimeouts.push(startId, stopId)
+		}
+	}
+
+	// Clicking a chord: plays it outright or through the pattern,
+	// depending on the chord preview mode in the bottom bar.
+	previewChord = async (chord: ChordT, project: PerformProjectArgsT) => {
+		this.stopPatternPreview()
+		const isPatternMode = output.chordPreviewMode === 'pattern'
+		if (isPatternMode) return this.playChordWithPattern(chord, project)
+		return this.playChord(chord, project.octave)
+	}
+
 	stopChord = (chord: ChordT) => {
 		const isNotCurrentChord = this.currentlyPlayingChordId !== chord.id
 		if (isNotCurrentChord) return

@@ -16,7 +16,16 @@ const getInitialMaxVelocity = () => {
     : GENERAL_CONFIG.DEFAULT_OUTPUT_MAX_VELOCITY
 }
 
+export type ChordPreviewModeT = 'chord' | 'pattern'
+
+const getInitialChordPreviewMode = (): ChordPreviewModeT => {
+  const storedMode = store.get('output.chordPreviewMode')
+  return storedMode === 'pattern' ? 'pattern' : 'chord'
+}
+
 class OutputStore {
+  // What clicking a chord plays: the chord outright, or the pattern over it.
+  chordPreviewMode = $state(getInitialChordPreviewMode()) as ChordPreviewModeT;
   type = $state('Instrument') as string;
   instrument = $state('piano') as string;
   midiDeviceName = $state('') as string;

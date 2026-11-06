@@ -6,7 +6,7 @@
 	import { toFractionString } from '$lib/helpers/numbers'
 	import {
 		DownloadSimple,
-		Plus,
+		Pause,
 		MagnifyingGlassPlus,
 		MagnifyingGlassMinus,
 		Play,
@@ -496,21 +496,29 @@
 
 		<z-row gap="sm" alignsY="center">
 			<z-menu items={downloadMenuItems} onselect={handleDownloadSelect}>
-				<z-button slot="trigger" kind="outline" size="sm">
+				<z-button slot="trigger" kind="outline" size="sm" aria-label="Download">
 					<DownloadSimple size={16} weight="bold" />
-					Download
 				</z-button>
 			</z-menu>
 
-			<z-button kind="outline" size="sm" onclick={handleAddRest}>
-				<Plus size={16} weight="bold" />
-				Add rest
-			</z-button>
+			<z-tooltip content="Add rest" placement="bottom">
+				<z-button kind="outline" size="sm" onclick={handleAddRest} aria-label="Add rest">
+					<Pause size={16} weight="bold" />
+				</z-button>
+			</z-tooltip>
 
-			<z-toggle-button kind="outline" tone="primary" size="sm" isPressed={isFollowEnabled} onpress={toggleFollow}>
-				<ArrowRight size={16} />
-				Follow
-			</z-toggle-button>
+			<z-tooltip content="Follow playhead" placement="bottom">
+				<z-toggle-button
+					kind="outline"
+					tone="primary"
+					size="sm"
+					isPressed={isFollowEnabled}
+					onpress={toggleFollow}
+					aria-label="Follow playhead"
+				>
+					<ArrowRight size={16} />
+				</z-toggle-button>
+			</z-tooltip>
 		</z-row>
 
 		<z-separator isVertical></z-separator>

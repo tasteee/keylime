@@ -64,7 +64,7 @@
 
 		event.preventDefault()
 		event.stopPropagation()
-		playbackStore.playChord(props.chord, project.octave)
+		playbackStore.previewChord(props.chord, project)
 	}
 </script>
 
