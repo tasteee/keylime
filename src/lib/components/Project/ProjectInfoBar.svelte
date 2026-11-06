@@ -5,8 +5,7 @@
 	import { awaited } from '$lib/modules/the-awaited'
 	import SelectBpm from './SelectBpm.svelte'
 	import SelectOctave from './SelectOctave.svelte'
-	import SelectKey from './SelectKey.svelte'
-	import SelectScale from './SelectScale.svelte'
+	import SelectKeyScale from './SelectKeyScale.svelte'
 	import DialogProjectSettings from './DialogProjectSettings.svelte'
 
 	const projectEditor = useProjectEditor()
@@ -80,8 +79,7 @@
 		<z-row gap="md" alignsY="center">
 			<SelectBpm />
 			<SelectOctave />
-			<SelectKey />
-			<SelectScale />
+			<SelectKeyScale />
 
 			<z-separator isVertical></z-separator>
 
