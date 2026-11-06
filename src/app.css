@@ -32,3 +32,47 @@ z-toggle-button-group-item > svg {
 	--on-accent: var(--background);
 	--purple: var(--foreground);
 }
+
+/* Chord hues. One per scale degree, shared by the chord grid,
+   the progression, and anything else that shows a chord.
+   Components tint with color-mix, so they stay flat in both themes. */
+:root {
+	--chord-purple: oklch(0.62 0.19 300);
+	--chord-pink: oklch(0.68 0.19 350);
+	--chord-red: oklch(0.63 0.21 25);
+	--chord-orange: oklch(0.72 0.17 55);
+	--chord-yellow: oklch(0.82 0.16 95);
+	--chord-green: oklch(0.68 0.17 150);
+	--chord-blue: oklch(0.64 0.17 250);
+
+	/* The live part of the pattern: the chosen duration. */
+	--active-accent: var(--chord-blue);
+}
+
+[data-chord-color='purple'] {
+	--chord-hue: var(--chord-purple);
+}
+
+[data-chord-color='pink'] {
+	--chord-hue: var(--chord-pink);
+}
+
+[data-chord-color='red'] {
+	--chord-hue: var(--chord-red);
+}
+
+[data-chord-color='orange'] {
+	--chord-hue: var(--chord-orange);
+}
+
+[data-chord-color='yellow'] {
+	--chord-hue: var(--chord-yellow);
+}
+
+[data-chord-color='green'] {
+	--chord-hue: var(--chord-green);
+}
+
+[data-chord-color='blue'] {
+	--chord-hue: var(--chord-blue);
+}

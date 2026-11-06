@@ -15,7 +15,7 @@
 	const rootColor = $derived(isRest ? 'muted' : 'strong')
 </script>
 
-<z-text size="xl" weight={700} color={rootColor} class="chordSymbol">
+<z-text size="lg" weight={700} color={rootColor} class="chordSymbol">
 	{symbolParts.root}<z-inline color="muted" weight={400}>{symbolParts.suffix}</z-inline>
 </z-text>
 

@@ -470,8 +470,58 @@
 <svelte:window onkeydown={handleKeyDown} onmousemove={handleMouseMove} onmouseup={handleMouseUp} />
 
 <z-column class="progressionPanelContainer">
-	<z-separator></z-separator>
-	<z-row insetX="lg" insetY="sm" gap="lg" alignsY="center" isFullWidth>
+
+	<!-- Main Progression Area -->
+	<div class="mainProgressionPanel" data-is-dragging={isDraggingItem || isResizingItem} data-is-resizing={isResizingItem}>
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<div class="middle" bind:this={middleElement} onclick={handleMiddleClick} onwheel={handleWheel}>
+			<div class="itemArea" bind:this={itemAreaElement} style="width: calc({itemAreaWidth}px + 2 * var(--progression-gutter));">
+				<div class="gridLayer">
+					<ProgressionTimingMarkers
+						pixelsPerBeat={PIXELS_PER_BEAT}
+						beatsPerBar={BEATS_PER_BAR}
+						maxMarkerBars={MAX_MARKER_BARS}
+					/>
+					{#if playbackContext.state.isPlaying}
+						<div class="playbackCursor" bind:this={cursorElement}></div>
+					{/if}
+				</div>
+				{#each progressionItems as item, index (item.id)}
+					<ProgressionChordCard
+						{item}
+						{index}
+						pixelsPerBeat={PIXELS_PER_BEAT}
+						isDragging={isDraggingItem && draggedItemId === item?.id}
+						isResizing={isResizingItem && resizingItemId === item?.id}
+						selectItem={handleItemClick}
+						onItemMouseDown={handleItemMouseDown}
+						onResizeMouseDown={handleResizeMouseDown}
+					/>
+				{/each}
+			</div>
+		</div>
+
+		{#if ghostItem && isDraggingItem}
+			<div
+				class="ghostItem"
+				style="
+					left: {ghostItemMouseX}px;
+					top: {ghostItemMouseY}px;
+				"
+			>
+				<span class="ghostItemText">
+					{#if ghostItem.type === 'rest'}
+						REST
+					{:else}
+						{ghostItem.symbol}
+					{/if}
+				</span>
+			</div>
+		{/if}
+	</div>
+
+	<z-row insetX="md" insetY="sm" gap="lg" alignsY="center" isFullWidth class="progressionControls">
 		<z-row gap="md" alignsY="center">
 			<z-button
 				tone="primary"
@@ -536,65 +586,22 @@
 
 		<ProgressionSelectionControls />
 	</z-row>
-	<z-separator></z-separator>
-
-	<!-- Main Progression Area -->
-	<div class="mainProgressionPanel" data-is-dragging={isDraggingItem || isResizingItem} data-is-resizing={isResizingItem}>
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<div class="middle" bind:this={middleElement} onclick={handleMiddleClick} onwheel={handleWheel}>
-			<div class="itemArea" bind:this={itemAreaElement} style="width: calc({itemAreaWidth}px + 2 * var(--progression-gutter));">
-				<div class="gridLayer">
-					<ProgressionTimingMarkers
-						pixelsPerBeat={PIXELS_PER_BEAT}
-						beatsPerBar={BEATS_PER_BAR}
-						maxMarkerBars={MAX_MARKER_BARS}
-					/>
-					{#if playbackContext.state.isPlaying}
-						<div class="playbackCursor" bind:this={cursorElement}></div>
-					{/if}
-				</div>
-				{#each progressionItems as item, index (item.id)}
-					<ProgressionChordCard
-						{item}
-						{index}
-						pixelsPerBeat={PIXELS_PER_BEAT}
-						isDragging={isDraggingItem && draggedItemId === item?.id}
-						isResizing={isResizingItem && resizingItemId === item?.id}
-						selectItem={handleItemClick}
-						onItemMouseDown={handleItemMouseDown}
-						onResizeMouseDown={handleResizeMouseDown}
-					/>
-				{/each}
-			</div>
-		</div>
-
-		{#if ghostItem && isDraggingItem}
-			<div
-				class="ghostItem"
-				style="
-					left: {ghostItemMouseX}px;
-					top: {ghostItemMouseY}px;
-				"
-			>
-				<span class="ghostItemText">
-					{#if ghostItem.type === 'rest'}
-						REST
-					{:else}
-						{ghostItem.symbol}
-					{/if}
-				</span>
-			</div>
-		{/if}
-	</div>
-
 </z-column>
 
 <style>
+	/* A rounded segment of the page, not the frame of it. */
 	.progressionPanelContainer {
-		width: 100%;
 		flex-shrink: 0;
+		margin: var(--spacing-3) var(--spacing-4);
 		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+	}
+
+	/* Sits below the chords. Selected-chord options appear at its right. */
+	.progressionControls {
+		border-top: 1px solid var(--border);
 	}
 
 	.mainProgressionPanel {

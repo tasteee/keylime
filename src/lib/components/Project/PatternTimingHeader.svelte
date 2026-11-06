@@ -80,6 +80,7 @@
 		</div>
 	{/each}
 
+	<div class="activeRegion" style="width: {activeWidth}px"></div>
 	<div class="inactiveRegion" style="left: {activeWidth}px"></div>
 
 	{#if hoveredCellCount !== null}
@@ -106,11 +107,22 @@
 		display: flex;
 		font-size: var(--font-size-1);
 		font-weight: var(--font-weight-semibold);
-		color: var(--muted-foreground);
+		color: var(--foreground);
 		user-select: none;
 		box-sizing: border-box;
 		position: relative;
 		left: -1px;
+	}
+
+	/* The chosen duration. Tinted so it reads as live. */
+	.activeRegion {
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		background: color-mix(in oklch, var(--active-accent) 16%, transparent);
+		border-bottom: 2px solid var(--active-accent);
+		pointer-events: none;
 	}
 
 	.inactiveRegion {

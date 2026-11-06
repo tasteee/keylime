@@ -63,7 +63,7 @@
 	}
 
 	.chordColumn {
-		flex: 1 1 9rem;
-		min-width: 9rem;
+		flex: 1 1 7rem;
+		min-width: 7rem;
 	}
 </style>
