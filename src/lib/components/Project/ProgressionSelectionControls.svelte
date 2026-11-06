@@ -90,7 +90,7 @@
 </script>
 
 {#if selectedItem}
-	<z-surface level="1" kind="soft" isBordered radius="md" insetX="sm" insetY="2xs" class="selectionControls">
+	<div class="selectionControls">
 		<z-toolbar size="sm" aria-label="Selected item">
 			<z-text size="xs" weight={600} class="durationLabel">{durationLabel}</z-text>
 
@@ -127,7 +127,7 @@
 				</z-button>
 			</z-toolbar-group>
 		</z-toolbar>
-	</z-surface>
+	</div>
 {/if}
 
 <style>

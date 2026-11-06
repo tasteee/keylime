@@ -68,7 +68,7 @@
 	}
 </script>
 
-<z-popover placement="top-end">
+<z-popover placement="bottom-end">
 	<z-button slot="trigger" kind="outline" size="sm" aria-label="Output">
 		<span class={iconClassName}>
 			<SpeakerHigh size={16} />

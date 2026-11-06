@@ -2,17 +2,7 @@
 	import ProgressionChordCard from './ProgressionChordCard.svelte'
 	import ProgressionSelectionControls from './ProgressionSelectionControls.svelte'
 	import ProgressionTimingMarkers from './ProgressionTimingMarkers.svelte'
-	import { exportPerformanceAsMidi, exportChordsAsMidi } from '$lib/helpers/midiExport'
-	import { toFractionString } from '$lib/helpers/numbers'
-	import {
-		DownloadSimple,
-		Pause,
-		MagnifyingGlassPlus,
-		MagnifyingGlassMinus,
-		Play,
-		Stop,
-		ArrowRight
-	} from 'phosphor-svelte'
+	import { Pause, MagnifyingGlassPlus, MagnifyingGlassMinus, ArrowRight } from 'phosphor-svelte'
 	import { isTypingInTextField } from '$lib/helpers/typing'
 	import { getContext } from 'svelte'
 	import GENERAL_CONFIG from '$lib/constants/general.json'
@@ -224,12 +214,6 @@
 		return item
 	})
 
-	// Derived: total duration in bars
-	const totalBars = $derived.by(() => {
-		const beats = getProgressionTotalDuration()
-		return Math.round((beats / BEATS_PER_BAR) * 1000) / 1000
-	})
-
 	const handleKeyDown = (event: KeyboardEvent) => {
 		// While typing in a field, keys belong to the field.
 		if (isTypingInTextField(event)) return
@@ -399,61 +383,8 @@
 		middleElement.scrollLeft += event.deltaY
 	}
 
-	const togglePlayback = async () => {
-		const isCurrentlyPlaying = playbackContext.state.isPlaying
-
-		if (isCurrentlyPlaying) {
-			playbackContext.stop()
-			return
-		}
-
-		playbackContext.perform({
-			id: context.state.project.id,
-			bpm: context.state.project.bpm,
-			octave: context.state.project.octave,
-			progressionChords: progressionItems,
-			patternSignals: patternActiveSignals,
-			patternSignalRows: context.state.project.patternSignalRows,
-			patternDurationBars: patternActiveDurationBeats / 4,
-			doesPatternResetOnChordChange: context.state.project.doesPatternResetOnChordChange,
-			minVelocity: context.state.project.minVelocity,
-			maxVelocity: context.state.project.maxVelocity
-		})
-	}
-
-	const handleDownloadMidi = () => {
-		const project = context.state.project
-		// Use derived progressionChords with calculated startTimes
-		const projectWithStartTimes = {
-			...project,
-			progressionChords: progressionItems
-		}
-		exportPerformanceAsMidi(projectWithStartTimes)
-	}
-
-	const handleDownloadChords = () => {
-		const project = context.state.project
-		// Use derived progressionChords with calculated startTimes
-		const projectWithStartTimes = {
-			...project,
-			progressionChords: progressionItems
-		}
-		exportChordsAsMidi(projectWithStartTimes)
-	}
-
 	const toggleFollow = () => {
 		isFollowEnabled = !isFollowEnabled
-	}
-
-	const downloadMenuItems = [
-		{ value: 'chords', label: 'Chords' },
-		{ value: 'performance', label: 'Performance' }
-	]
-
-	const handleDownloadSelect = (event: CustomEvent) => {
-		const selectedValue: string = event.detail.value
-		if (selectedValue === 'chords') handleDownloadChords()
-		if (selectedValue === 'performance') handleDownloadMidi()
 	}
 
 	const zoomIn = () => {
@@ -519,51 +450,21 @@
 				</span>
 			</div>
 		{/if}
-	</div>
 
-	<z-row insetX="md" insetY="sm" gap="lg" alignsY="center" isFullWidth class="progressionControls">
-		<z-row gap="md" alignsY="center">
-			<z-button
-				tone="primary"
-				onclick={togglePlayback}
-				aria-label={playbackContext.state.isPlaying ? 'Stop' : 'Play'}
-			>
-				{#if playbackContext.state.isPlaying}
-					<Stop size={18} weight="fill" />
-				{:else}
-					<Play size={18} weight="fill" />
-				{/if}
-			</z-button>
-
-			<z-column>
-				<z-subheading size="md">Progression</z-subheading>
-				<z-text size="xs" color="muted" class="progressionBarCount">
-					{toFractionString(totalBars)}
-					{totalBars === 1 ? 'bar' : 'bars'}
-				</z-text>
-			</z-column>
-		</z-row>
-
-		<z-separator isVertical></z-separator>
-
-		<z-row gap="sm" alignsY="center">
-			<z-menu items={downloadMenuItems} onselect={handleDownloadSelect}>
-				<z-button slot="trigger" kind="outline" size="sm" aria-label="Download">
-					<DownloadSimple size={16} weight="bold" />
-				</z-button>
-			</z-menu>
-
-			<z-tooltip content="Add rest" placement="bottom">
+		<div class="progressionControls">
+			<z-tooltip content="Add rest" placement="top">
 				<z-button kind="outline" size="sm" onclick={handleAddRest} aria-label="Add rest">
 					<Pause size={16} weight="bold" />
 				</z-button>
 			</z-tooltip>
 
-			<z-tooltip content="Follow playhead" placement="bottom">
+			<z-tooltip content="Follow playhead" placement="top">
 				<z-toggle-button
 					kind="outline"
-					tone="primary"
+					tone="neutral"
 					size="sm"
+					class="followToggle"
+					class:isActive={isFollowEnabled}
 					isPressed={isFollowEnabled}
 					onpress={toggleFollow}
 					aria-label="Follow playhead"
@@ -571,21 +472,19 @@
 					<ArrowRight size={16} />
 				</z-toggle-button>
 			</z-tooltip>
-		</z-row>
 
-		<z-separator isVertical></z-separator>
+			<z-button-group>
+				<z-button kind="outline" size="sm" onclick={zoomOut} aria-label="Zoom out">
+					<MagnifyingGlassMinus size={16} weight="bold" />
+				</z-button>
+				<z-button kind="outline" size="sm" onclick={zoomIn} aria-label="Zoom in">
+					<MagnifyingGlassPlus size={16} weight="bold" />
+				</z-button>
+			</z-button-group>
 
-		<z-button-group>
-			<z-button kind="outline" size="sm" onclick={zoomOut} aria-label="Zoom out">
-				<MagnifyingGlassMinus size={16} weight="bold" />
-			</z-button>
-			<z-button kind="outline" size="sm" onclick={zoomIn} aria-label="Zoom in">
-				<MagnifyingGlassPlus size={16} weight="bold" />
-			</z-button>
-		</z-button-group>
-
-		<ProgressionSelectionControls />
-	</z-row>
+			<ProgressionSelectionControls />
+		</div>
+	</div>
 </z-column>
 
 <style>
@@ -599,14 +498,36 @@
 		overflow: hidden;
 	}
 
-	/* Sits below the chords. Selected-chord options appear at its right. */
+	/* Floats over the grid lines, below the chords. No surface of its own.
+	   Selected-chord options appear at its right. */
 	.progressionControls {
-		border-top: 1px solid var(--border);
+		position: absolute;
+		left: var(--spacing-3);
+		right: var(--spacing-3);
+		bottom: var(--spacing-3);
+		z-index: 200;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: var(--spacing-2);
+		pointer-events: none;
+	}
+
+	.progressionControls > :global(*) {
+		pointer-events: auto;
+	}
+
+	/* Active follow is strong neutral, like the rest of the UI. */
+	.progressionControls :global(.followToggle.isActive) {
+		background: var(--foreground);
+		border-color: var(--foreground);
+		color: var(--background);
 	}
 
 	.mainProgressionPanel {
+		position: relative;
 		width: 100%;
-		height: 7.5rem;
+		height: 10.5rem;
 		flex-shrink: 0;
 		display: flex;
 		flex-direction: column;
@@ -621,7 +542,7 @@
 		flex-direction: column;
 		overflow-x: auto;
 		overflow-y: hidden;
-		max-height: 7.5rem;
+		max-height: 10.5rem;
 	}
 
 	.itemArea {
@@ -636,7 +557,7 @@
 		flex-direction: row;
 		align-items: stretch;
 		padding-top: calc(var(--spacing-6) + var(--progression-gutter));
-		padding-bottom: var(--progression-gutter);
+		padding-bottom: calc(var(--spacing-7) + var(--progression-gutter));
 		left: -2px;
 	}
 
@@ -680,8 +601,4 @@
 		will-change: transform;
 	}
 
-	.progressionBarCount {
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
 </style>

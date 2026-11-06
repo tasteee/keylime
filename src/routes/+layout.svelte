@@ -9,7 +9,6 @@
 	import { base } from '$app/paths'
 	import favicon from '$lib/assets/favicon.svg'
 	import PlaybackContextFrame from '$lib/components/PlaybackContextFrame.svelte'
-	import BottomBar from '$lib/components/Project/BottomBar.svelte'
 	import { setContext } from 'svelte'
 
 	let { children, data } = $props()
@@ -34,7 +33,6 @@
 				{@render children?.()}
 			</PlaybackContextFrame>
 		</div>
-		<BottomBar />
 	</z-column>
 {:else}
 	<PlaybackContextFrame>
