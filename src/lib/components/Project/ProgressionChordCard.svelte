@@ -186,8 +186,8 @@
 	}
 
 	.progressionItem.isSelected {
-		background-color: color-mix(in oklch, var(--purple) 12%, var(--card));
-		border-color: var(--purple);
+		background-color: var(--color-neutral-3);
+		border-color: var(--color-neutral-5);
 		z-index: 20;
 	}
 
@@ -198,7 +198,7 @@
 	}
 
 	.progressionItem.isRest.isSelected {
-		background-color: color-mix(in oklch, var(--purple) 12%, var(--card));
+		background-color: var(--color-neutral-3);
 		color: var(--foreground);
 	}
 
