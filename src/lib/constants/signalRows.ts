@@ -1,3 +1,5 @@
+export const ROWS_PER_BAND = 8
+
 const SIGNAL_IDS_0 = ['N1-2', 'N2-2', 'N3-2', 'N4-2', 'N5-2', 'N6-2', 'N7-2', 'N8-2']
 const SIGNAL_IDS_1 = ['N1-1', 'N2-1', 'N3-1', 'N4-1', 'N5-1', 'N6-1', 'N7-1', 'N8-1']
 const SIGNAL_IDS_2 = ['N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8']

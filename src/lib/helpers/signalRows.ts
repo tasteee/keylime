@@ -1,4 +1,5 @@
 import { Note } from 'tonal'
+import { ROWS_PER_BAND } from '$lib/constants/signalRows'
 
 // Match any digits that follow "N" in a signalRow id.
 // i.e "N1" -> 1, "N5-1" -> 5, "N3+2" -> 3, "N0" -> 0
@@ -25,23 +26,21 @@ export const getNoteFromSignalRow = (args: GetNoteFromSignalRowArgsT): string | 
   if (!args.chord && !args.chordNotes) return null
 
   const noteIndex = getSignalRowIdIndex(args.signalRowId)
-  const octaveOffset = getSignalRowIdOctave(args.signalRowId)
+  const bandOffset = getSignalRowIdOctave(args.signalRowId)
 
   // Use provided chordNotes or fall back to chord.notes (for backward compatibility)
   const notes = args.chordNotes || (args.chord as any)?.notes || []
   const chordNotesCount = notes.length
   if (chordNotesCount === 0) return null
 
-  // Calculate which note in the chord (wrapping around)
-  // N1 -> index 0, N2 -> index 1, N3 -> index 2, N4 -> index 0 (next octave), etc.
-  const zeroIndexedNoteIndex = noteIndex - 1
-  const wrappedNoteIndex = ((zeroIndexedNoteIndex % chordNotesCount) + chordNotesCount) % chordNotesCount
+  // Each band ("+1", "-1") holds ROWS_PER_BAND rows. A band continues
+  // the ladder where the previous band stopped, so pitch always
+  // ascends from the bottom row to the top row.
+  const rowPosition = noteIndex - 1 + bandOffset * ROWS_PER_BAND
 
-  // Calculate how many full octaves we've wrapped through
-  const octavesFromWrapping = Math.floor(zeroIndexedNoteIndex / chordNotesCount)
-
-  // Total octave offset combines the wrapping octaves and the explicit octave offset
-  const totalOctaveOffset = octavesFromWrapping + octaveOffset
+  // N1 -> index 0, N4 -> index 0 (next octave), etc.
+  const wrappedNoteIndex = ((rowPosition % chordNotesCount) + chordNotesCount) % chordNotesCount
+  const totalOctaveOffset = Math.floor(rowPosition / chordNotesCount)
 
   const baseNote = notes[wrappedNoteIndex]
   if (!baseNote) return null

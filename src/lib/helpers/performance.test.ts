@@ -246,37 +246,37 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
       expect(note7).toBe('C5')
     })
 
-    it('should apply explicit octave offsets after wrapping', () => {
-      // N1+1 = first voice plus one octave
+    it('should continue the ladder in the +1 band', () => {
+      // N1+1 comes right after N8 (position 8 = third voice, 2 octaves up)
       const note = getNoteFromSignalRow({
         signalRowId: 'N1+1',
         chord: null,
         chordNotes: cMajorNotes
       })
 
-      expect(note).toBe('C4')
+      expect(note).toBe('G5')
     })
 
-    it('should combine wrapping and explicit offsets correctly', () => {
-      // N4-1 = wrapped to C4, then -1 octave = C3
+    it('should combine wrapping and band offsets correctly', () => {
+      // N4-1 = position -5 = third voice, 2 octaves down
       const note = getNoteFromSignalRow({
         signalRowId: 'N4-1',
         chord: null,
         chordNotes: cMajorNotes
       })
 
-      expect(note).toBe('C3')
+      expect(note).toBe('G1')
     })
 
-    it('should handle negative octave offsets', () => {
-      // N1-1 = first voice minus one octave
+    it('should handle negative band offsets', () => {
+      // N1-1 = position -8 = second voice, 3 octaves down
       const note = getNoteFromSignalRow({
         signalRowId: 'N1-1',
         chord: null,
         chordNotes: cMajorNotes
       })
 
-      expect(note).toBe('C2')
+      expect(note).toBe('E0')
     })
 
     it('should create continuous pitch lattice over voicing', () => {
