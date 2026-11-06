@@ -9,6 +9,8 @@ export type PaletteT = {
 	textMuted: string
 	textFaint: string
 	accent: string
+	noteSelected: string
+	noteIdle: string
 	lineBar: string
 	lineBeat: string
 	lineCell: string
@@ -90,6 +92,7 @@ const buildPalette = (): PaletteT => {
 	const textMuted = resolveColor('var(--muted-foreground)')
 	const textFaint = resolveColor('var(--secondary, var(--muted-foreground))')
 	const accent = resolveColor('var(--active-accent, var(--foreground))')
+	const noteSelected = resolveColor('var(--note-selected, var(--active-accent))')
 	const isDark = getLuminance(background) < 0.4
 	const fontMonoValue = getComputedStyle(document.documentElement).getPropertyValue('--font-mono').trim()
 
@@ -101,6 +104,9 @@ const buildPalette = (): PaletteT => {
 		textMuted,
 		textFaint,
 		accent,
+		noteSelected,
+		// A shade or two below full contrast.
+		noteIdle: withAlpha(text, 0.62),
 		lineBar: withAlpha(text, 0.22),
 		lineBeat: withAlpha(text, 0.11),
 		lineCell: withAlpha(text, 0.05),

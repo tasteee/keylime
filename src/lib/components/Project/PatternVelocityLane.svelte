@@ -104,21 +104,23 @@
 			context.globalAlpha = mutedOpacity * inactiveOpacity
 
 			const strokeAlpha = isSelected || isHovered ? 1 : 0.55
-			context.strokeStyle = withAlpha(isPlaying ? palette.accent : palette.text, strokeAlpha)
+			const idleColor = isSelected ? palette.noteSelected : palette.noteIdle
+			const stemColor = isPlaying ? palette.accent : idleColor
+			context.strokeStyle = withAlpha(stemColor, strokeAlpha)
 			context.lineWidth = isSelected || isHovered ? 2 : 1.5
 			context.beginPath()
 			context.moveTo(stemX, height - PADDING_BOTTOM)
 			context.lineTo(stemX, top)
 			context.stroke()
 
-			context.fillStyle = isPlaying ? palette.accent : palette.text
+			context.fillStyle = stemColor
 			context.beginPath()
 			context.arc(stemX, top, isHovered ? 5 : 3.5, 0, Math.PI * 2)
 			context.fill()
 
 			if (isSelected) {
 				context.lineWidth = 1.5
-				context.strokeStyle = palette.accent
+				context.strokeStyle = palette.noteSelected
 				context.stroke()
 			}
 
