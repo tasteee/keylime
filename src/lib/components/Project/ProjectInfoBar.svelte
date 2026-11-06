@@ -6,6 +6,8 @@
 	import SelectBpm from './SelectBpm.svelte'
 	import SelectOctave from './SelectOctave.svelte'
 	import SelectKeyScale from './SelectKeyScale.svelte'
+	import ProjectPlayButton from './ProjectPlayButton.svelte'
+	import DownloadMenu from './DownloadMenu.svelte'
 	import DialogProjectSettings from './DialogProjectSettings.svelte'
 
 	const projectEditor = useProjectEditor()
@@ -66,7 +68,7 @@
 <z-column>
 	<z-row insetX="lg" insetY="sm" alignsX="between" alignsY="center" gap="lg" isFullWidth>
 		<z-row gap="sm" alignsY="center" class="projectTitleRow">
-			<z-eyebrow label="Project" tone="neutral"></z-eyebrow>
+			<ProjectPlayButton />
 			{#if isDirty}
 				<z-status-dot status="away" doesPulse label="Unsaved"></z-status-dot>
 			{/if}
@@ -88,6 +90,8 @@
 					<Gear size={16} />
 				</z-button>
 			</z-tooltip>
+
+			<DownloadMenu />
 
 			<z-menu items={saveMenuItems} align="end" onselect={handleSaveMenuSelect}>
 				<z-button

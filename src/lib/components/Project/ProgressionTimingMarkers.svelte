@@ -74,7 +74,7 @@
 		font-weight: var(--font-weight-semibold);
 		color: var(--muted-foreground);
 		margin-left: var(--spacing-2);
-		margin-top: calc(var(--spacing-1) / 2);
+		margin-top: calc(var(--spacing-1) / 2 + 2px);
 		white-space: nowrap;
 		font-family: var(--font-mono);
 	}

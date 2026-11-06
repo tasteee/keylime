@@ -4,6 +4,7 @@
 	import { base } from '$app/paths'
 	import Logo from './Logo.svelte'
 	import UserMenu from './UserMenu.svelte'
+	import SelectOutput from '$lib/components/Project/SelectOutput.svelte'
 	import DialogUserSettings from '$lib/components/DialogUserSettings.svelte'
 	import { goToPath } from '$lib/modules/navigate'
 
@@ -61,6 +62,7 @@
 		</div>
 
 		<div class="topBarEnd">
+			<SelectOutput />
 			<UserMenu onOpenSettings={handleOpenSettings} />
 		</div>
 	</z-row>

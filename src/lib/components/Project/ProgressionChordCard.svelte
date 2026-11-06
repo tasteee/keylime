@@ -175,8 +175,14 @@
 		align-items: center;
 		justify-content: center;
 		height: auto;
-		background-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 8%, var(--card));
-		border: 1px solid color-mix(in oklch, var(--chord-hue, var(--foreground)) 26%, var(--border));
+		--chord-tint-start: 16%;
+		--chord-tint-end: 4%;
+		background: linear-gradient(
+			135deg,
+			color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint-start), var(--card)),
+			color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint-end), var(--card))
+		);
+		border: 1px solid color-mix(in oklch, var(--chord-hue, var(--foreground)) 28%, var(--border));
 		border-radius: var(--radius-md);
 		color: var(--foreground);
 		cursor: default;
@@ -188,25 +194,27 @@
 	}
 
 	.progressionItem:hover {
-		background-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 13%, var(--card));
+		--chord-tint-start: 24%;
+		--chord-tint-end: 8%;
 	}
 
 	/* Selected is one step up in tone: deeper tint, stronger border. */
 	.progressionItem.isSelected {
-		background-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 22%, var(--card));
+		--chord-tint-start: 34%;
+		--chord-tint-end: 16%;
 		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 70%, var(--border));
 		z-index: 20;
 	}
 
 	.progressionItem.isRest {
-		background-color: var(--color-neutral-2);
+		background: var(--color-neutral-2);
 		border-style: dashed;
 		color: var(--muted-foreground);
 	}
 
 	.progressionItem.isRest.isSelected {
 		border-color: var(--color-neutral-5);
-		background-color: var(--color-neutral-3);
+		background: var(--color-neutral-3);
 		color: var(--foreground);
 	}
 
@@ -321,12 +329,13 @@
 	/* Disable hover effects on every card while one is dragged or resized. */
 	:global([data-is-dragging='true']) .progressionItem:not(.isSelected):hover,
 	:global([data-is-resizing='true']) .progressionItem:not(.isSelected):hover {
-		background-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 8%, var(--card));
+		--chord-tint-start: 16%;
+		--chord-tint-end: 4%;
 	}
 
 	:global([data-is-dragging='true']) .progressionItem.isRest:hover,
 	:global([data-is-resizing='true']) .progressionItem.isRest:hover {
-		background-color: var(--color-neutral-2);
+		background: var(--color-neutral-2);
 	}
 
 	:global([data-is-dragging='true']) .progressionItem:hover .dragHandle,

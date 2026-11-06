@@ -114,20 +114,26 @@
 	.chordCard {
 		height: 3rem;
 		user-select: none;
-		background: color-mix(in oklch, var(--chord-hue, var(--foreground)) 7%, var(--card));
-		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 24%, var(--border));
-		transition:
-			background var(--motion-fast) var(--ease-enter),
-			border-color var(--motion-fast) var(--ease-enter);
+		--chord-tint-start: 16%;
+		--chord-tint-end: 4%;
+		background: linear-gradient(
+			135deg,
+			color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint-start), var(--card)),
+			color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint-end), var(--card))
+		);
+		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 28%, var(--border));
+		transition: border-color var(--motion-fast) var(--ease-enter);
 	}
 
 	.chordCard:hover {
-		background: color-mix(in oklch, var(--chord-hue, var(--foreground)) 13%, var(--card));
-		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 45%, var(--border));
+		--chord-tint-start: 24%;
+		--chord-tint-end: 8%;
+		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 50%, var(--border));
 	}
 
 	.chordCard.isPlaying {
-		background: color-mix(in oklch, var(--chord-hue, var(--foreground)) 20%, var(--card));
+		--chord-tint-start: 32%;
+		--chord-tint-end: 14%;
 		border-color: var(--chord-hue, var(--foreground));
 	}
 
