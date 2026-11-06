@@ -79,7 +79,7 @@
 	isBordered
 	isInteractive
 	isFullWidth
-	radius="md"
+	radius="sm"
 	insetX="md"
 	class="chordCard"
 	class:isPlaying

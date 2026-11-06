@@ -177,7 +177,7 @@
 		--chord-tint: 22%;
 		background: color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint), var(--card));
 		border: 1px solid color-mix(in oklch, var(--chord-hue, var(--foreground)) 70%, var(--card));
-		border-radius: var(--radius-md);
+		border-radius: var(--radius-sm);
 		color: var(--foreground);
 		cursor: default;
 		user-select: none;
