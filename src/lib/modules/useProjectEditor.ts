@@ -22,6 +22,12 @@ type ProjectEditorContextT = {
   updatePatternSignal: (signalId: string, updates: Partial<SignalT>) => void
   removePatternSignal: (signalId: string) => void
   movePatternSignalToRow: (args: MoveSignalToRowOptionsT) => void
+  updateGridChordModifiers: (args: {
+    chordId: string
+    octaveOffset?: number
+    inversion?: number
+    voicing?: VoicingT
+  }) => void
   save: () => Promise<{ didSucceed: boolean }>
   saveClone: () => Promise<{ didSucceed: boolean; newProjectId: string }>
   checkIsDirty: () => boolean
