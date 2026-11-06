@@ -1,9 +1,6 @@
-import { getPublicProjects } from "$lib/modules/database";
+import { listPublicProjects } from '$lib/server/repo'
 
-export async function load() {
-  const { data } = await getPublicProjects({});
-
-  return {
-    projects: data ?? []
-  };
+export async function load({ platform }) {
+	const { data } = await listPublicProjects(platform.env.DB, {})
+	return { projects: data }
 }

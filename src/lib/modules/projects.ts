@@ -1,6 +1,6 @@
 import { goto } from "$app/navigation"
 import { SIGNAL_ROWS } from "$lib/constants/signalRows"
-import { supabase } from "$lib/supabase/client"
+import { deleteProjectById, getProjectById, saveProjectData } from "$lib/modules/database"
 
 export const getFreshPatternSignalRows = () => {
   return JSON.parse(JSON.stringify(SIGNAL_ROWS))
@@ -55,53 +55,19 @@ export const createClonedProjectData = (userId: string, overrides: Partial<Proje
 }
 
 // overwrite or create a new project in the database.
-export const saveProject = async (project: ProjectT): Promise<any> => {
-  console.log('saveProject called for project:', project)
-  console.log('About to call supabase upsert...')
-
-  try {
-    console.log('Supabase client exists:', !!supabase)
-    console.log('Calling upsert now...')
-
-    const supabaseSaveResult = await supabase
-      .from('all_projects')
-      .upsert(project as any)
-      .select()
-
-    console.log('Upsert completed, result:', supabaseSaveResult)
-    console.log('Result data:', supabaseSaveResult.data)
-    console.log('Result error:', supabaseSaveResult.error)
-
-    return supabaseSaveResult
-  } catch (error) {
-    console.error('Error in saveProject catch block:', error)
-    throw error
-  }
+export const saveProject = async (project: ProjectT): Promise<{ data: ProjectT | null; error: Error | null }> => {
+  const { data, error } = await saveProjectData(project)
+  return { data, error }
 }
 
 export const deleteProject = async (id: string) => {
-
-  const supabaseDeleteResult = await supabase
-    .from('all_projects')
-    .delete()
-    .eq('id', id)
-
-  return supabaseDeleteResult
+  return deleteProjectById(id)
 }
 
 export const goToProjectEditor = (id: string) => {
   goto(`/project/editor/${id}`)
 }
 
-export const loadProject = async (id: string): Promise<any> => {
-
-
-  const supabaseLoadResult = await supabase
-    .from('all_projects')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-
-  return supabaseLoadResult
+export const loadProject = async (id: string): Promise<{ data: ProjectT | null; error: Error | null }> => {
+  return getProjectById(id)
 }

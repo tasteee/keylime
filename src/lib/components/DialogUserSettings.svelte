@@ -22,8 +22,6 @@
 	let email = $state(authUser?.email || '')
 	let bio = $state(activeUser?.bio || '')
 	let avatarUrl = $state(activeUser?.avatarUrl || '')
-	let newPassword = $state('')
-	let confirmPassword = $state('')
 	let errorMessage = $state<string | null>(null)
 	let successMessage = $state<string | null>(null)
 	let isSubmitting = $state(false)
@@ -35,8 +33,6 @@
 		email = authUser?.email || ''
 		bio = activeUser?.bio || ''
 		avatarUrl = activeUser?.avatarUrl || ''
-		newPassword = ''
-		confirmPassword = ''
 		errorMessage = null
 		successMessage = null
 	})
@@ -46,29 +42,12 @@
 		errorMessage = null
 		successMessage = null
 
-		const isPasswordBeingChanged = newPassword.length > 0 || confirmPassword.length > 0
-		if (isPasswordBeingChanged) {
-			const doPasswordsMatch = newPassword === confirmPassword
-			if (!doPasswordsMatch) {
-				errorMessage = 'Passwords do not match'
-				return
-			}
-
-			const isPasswordLongEnough = newPassword.length >= 6
-			if (!isPasswordLongEnough) {
-				errorMessage = 'Password must be at least 6 characters'
-				return
-			}
-		}
-
 		isSubmitting = true
 
 		const updateResult = await updateUserSettings({
 			userName,
-			email,
 			bio,
-			avatarUrl,
-			newPassword: isPasswordBeingChanged ? newPassword : undefined
+			avatarUrl
 		})
 
 		isSubmitting = false
@@ -80,8 +59,6 @@
 		}
 
 		successMessage = 'Settings updated successfully!'
-		newPassword = ''
-		confirmPassword = ''
 
 		setTimeout(() => {
 			props.onOpenChange(false)
@@ -130,15 +107,7 @@
 
 						<div class="field">
 							<Label for="email">Email</Label>
-							<Input
-								size="large"
-								type="email"
-								id="email"
-								name="email"
-								placeholder="name@example.com"
-								required
-								bind:value={email}
-							/>
+							<Input size="large" type="email" id="email" name="email" value={email} disabled />
 						</div>
 
 						<div class="field">
@@ -155,32 +124,6 @@
 								name="avatarUrl"
 								placeholder="https://..."
 								bind:value={avatarUrl}
-							/>
-						</div>
-
-						<div class="divider"></div>
-
-						<div class="field">
-							<Label for="newPassword">New Password (optional)</Label>
-							<Input
-								size="large"
-								type="password"
-								id="newPassword"
-								name="newPassword"
-								placeholder="Leave blank to keep current"
-								bind:value={newPassword}
-							/>
-						</div>
-
-						<div class="field">
-							<Label for="confirmPassword">Confirm New Password</Label>
-							<Input
-								size="large"
-								type="password"
-								id="confirmPassword"
-								name="confirmPassword"
-								placeholder="Confirm new password"
-								bind:value={confirmPassword}
 							/>
 						</div>
 					</Box>

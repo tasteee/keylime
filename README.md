@@ -1,14 +1,42 @@
 # keylime
 
+Runs on Cloudflare Pages with D1 (SQLite). No other services.
+
+## Cloudflare setup
+
+```sh
+npx wrangler d1 create keylime-db      # copy the database_id into wrangler.toml
+npm run db:migrate:remote              # creates the tables
+```
+
+In the Pages project (Settings → Bindings / Variables and Secrets), for Production and Preview:
+
+| Name | Value |
+| --- | --- |
+| `DB` (D1 binding) | `keylime-db` |
+| `RESEND_API_KEY` | Secret. From resend.com. |
+| `MAIL_FROM` | `keylime <onboarding@resend.dev>` to start. Use your own domain to email anyone. |
+
+Build command `npm run build`, output directory `.svelte-kit/cloudflare`.
+
+## Develop
+
+```sh
+echo "DEV_SHOW_LINKS=true" > .dev.vars   # sign-in link shows on screen, no email needed
+npm run db:migrate:local
+npm run dev                              # localhost:3124
+```
+
+## Saving
+
+Edits are kept in this browser (localStorage) while you work. The server is only written to when you press save or Ctrl/Cmd+S, so editing makes no requests. Unsaved work survives a reload and is dropped if the project changed on the server in the meantime.
+
 ## ROUTING
 
 ```
 # Public routes
 / -> splash (if not authed), redirect to /dashboard (if authed)
-/auth/login -> login form, redirect to /dashboard (if already authed)
-/auth/signup -> signup form, redirect to /dashboard (if already authed)
-/auth/forgot-password -> email form, redirect to /dashboard (if authed without token)
-/auth/reset-password -> password form (requires token), redirect to /dashboard (if authed without valid token)
+/auth/login -> email form. Sends a one-time sign-in link (also creates the account on first use). Redirects to /dashboard if already authed
 
 # Protected routes (require auth)
 /dashboard -> user's project list + activity feed

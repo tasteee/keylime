@@ -3,33 +3,31 @@
 	import { Input } from '$lib/components/ui/input'
 	import { Label } from '$lib/components/ui/label'
 	import Box from '$lib/components/ui/box.svelte'
-	import Divider from '$lib/components/ui/divider.svelte'
-	import { login } from '$lib/database/auth'
-	import { goto } from '$app/navigation'
+	import { requestLoginLink } from '$lib/database/auth'
+	import { page } from '$app/stores'
 
 	let email = $state('')
-	let password = $state('')
 	let isSubmitting = $state(false)
+	let didSend = $state(false)
+	let devLink = $state<string | null>(null)
 	let errorMessage = $state<string | null>(null)
+
+	const hasExpiredLink = $derived($page.url.searchParams.get('expired') === '1')
 
 	const handleSubmit = async (event: SubmitEvent) => {
 		event.preventDefault()
-		console.log('[login] Form submitted')
 		errorMessage = null
 		isSubmitting = true
-		const result = await login({ email, password })
-		console.log('[login] Sign in result:', result)
-		const hasError = !result.success
+		const result = await requestLoginLink(email)
+		isSubmitting = false
 
-		if (hasError) {
-			errorMessage = result.error || 'Failed to sign in'
-			isSubmitting = false
+		if (!result.success) {
+			errorMessage = result.error || 'Failed to send the link'
 			return
 		}
 
-		console.log('[login] Sign in successful, redirecting to /dashboard')
-		// Force a full page reload to ensure server-side session is synced
-		window.location.href = '/dashboard'
+		devLink = result.devLink ?? null
+		didSend = true
 	}
 </script>
 
@@ -38,52 +36,49 @@
 		<Box class="authCardContainer" gap="24px" justify="stretch" isColumn>
 			<div class="header">
 				<h1 class="logo">KEYLIME</h1>
-				<p class="subtitle">Sign in to your account</p>
+				<p class="subtitle">Sign in or create an account with a link sent to your email</p>
 			</div>
 
-			<form class="form" onsubmit={handleSubmit}>
+			{#if didSend}
 				<Box gap="16px" isColumn>
-					{#if errorMessage}
-						<Box class="error">
-							{errorMessage}
-						</Box>
+					<p class="subtitle">Check <strong>{email}</strong> for your sign-in link. It works once, for 15 minutes.</p>
+					{#if devLink}
+						<a class="link" href={devLink}>Dev link: sign in</a>
 					{/if}
-					<Box isColumn isFullWidth class="field">
-						<Label for="email">Email</Label>
-						<Input
-							size="large"
-							type="email"
-							id="email"
-							name="email"
-							placeholder="name@example.com"
-							required
-							bind:value={email}
-						/>
-					</Box>
-					<Box isColumn isFullWidth class="field">
-						<Box justify="between" isFullWidth>
-							<Label for="password">Password</Label>
-							<a href="/auth/forgot-password" class="forgot-link">Forgot password?</a>
-						</Box>
-
-						<Input size="large" type="password" id="password" name="password" required bind:value={password} />
-					</Box>
+					<Button type="button" isFullWidth={true} size="medium" onclick={() => (didSend = false)}>Use a different email</Button>
 				</Box>
+			{:else}
+				<form class="form" onsubmit={handleSubmit}>
+					<Box gap="16px" isColumn>
+						{#if hasExpiredLink}
+							<Box class="error">That link expired or was already used. Request a new one.</Box>
+						{/if}
+						{#if errorMessage}
+							<Box class="error">
+								{errorMessage}
+							</Box>
+						{/if}
+						<Box isColumn isFullWidth class="field">
+							<Label for="email">Email</Label>
+							<Input
+								size="large"
+								type="email"
+								id="email"
+								name="email"
+								placeholder="name@example.com"
+								required
+								bind:value={email}
+							/>
+						</Box>
+					</Box>
 
-				<div class="actions">
-					<Button type="submit" isFullWidth={true} size="medium" color="brand" disabled={isSubmitting}>
-						{isSubmitting ? 'Signing in...' : 'Sign In'}
-					</Button>
-				</div>
-			</form>
-
-			<Divider isHorizontal={true} margin="0px" />
-
-			<div class="footer">
-				<p class="text-sm text-muted-foreground">
-					Don't have an account? <a href="/auth/signup" class="link">Sign up</a>
-				</p>
-			</div>
+					<div class="actions">
+						<Button type="submit" isFullWidth={true} size="medium" color="brand" disabled={isSubmitting}>
+							{isSubmitting ? 'Sending...' : 'Email me a sign-in link'}
+						</Button>
+					</div>
+				</form>
+			{/if}
 		</Box>
 	</div>
 </div>

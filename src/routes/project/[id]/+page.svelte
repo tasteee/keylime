@@ -67,6 +67,13 @@
 	}
 
 	const handleKeyDown = async (event: KeyboardEvent) => {
+		const isSaveShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's'
+		if (isSaveShortcut) {
+			event.preventDefault()
+			if (projectEditor.checkIsDirty()) await projectEditor.save()
+			return
+		}
+
 		const isSpaceKey = event.code === 'Space'
 		if (!isSpaceKey) return
 
