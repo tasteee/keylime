@@ -3,16 +3,15 @@ import INSTRUMENTS_CONFIG from '$lib/constants/instruments.json'
 import GENERAL_CONFIG from '$lib/constants/general.json'
 import output from './output.svelte.js'
 import { WebMidi } from 'webmidi'
-import { Note } from 'tonal'
+import { getChordMidiNotes, toMidiNote } from '$lib/music'
 import { generatePerformance } from '$lib/helpers/performance'
-import { chordToNotes } from '$lib/helpers/chordToNotes'
 
-type PlayArgsT = { note: string }
+type PlayArgsT = { note: number | string }
 
 type PerformProjectArgsT = {
 	id: string
 	bpm: number
-	octave: string
+	octave: number
 	progressionChords: ProgressionItemT[]
 	patternSignals: SignalT[]
 	patternSignalRows: SignalRowsT
@@ -41,14 +40,6 @@ const getMidiOutput = () => {
 	const channelNumber = output.midiChannel === 'All' ? 1 : parseInt(output.midiChannel, 10)
 	console.log('MIDI output found:', { device: midiOutput.name, channel: channelNumber })
 	return midiOutput.channels[channelNumber]
-}
-
-const transposeNote = (args: { note: string; semitones: number }) => {
-	const midiNumber = Note.midi(args.note)
-	if (midiNumber === null) return args.note
-	const transposedMidi = midiNumber + args.semitones
-	const transposedNote = Note.fromMidiSharps(transposedMidi)
-	return transposedNote
 }
 
 // stopAll, stopNote, stopChord, playNote, playChord,
@@ -97,9 +88,9 @@ const createPlaybackInstrument = async (args: { context: AudioContext }): Promis
 class PlaybackStore {
 	context = $state(null) as unknown as AudioContext
 	piano = $state(null) as PlaybackInstrumentT | null
-	activeChords = $state(new Set()) as Set<string>
+	activeChords = $state(new Set()) as Set<number>
 	currentlyPlayingChordId = $state(null) as string | null
-	currentlyPlayingChordNotes = $state(new Set()) as Set<string>
+	currentlyPlayingChordNotes = $state(new Set()) as Set<number>
 	isLoading = $state(false)
 	isLoaded = $state(false)
 	isPlaying = $state(false)
@@ -107,13 +98,13 @@ class PlaybackStore {
 	currentProjectId = $state<string | null>(null)
 	loopStartTime = $state(0)
 	scheduledNotes = $state(new Map()) as Map<string, ReturnType<typeof setTimeout>>
-	activeNoteInstances = $state(new Map()) as Map<string, Set<string>>
+	activeNoteInstances = $state(new Map()) as Map<number, Set<string>>
 	loadPromise: Promise<void> | null = null
 
 	// In-memory performance data
 	currentPerformance = $state<PerformanceNoteT[]>([])
 	currentBpm = $state(120)
-	currentOctave = $state('3')
+	currentOctave = $state(3)
 	currentProgressionDuration = $state(0)
 
 	isSelectedInstrumentLoaded = () => {
@@ -173,22 +164,23 @@ class PlaybackStore {
 	}
 
 	playNote = async (args: PlayArgsT) => {
-		console.log('playNote called with:', args.note)
+		const midiNote = toMidiNote(args.note)
+		if (midiNote === null) return
 		const isInstrumentNotReady = !this.isSelectedInstrumentLoaded()
 		if (isInstrumentNotReady) await this.load()
 
-		this.activeChords.add(args.note)
+		this.activeChords.add(midiNote)
 		const midiOutput = getMidiOutput()
 		const velocity = getRandomBetween({ min: output.minVelocity, max: output.maxVelocity })
 		if (!midiOutput) {
-			this.piano?.start({ note: args.note, velocity })
+			this.piano?.start({ note: midiNote, velocity })
 			return
 		}
 
-		midiOutput.playNote(args.note, { attack: velocity / 127 })
+		midiOutput.playNote(midiNote, { attack: velocity / 127 })
 	}
 
-	playChord = async (chord: ChordT, octave: string, durationMs: number = 500) => {
+	playChord = async (chord: ChordT, octave: number, durationMs: number = 500) => {
 		console.log('playChord called with:', { chord, octave, durationMs })
 		// Stop only the previously playing chord notes, not the performance playback
 		this.currentlyPlayingChordNotes.forEach((note) => {
@@ -200,7 +192,7 @@ class PlaybackStore {
 		this.currentlyPlayingChordId = chord.id
 
 		// Derive notes from chord at play time
-		const notes = chordToNotes({ chord, rootOctave: octave })
+		const notes = getChordMidiNotes(chord, octave)
 
 		// A tiny strum keeps the notes from sounding as one hard click.
 		// Velocity still varies per note. Timing stays tight.
@@ -234,12 +226,14 @@ class PlaybackStore {
 	}
 
 	stopNote = (args: PlayArgsT) => {
-		const isActive = this.activeChords.has(args.note)
+		const midiNote = toMidiNote(args.note)
+		if (midiNote === null) return
+		const isActive = this.activeChords.has(midiNote)
 		const midiOutput = getMidiOutput()
 		if (!isActive) return
-		if (midiOutput) midiOutput.stopNote(args.note)
-		if (!midiOutput) this.piano?.stop({ stopId: args.note })
-		this.activeChords.delete(args.note)
+		if (midiOutput) midiOutput.stopNote(midiNote)
+		if (!midiOutput) this.piano?.stop({ stopId: midiNote })
+		this.activeChords.delete(midiNote)
 	}
 
 	// Convert project settings and pattern to in-memory MIDI performance and begin playback
@@ -341,7 +335,7 @@ class PlaybackStore {
 		this.currentProjectId = null
 		this.currentPerformance = []
 		this.currentBpm = 120
-		this.currentOctave = '3'
+		this.currentOctave = 3
 		this.currentProgressionDuration = 0
 		this.stopAllScheduledNotes()
 	}
@@ -389,8 +383,8 @@ class PlaybackStore {
 
 		this.currentPerformance.forEach((performanceNote) => {
 			// Convert beat-based timing to milliseconds
-			const noteStartMs = performanceNote.startTime * msPerBeat
-			const noteDurationMs = performanceNote.duration * msPerBeat
+			const noteStartMs = performanceNote.startBeat * msPerBeat
+			const noteDurationMs = performanceNote.durationBeats * msPerBeat
 
 			const noteStartTimeoutId = setTimeout(() => {
 				if (!this.isPlaying) return
@@ -399,28 +393,28 @@ class PlaybackStore {
 				const noteId = performanceNote.id
 
 				// Track this note instance
-				if (!this.activeNoteInstances.has(performanceNote.note))
-					this.activeNoteInstances.set(performanceNote.note, new Set())
-				this.activeNoteInstances.get(performanceNote.note)!.add(noteId)
+				if (!this.activeNoteInstances.has(performanceNote.midiNote))
+					this.activeNoteInstances.set(performanceNote.midiNote, new Set())
+				this.activeNoteInstances.get(performanceNote.midiNote)!.add(noteId)
 
 				if (!midiOutput) {
-					this.piano?.start({ note: performanceNote.note, velocity, stopId: noteId })
+					this.piano?.start({ note: performanceNote.midiNote, velocity, stopId: noteId })
 				}
-				if (midiOutput) midiOutput.playNote(performanceNote.note, { attack: velocity / 127 })
-				this.activeChords.add(performanceNote.note)
+				if (midiOutput) midiOutput.playNote(performanceNote.midiNote, { attack: velocity / 127 })
+				this.activeChords.add(performanceNote.midiNote)
 
 				const noteStopTimeoutId = setTimeout(() => {
 					// Stop this specific note instance
-					const noteInstances = this.activeNoteInstances.get(performanceNote.note)
+					const noteInstances = this.activeNoteInstances.get(performanceNote.midiNote)
 					if (noteInstances) {
 						noteInstances.delete(noteId)
 						if (noteInstances.size === 0) {
-							this.activeNoteInstances.delete(performanceNote.note)
-							this.activeChords.delete(performanceNote.note)
+							this.activeNoteInstances.delete(performanceNote.midiNote)
+							this.activeChords.delete(performanceNote.midiNote)
 						}
 					}
 
-					if (midiOutput) midiOutput.stopNote(performanceNote.note)
+					if (midiOutput) midiOutput.stopNote(performanceNote.midiNote)
 					if (!midiOutput) this.piano?.stop({ stopId: noteId })
 					this.scheduledNotes.delete(performanceNote.id + '-stop')
 				}, noteDurationMs)

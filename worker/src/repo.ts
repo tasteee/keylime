@@ -128,7 +128,8 @@ const projectFromRow = (row: ProjectRowT): ProjectT => {
 		...rest,
 		isPublic: Boolean(rest.isPublic),
 		doesPatternResetOnChordChange: Boolean(rest.doesPatternResetOnChordChange),
-		octave: String(rest.octave),
+		octave: Number(rest.octave) || 3,
+		dataVersion: Number(rest.dataVersion) || 1,
 		progressionChords: parseJson(rest.progressionChords, []),
 		chordSymbols: parseJson(rest.chordSymbols, []),
 		patternSignals: parseJson(rest.patternSignals, []),
@@ -295,7 +296,7 @@ export const saveProject = async (db: D1Database, userId: string, input: Partial
 		input.isPublic ? 1 : 0,
 		text(input.key, 'C', 8),
 		text(input.scale, 'Major', 64),
-		String(input.octave ?? '3').slice(0, 2),
+		String(input.octave ?? 3).slice(0, 2),
 		int(input.bpm, 120),
 		int(input.minVelocity, 60),
 		int(input.maxVelocity, 100),
@@ -308,13 +309,14 @@ export const saveProject = async (db: D1Database, userId: string, input: Partial
 		input.doesPatternResetOnChordChange ? 1 : 0,
 		int(input.patternZoomLevel, 32),
 		int(input.progressionZoomLevel, 82),
+		int(input.dataVersion, 1),
 		Number.isNaN(Date.parse(createdAt)) ? stamp : createdAt,
 		stamp
 	]
 
 	const sql = `INSERT INTO projects (id, title, description, userId, isPublic, key, scale, octave, bpm, minVelocity, maxVelocity,
 			progressionChords, progressionDurationBars, chordSymbols, patternSignals, patternSignalRows,
-			patternDurationBars, doesPatternResetOnChordChange, patternZoomLevel, progressionZoomLevel, createdAt, updatedAt)
+			patternDurationBars, doesPatternResetOnChordChange, patternZoomLevel, progressionZoomLevel, dataVersion, createdAt, updatedAt)
 		VALUES (${values.map(() => '?').join(', ')})
 		ON CONFLICT (id) DO UPDATE SET
 			title = excluded.title, description = excluded.description, isPublic = excluded.isPublic,
@@ -325,6 +327,7 @@ export const saveProject = async (db: D1Database, userId: string, input: Partial
 			patternSignalRows = excluded.patternSignalRows, patternDurationBars = excluded.patternDurationBars,
 			doesPatternResetOnChordChange = excluded.doesPatternResetOnChordChange,
 			patternZoomLevel = excluded.patternZoomLevel, progressionZoomLevel = excluded.progressionZoomLevel,
+			dataVersion = excluded.dataVersion,
 			updatedAt = excluded.updatedAt
 		WHERE projects.userId = excluded.userId`
 

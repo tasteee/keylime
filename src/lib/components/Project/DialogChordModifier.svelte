@@ -7,9 +7,9 @@
 	type DialogChordModifierPropsT = {
 		isOpen: boolean
 		chord: ProgressionChordT
-		projectOctave: string
+		projectOctave: number
 		onClose: () => void
-		onSave: (args: { octaveOffset: number; inversion: number; voicing: string }) => void
+		onSave: (args: { octaveOffset: number; inversion: number; voicing: VoicingT }) => void
 	}
 
 	const props: DialogChordModifierPropsT = $props()
@@ -103,7 +103,7 @@
 
 		<z-grid columns="2" gap="md">
 			<SelectInversion value={inversion} onValueChange={handleInversionChange} />
-			<SelectVoicing value={voicing} onValueChange={handleVoicingChange} />
+			<SelectVoicing value={voicing} symbol={props.chord.symbol} onValueChange={handleVoicingChange} />
 		</z-grid>
 	</z-column>
 

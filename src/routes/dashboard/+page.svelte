@@ -50,7 +50,7 @@
 			...project,
 			updatedAt: new Date(project.updatedAt),
 			createdAt: new Date(project.createdAt),
-			octave: String(project.octave),
+			octave: Number(project.octave),
 			progressionChords: progressionChordsWithStartTime,
 			patternSignals:
 				typeof project.patternSignals === 'string' ? JSON.parse(project.patternSignals) : project.patternSignals,

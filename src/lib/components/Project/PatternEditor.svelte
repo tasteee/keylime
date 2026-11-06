@@ -6,10 +6,9 @@
 	import { MagnifyingGlassPlus, MagnifyingGlassMinus, MusicNotes } from 'phosphor-svelte'
 	import { SIGNAL_IDS, SIGNAL_ROWS } from '$lib/constants/signalRows'
 	import { createSignal } from '$lib/helpers/creators'
-	import { resolveSignalConflicts, getNoteFromSignalRow } from '$lib/helpers/signalRows'
-	import { chordToNotes } from '$lib/helpers/chordToNotes'
+	import { resolveSignalConflicts, getSignalRowMidiNotes } from '$lib/helpers/signalRows'
+	import { getVoicedChord, midiToNoteName } from '$lib/music'
 	import { getPatternBeat } from '$lib/helpers/performance'
-	import { chordNotesToSignalRowNotes } from '$lib/helpers/chordNotesToSignalRowNotes'
 	import { numbers } from '$lib/helpers/numbers'
 	import playbackStore from '$lib/stores/playback.svelte'
 
@@ -59,9 +58,9 @@
 	let resizeStartTime = $state(0)
 	let resizeStartDuration = $state(0)
 	let ignoreClickOutsideUntil = $state(0)
-	let currentlyPlayingNote: string | null = $state(null)
+	let currentlyPlayingNote: number | null = $state(null)
 	let isMouseDownOnLabel = $state(false)
-	let currentLabelNote: string | null = $state(null)
+	let currentLabelNote: number | null = $state(null)
 	let cursorElement: HTMLElement | null = $state(null)
 	let animationFrameId: number
 
@@ -120,14 +119,9 @@
 
 	// Calculate note mappings for each signal row based on selected chord
 	const signalRowNotes = $derived.by(() => {
-		if (!selectedChord) return new Map<string, string>()
-		const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: String(context.state.project.octave) })
-		const notes = chordNotesToSignalRowNotes({ chordNotes })
-		const noteMap = new Map<string, string>()
-		SIGNAL_IDS.forEach((signalId, index) => {
-			noteMap.set(signalId, notes[index])
-		})
-		return noteMap
+		if (!selectedChord) return new Map<string, number>()
+		const voicedChord = getVoicedChord({ chord: selectedChord, octave: context.state.project.octave })
+		return getSignalRowMidiNotes(voicedChord)
 	})
 
 	// Calculate where the inactive area starts (in pixels)
@@ -229,11 +223,7 @@
 		selectedSignalId = signal.id
 
 		// Derive notes from selected chord if available
-		let noteToPlay: string | null = null
-		if (selectedChord) {
-			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: String(context.state.project.octave) })
-			noteToPlay = getNoteFromSignalRow({ signalRowId: label as string, chord: null, chordNotes })
-		}
+		const noteToPlay = signalRowNotes.get(label as string) ?? null
 
 		if (noteToPlay) {
 			playbackStore.playNote({ note: noteToPlay })
@@ -271,11 +261,7 @@
 		selectedSignalId = signalId
 
 		// Derive notes from selected chord if available
-		let noteToPlay: string | null = null
-		if (selectedChord) {
-			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: String(context.state.project.octave) })
-			noteToPlay = getNoteFromSignalRow({ signalRowId: toneId, chord: null, chordNotes })
-		}
+		const noteToPlay = signalRowNotes.get(toneId as string) ?? null
 
 		if (noteToPlay) {
 			currentlyPlayingNote = noteToPlay
@@ -309,9 +295,8 @@
 
 		// Play note when resizing starts
 		if (selectedChord && toneId) {
-			const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: String(context.state.project.octave) })
-			const noteToPlay = getNoteFromSignalRow({ signalRowId: toneId, chord: null, chordNotes })
-			if (noteToPlay) {
+			const noteToPlay = signalRowNotes.get(toneId)
+			if (noteToPlay !== undefined) {
 				playbackStore.playNote({ note: noteToPlay })
 				setTimeout(() => {
 					playbackStore.stopNote({ note: noteToPlay })
@@ -420,9 +405,8 @@
 
 			// Play the new note for the new row
 			if (selectedChord) {
-				const chordNotes = chordToNotes({ chord: selectedChord, rootOctave: String(context.state.project.octave) })
-				const noteToPlay = getNoteFromSignalRow({ signalRowId: currentRowId, chord: null, chordNotes })
-				if (noteToPlay) {
+				const noteToPlay = signalRowNotes.get(currentRowId)
+				if (noteToPlay !== undefined) {
 					currentlyPlayingNote = noteToPlay
 					playbackStore.playNote({ note: noteToPlay })
 				}
@@ -733,7 +717,7 @@
 				>
 					<span class="labelId">{label}</span>
 					{#if signalRowNotes.get(label)}
-						<span class="labelNote">{signalRowNotes.get(label)}</span>
+						<span class="labelNote">{midiToNoteName(signalRowNotes.get(label)!)}</span>
 					{/if}
 				</div>
 			{/each}

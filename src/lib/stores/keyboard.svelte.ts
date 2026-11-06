@@ -1,39 +1,5 @@
 import KEYMAPS_CONFIG from '$lib/constants/keymaps.json';
-import { Scale, Note } from 'tonal';
-
-const getFinalNote = (note: string) => {
-  // 1. make sure there are no DOUBLE SHARPS: F## -> G, C## -> D, etc.
-  // 2. make sure there are no FLATS: Db -> C#, Eb -> D#, etc.
-
-  const doubleSharpMap = {
-    'C##': 'D',
-    'D##': 'E',
-    'E##': 'F#',
-    'F##': 'G',
-    'G##': 'A',
-    'A##': 'B',
-    'B##': 'C#'
-  };
-
-  const flatToSharpMap = {
-    Db: 'C#',
-    Eb: 'D#',
-    Gb: 'F#',
-    Ab: 'G#',
-    Bb: 'A#',
-    Fb: 'E',
-    Cb: 'B'
-  };
-
-  const simplified = Note.simplify(note) || note;
-  const octaveMatch = simplified.match(/(\d+)$/);
-  const octave = octaveMatch ? octaveMatch[1] : '';
-  const noteWithoutOctave = simplified.replace(/\d+$/, '');
-  const correctedDoubleSharp = doubleSharpMap[noteWithoutOctave as keyof typeof doubleSharpMap];
-  const correctedFlat = flatToSharpMap[noteWithoutOctave as keyof typeof flatToSharpMap];
-  const finalNote = correctedDoubleSharp || correctedFlat || noteWithoutOctave;
-  return finalNote + octave;
-};
+import { scaled, midiToNoteName } from '$lib/music';
 
 class KeyboardStore {
   selectedKey = $state('C');
@@ -65,27 +31,24 @@ class KeyboardStore {
   });
 
   qwertyNotes = $derived.by(() => {
-    const scaleNotes = Scale.get(`${this.selectedKey} ${this.selectedScale}`).notes;
-    const convertedNotes = scaleNotes.map(getFinalNote);
     const maxKeys = 45; // QWERTY keyboard key count
     const maxOctave = 12;
-    const notes = [];
-    const rootNote = convertedNotes[0];
-    const noteOrder = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    const rootNoteIndex = noteOrder.indexOf(rootNote);
+    const scale = scaled.getScale({ key: this.selectedKey, scale: this.selectedScale });
+    // Scale notes as semitones above the key's note, which is the lowest note on the keyboard.
+    const tonicPitch = scale.tonicPitch;
+    const semitonesAboveTonic = scale.pitches.map((pitch) => (pitch - tonicPitch + 12) % 12);
+    const notes: string[] = [];
 
     for (
       let octave = Number(this.rootOctave);
       octave <= maxOctave && notes.length < maxKeys;
       octave++
     ) {
-      for (const note of convertedNotes) {
+      // MIDI note of the key's note in this octave (C4 = 60).
+      const tonicMidiNote = (octave + 1) * 12 + tonicPitch;
+      for (const semitones of semitonesAboveTonic) {
         if (notes.length >= maxKeys) break;
-        const currentNoteIndex = noteOrder.indexOf(note);
-        const shouldIncrementOctave = currentNoteIndex < rootNoteIndex;
-        const finalOctave = shouldIncrementOctave ? octave + 1 : octave;
-        const finalNote = getFinalNote(`${note}${finalOctave}`);
-        notes.push(finalNote);
+        notes.push(midiToNoteName(tonicMidiNote + semitones));
       }
     }
 

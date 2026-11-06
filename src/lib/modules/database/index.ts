@@ -2,6 +2,7 @@
 // which read and write D1. Return shapes match what pages expect.
 import { warnWhen } from "$lib/modules/warnWhen"
 import { callApi } from "$lib/modules/api"
+import { isCurrentProject, migrateProject } from "$lib/modules/migrateProject"
 
 const toQuery = (params: Record<string, unknown>): string => {
   const search = new URLSearchParams()
@@ -41,16 +42,32 @@ export const cloneProjectById = async (projectId: string, _currentUserId?: strin
   return { data: result.data?.data ?? null, error: result.error, didSucceed: !result.error }
 }
 
+// Projects saved in an older shape are converted to scaled's shape when they load.
+// A project opened for editing is saved straight back so it only converts once.
+// Saving fails quietly for projects the viewer doesn't own; they stay converted in memory.
+const loadMigratedProject = (project: ProjectT): ProjectT => {
+  if (isCurrentProject(project)) return project
+  const migratedProject = migrateProject(project)
+  void callApi(`/api/projects/${migratedProject.id}`, { method: 'PUT', body: JSON.stringify(migratedProject) })
+  return migratedProject
+}
+
+// For lists: shows projects in the current shape without saving anything.
+const migrateForDisplay = (projects: ProjectT[] | null): ProjectT[] | null => {
+  return projects ? projects.map(migrateProject) : null
+}
+
 export const getProjectById = async (projectId: string) => {
   const result = await callApi<{ data: ProjectT }>(`/api/projects/${projectId}`)
   warnWhen(result.error, `Error fetching project by ID: ${result.error?.message}`)
-  return { data: result.data?.data ?? null, error: result.error }
+  const project = result.data?.data ? loadMigratedProject(result.data.data) : null
+  return { data: project, error: result.error }
 }
 
 // The signed-in user's own projects.
 export const getProjectsByUserId = async (_userId: string, limit: number = 20, offset: number = 0) => {
   const result = await callApi<{ data: ProjectT[]; totalCount: number }>(`/api/projects${toQuery({ mine: 1, limit, offset })}`)
-  return { data: result.data?.data ?? null, error: result.error, totalCount: result.data?.totalCount ?? 0 }
+  return { data: migrateForDisplay(result.data?.data ?? null), error: result.error, totalCount: result.data?.totalCount ?? 0 }
 }
 
 type GetPublicProjectsOptionsT = {
@@ -70,12 +87,12 @@ type GetPublicProjectsOptionsT = {
 export const getPublicProjects = async (options: GetPublicProjectsOptionsT) => {
   const result = await callApi<{ data: ProjectT[]; totalCount: number }>(`/api/projects${toQuery(options)}`)
   warnWhen(result.error, `Error fetching public projects: ${result.error?.message}`)
-  return { data: result.data?.data ?? null, error: result.error, totalCount: result.data?.totalCount ?? 0 }
+  return { data: migrateForDisplay(result.data?.data ?? null), error: result.error, totalCount: result.data?.totalCount ?? 0 }
 }
 
 export const getPublicProjectsByUserName = async (userName: string) => {
   const result = await callApi<{ projects: ProjectT[] }>(`/api/users/${encodeURIComponent(userName)}`)
-  return { data: result.data?.projects ?? null, error: result.error }
+  return { data: migrateForDisplay(result.data?.projects ?? null), error: result.error }
 }
 
 // ---------- users ----------

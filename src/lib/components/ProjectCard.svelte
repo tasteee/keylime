@@ -14,7 +14,7 @@
 			key: string
 			scale: string
 			bpm: number
-			octave: string
+			octave: number
 			chordSymbols: string[]
 			updatedAt: Date
 			userId: string

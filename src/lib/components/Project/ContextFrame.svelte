@@ -4,8 +4,7 @@
 	import { getFreshPatternSignalRows } from '$lib/modules/projects'
 	import { getContext, onMount, setContext } from 'svelte'
 	import { browser } from '$app/environment'
-	import chordsByScale from '$lib/constants/chordsByScale.json'
-	import { generateChord } from '$lib/helpers/chords'
+	import { createChord, getScaleChordSymbols } from '$lib/music'
 	import { calculateStartTimes } from '$lib/helpers/progression'
 	import { clearDraft, readDraft, writeDraft } from '$lib/modules/localDraft'
 
@@ -92,7 +91,7 @@
 			...project,
 			updatedAt: new Date(project.updatedAt),
 			createdAt: new Date(project.createdAt),
-			octave: String(project.octave),
+			octave: Number(project.octave),
 			progressionChords: progressionChordsWithStartTime,
 			patternSignals:
 				typeof project.patternSignals === 'string' ? JSON.parse(project.patternSignals) : project.patternSignals,
@@ -147,7 +146,8 @@
 			isPublic: false,
 			key: 'C',
 			scale: 'Major',
-			octave: '3',
+			octave: 3,
+			dataVersion: 2,
 			bpm: 120,
 			minVelocity: 70,
 			maxVelocity: 80,
@@ -226,7 +226,6 @@
 			id: `rest-${Date.now()}`,
 			type: 'rest',
 			symbol: 'REST',
-			rootNote: 'REST',
 			startTime: 0,
 			durationBeats: 4
 		}
@@ -350,29 +349,13 @@
 	}
 
 	const gridChords = $derived.by(() => {
-		const scale = editorState.project.key + ' ' + editorState.project.scale
-		const inScaleChordNames = chordsByScale[scale as keyof typeof chordsByScale]
+		const { key, scale } = editorState.project
+		const symbols = getScaleChordSymbols(key, scale)
 
-		if (!inScaleChordNames) return []
-
-		const chords: ChordT[] = inScaleChordNames.map((name) => {
-			const chordId = getGridChordIdForName(name)
+		const chords: ChordT[] = symbols.map((symbol) => {
+			const chordId = getGridChordIdForName(symbol)
 			const modifiers = editorState.gridChordModifiers[chordId] || getDefaultGridChordModifiers()
-
-			const baseChord = generateChord({
-				name,
-				baseOctave: String(editorState.project.octave)
-			})
-
-			const chord: ChordT = {
-				...baseChord,
-				id: chordId,
-				octaveOffset: modifiers.octaveOffset,
-				inversion: modifiers.inversion,
-				voicing: modifiers.voicing
-			}
-
-			return chord
+			return createChord(symbol, { id: chordId, ...modifiers })
 		})
 
 		return chords

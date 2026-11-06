@@ -74,7 +74,7 @@
 		isModifierDialogOpen = false
 	}
 
-	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: string }) => {
+	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: VoicingT }) => {
 		context.updateProgressionItem({
 			id: props.item.id,
 			octaveOffset: args.octaveOffset,

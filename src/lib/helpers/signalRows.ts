@@ -1,5 +1,5 @@
-import { Note } from 'tonal'
-import { ROWS_PER_BAND } from '$lib/constants/signalRows'
+import { applyPerformanceSafely } from '$lib/music'
+import { ROWS_PER_BAND, SIGNAL_IDS } from '$lib/constants/signalRows'
 
 // Match any digits that follow "N" in a signalRow id.
 // i.e "N1" -> 1, "N5-1" -> 5, "N3+2" -> 3, "N0" -> 0
@@ -16,50 +16,42 @@ export const getSignalRowIdOctave = (signalId: string): number => {
   return match ? parseInt(match[0], 10) : 0
 }
 
-type GetNoteFromSignalRowArgsT = {
-  signalRowId: string
-  chord: ChordT | null
-  chordNotes?: string[]
+// Which note of the chord a row plays. N1 is index 0, N4 is index 3, and each
+// band ("+1", "-1") holds ROWS_PER_BAND rows and continues the ladder where the
+// previous band stopped, so pitch always ascends from the bottom row to the top.
+// The index may be negative or larger than the chord: scaled wraps it through
+// the chord's notes, moving an octave each time around.
+export const getChordToneIndex = (signalRowId: string): number => {
+  const noteIndex = getSignalRowIdIndex(signalRowId)
+  const bandOffset = getSignalRowIdOctave(signalRowId)
+  return noteIndex - 1 + bandOffset * ROWS_PER_BAND
 }
 
-export const getNoteFromSignalRow = (args: GetNoteFromSignalRowArgsT): string | null => {
-  if (!args.chord && !args.chordNotes) return null
-
-  const noteIndex = getSignalRowIdIndex(args.signalRowId)
-  const bandOffset = getSignalRowIdOctave(args.signalRowId)
-
-  // Use provided chordNotes or fall back to chord.notes (for backward compatibility)
-  const notes = args.chordNotes || (args.chord as any)?.notes || []
-  const chordNotesCount = notes.length
-  if (chordNotesCount === 0) return null
-
-  // Each band ("+1", "-1") holds ROWS_PER_BAND rows. A band continues
-  // the ladder where the previous band stopped, so pitch always
-  // ascends from the bottom row to the top row.
-  const rowPosition = noteIndex - 1 + bandOffset * ROWS_PER_BAND
-
-  // N1 -> index 0, N4 -> index 0 (next octave), etc.
-  const wrappedNoteIndex = ((rowPosition % chordNotesCount) + chordNotesCount) % chordNotesCount
-  const totalOctaveOffset = Math.floor(rowPosition / chordNotesCount)
-
-  const baseNote = notes[wrappedNoteIndex]
-  if (!baseNote) return null
-
-  const hasNoOctaveOffset = totalOctaveOffset === 0
-  if (hasNoOctaveOffset) return baseNote
-
-  const interval = totalOctaveOffset > 0
-    ? `${totalOctaveOffset * 7 + 1}P`
-    : `-${Math.abs(totalOctaveOffset) * 7 + 1}P`
-  const transposedNote = Note.transpose(baseNote, interval)
-
-  return transposedNote
+// The MIDI note every signal row plays against one voiced chord.
+// scaled does the resolving: one note per row, all in a one-beat clip.
+// Rows that fall outside MIDI range for this chord have no entry.
+export const getSignalRowMidiNotes = (
+  voicedChord: import('@tasteee/scaled/types').ScaledT.ChordT,
+  signalRowIds: readonly string[] = SIGNAL_IDS
+): Map<string, number> => {
+  const events = signalRowIds.map((signalRowId) => ({
+    id: signalRowId,
+    startBeat: 0,
+    durationBeats: 1,
+    pitch: { type: 'chordTone' as const, index: getChordToneIndex(signalRowId) }
+  }))
+  const performance = { id: 'signalRows', name: 'Signal rows', durationBeats: 1, events }
+  const progression = [{ id: 'row-chord', chord: voicedChord, durationBeats: 1 }]
+  const notes = applyPerformanceSafely({ progression, performance })
+  const midiNotesByRow = new Map<string, number>()
+  notes.forEach((note) => midiNotesByRow.set(note.eventId, note.midiNote))
+  return midiNotesByRow
 }
 
 export const signalRowHelpers = {
   getIdIndex: getSignalRowIdIndex,
   getIdOctave: getSignalRowIdOctave,
-  getNoteFromSignalRow
+  getChordToneIndex
 }
 
 export const resolveSignalConflicts = (signalRow: SignalRowT, signals: SignalT[]) => {
