@@ -212,7 +212,7 @@
 <style>
 	.projectView {
 		height: 100%;
-		background: linear-gradient(45deg, var(--color-neutral-0), var(--color-neutral-1));
+		background: linear-gradient(45deg, #0b0c0b, #131116, var(--color-neutral-0));
 		overflow: hidden;
 		user-select: none;
 	}
