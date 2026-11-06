@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Plus, Minus, ArrowCounterClockwise, Check } from 'phosphor-svelte'
+	import { Plus, Minus, ArrowCounterClockwise, Check, SpeakerHigh } from 'phosphor-svelte'
+	import { getChordNoteNames } from '$lib/helpers/chordGridLabels'
 	import SelectInversion from './SelectInversion.svelte'
 	import SelectVoicing from './SelectVoicing.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
@@ -26,6 +27,17 @@
 		return String(octaveOffset)
 	})
 
+	const shapedChord = $derived({
+		...props.chord,
+		octaveOffset,
+		inversion,
+		voicing
+	})
+
+	// Lowest note first, so inversions read as a new bass note.
+	const noteNames = $derived(getChordNoteNames(shapedChord, props.projectOctave))
+	const notesLabel = $derived(`Notes, low to high: ${noteNames.join(', ')}`)
+
 	// Reset local state when the dialog opens with a chord.
 	$effect(() => {
 		if (!props.isOpen) return
@@ -35,13 +47,7 @@
 	})
 
 	const playCurrentChord = () => {
-		const modifiedChord: ProgressionChordT = {
-			...props.chord,
-			octaveOffset,
-			inversion,
-			voicing
-		}
-		playbackStore.playChord(modifiedChord, props.projectOctave)
+		playbackStore.playChord(shapedChord, props.projectOctave)
 	}
 
 	const incrementOctave = () => {
@@ -86,6 +92,22 @@
 
 <z-dialog isOpen={props.isOpen} heading={chordName} description="Shape how this chord sounds." onclose={handleDialogClose}>
 	<z-column gap="lg" insetY="xs">
+		<z-row alignsX="between" alignsY="center" gap="md" class="shapePreview">
+			<z-column gap="xs">
+				<z-text size="xs" weight={600} color="muted">Notes, low to high</z-text>
+				<z-row gap="md" alignsY="center" aria-label={notesLabel} class="shapeNotes">
+					{#each noteNames as noteName (noteName)}
+						<z-text size="lg" weight={600} color="strong">{noteName}</z-text>
+					{/each}
+				</z-row>
+			</z-column>
+
+			<z-button kind="outline" size="sm" onclick={playCurrentChord}>
+				<SpeakerHigh size={16} />
+				Listen
+			</z-button>
+		</z-row>
+
 		<z-row alignsX="between" alignsY="center">
 			<z-text weight={600}>Octave</z-text>
 			<z-row gap="sm" alignsY="center">
@@ -120,6 +142,13 @@
 </z-dialog>
 
 <style>
+	.shapePreview {
+		padding: var(--spacing-3) var(--spacing-4);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-md);
+		background: var(--color-neutral-1);
+	}
+
 	.octaveDisplay {
 		min-width: 3rem;
 		text-align: center;
