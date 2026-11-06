@@ -144,7 +144,10 @@
 		will-change: transform;
 	}
 
+	/* border-box keeps each label exactly one row tall, so the labels
+	   stay level with the grid rows drawn at rowHeight spacing. */
 	.pattern-row-label {
+		box-sizing: border-box;
 		display: flex;
 		touch-action: none;
 		flex-direction: row;
