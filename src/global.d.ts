@@ -212,6 +212,8 @@ type DatabaseT = {
   }
 }
 
+type PlaybackStateT = typeof import('$lib/stores/playback.svelte').default
+
 type PlaybackContextT = {
   state: PlaybackStateT
   load: () => Promise<void>
