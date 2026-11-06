@@ -1,5 +1,6 @@
 import { Soundfont, SplendidGrandPiano } from 'smplr'
 import INSTRUMENTS_CONFIG from '$lib/constants/instruments.json'
+import GENERAL_CONFIG from '$lib/constants/general.json'
 import output from './output.svelte.js'
 import { WebMidi } from 'webmidi'
 import { Note } from 'tonal'
@@ -200,12 +201,13 @@ class PlaybackStore {
 		// Derive notes from chord at play time
 		const notes = chordToNotes({ chord, rootOctave: octave })
 
-		// Play notes with slight delay for arpeggio effect
+		// A tiny strum keeps the notes from sounding as one hard click.
+		// Velocity still varies per note. Timing stays tight.
 		notes.forEach((note, index) => {
 			setTimeout(() => {
 				this.playNote({ note })
 				this.currentlyPlayingChordNotes.add(note)
-			}, index * 11)
+			}, index * GENERAL_CONFIG.PREVIEW_STRUM_MS)
 		})
 
 		// Auto-stop after duration
