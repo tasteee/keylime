@@ -68,7 +68,9 @@
 	}
 
 	const createCleanSnapshot = (project: ProjectT): string => {
-		const { createdAt, updatedAt, ...rest } = project
+		// Zoom is a view preference. Changing it must not make the
+		// project dirty, so it stays out of the comparison.
+		const { createdAt, updatedAt, patternZoomLevel, progressionZoomLevel, ...rest } = project
 		return JSON.stringify(rest)
 	}
 
@@ -380,6 +382,16 @@
 		return gridChords.find((chord) => chord.id === chordId)
 	}
 
+	// After a save, the editor keeps what the user was editing and only
+	// takes the server's timestamps. Replacing the whole project with the
+	// server copy reset fields such as the pattern duration.
+	const mergeSavedProject = (savedProject: ProjectT, serverProject: ProjectT | null): ProjectT => {
+		if (!serverProject) return savedProject
+		const updatedAt = new Date(serverProject.updatedAt)
+		const createdAt = new Date(serverProject.createdAt)
+		return { ...savedProject, updatedAt, createdAt }
+	}
+
 	const save = async (): Promise<{ didSucceed: boolean }> => {
 		console.log('ContextFrame save() called')
 		console.log('activeUser:', activeUser)
@@ -416,7 +428,7 @@
 					throw new Error(`Failed to save cloned project: ${saveResult.error.message}`)
 				}
 
-				const syncedProject = (saveResult.data as ProjectT | null) || projectToSave
+				const syncedProject = mergeSavedProject(projectToSave, saveResult.data as ProjectT | null)
 
 				clearDraft(cleanProject.id as string)
 				clearDraft(syncedProject.id)
@@ -446,7 +458,7 @@
 			}
 
 			// Use synced data if available, otherwise use the project we just saved
-			const syncedProject = (saveResult.data as ProjectT | null) || projectToSave
+			const syncedProject = mergeSavedProject(projectToSave, saveResult.data as ProjectT | null)
 
 			clearDraft(syncedProject.id)
 			baseUpdatedAt = syncedProject.updatedAt
