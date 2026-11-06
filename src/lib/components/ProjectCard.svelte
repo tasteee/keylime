@@ -7,7 +7,7 @@
 	import Button from '$lib/components/ui/button/button.svelte'
 	import ChordBadge from '$lib/components/ChordBadge.svelte'
 	import * as Dialog from '$lib/components/ui/dialog'
-	import { goto } from '$app/navigation'
+	import { goToPath } from '$lib/modules/navigate'
 	import { getContext } from 'svelte'
 	import { calculateStartTimes } from '$lib/helpers/progression'
 	import ConfirmDeleteDialog from './Dashboard/ConfirmDeleteDialog.svelte'
@@ -61,7 +61,7 @@
 	const handleUserClick = (event: MouseEvent) => {
 		event.stopPropagation()
 		const userName = activeUser?.userName
-		if (userName) goto(`/users/${userName}`)
+		if (userName) goToPath(`/users/${userName}`)
 	}
 
 	const handlePlayToggle = async (event: MouseEvent) => {
@@ -94,7 +94,7 @@
 
 		const shouldOpen = isOwnedByCurrentUser
 		if (shouldOpen) {
-			goto(`/project/${props.project.id}`)
+			goToPath(`/project/${props.project.id}`)
 			return
 		}
 

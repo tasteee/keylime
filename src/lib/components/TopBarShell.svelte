@@ -2,7 +2,7 @@
 	import { Button } from '$lib/components/ui/button'
 	import Divider from './ui/divider.svelte'
 	import { OrangeSlice, SignOut } from 'phosphor-svelte'
-	import { goto } from '$app/navigation'
+	import { goToPath } from '$lib/modules/navigate'
 	import { logout } from '$lib/database/auth'
 	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
 	import * as Avatar from '$lib/components/ui/avatar'
@@ -16,7 +16,7 @@
 
 	const goToDashboard = () => {
 		console.log('[TopBar] Navigating to /dashboard')
-		goto('/dashboard')
+		goToPath('/dashboard')
 	}
 
 	const handleLogout = async () => {

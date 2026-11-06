@@ -6,7 +6,9 @@
 	"scripts": {
 		"dev": "vite dev --port 3124",
 		"build": "vite build",
-		"preview": "npm run build && wrangler pages dev .svelte-kit/cloudflare --port 3125",
+		"preview": "vite preview --port 3125",
+		"api:dev": "wrangler dev --config worker/wrangler.toml --port 8787",
+		"api:deploy": "wrangler deploy --config worker/wrangler.toml",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -15,15 +17,14 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright test",
-		"db:migrate:local": "wrangler d1 migrations apply keylime-db --local",
-		"db:migrate:remote": "wrangler d1 migrations apply keylime-db --remote"
+		"db:migrate:local": "wrangler d1 migrations apply keylime-db --local --config worker/wrangler.toml",
+		"db:migrate:remote": "wrangler d1 migrations apply keylime-db --remote --config worker/wrangler.toml"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20260702.1",
 		"@internationalized/date": "^3.10.0",
 		"@lucide/svelte": "^0.561.0",
 		"@playwright/test": "^1.55.1",
-		"@sveltejs/adapter-cloudflare": "^7.2.9",
 		"@sveltejs/adapter-static": "^4.0.1",
 		"@sveltejs/kit": "^2.43.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.0",

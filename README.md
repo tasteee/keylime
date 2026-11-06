@@ -1,30 +1,50 @@
 # tasteee/keylime
 
-Runs on Cloudflare Pages with D1 (SQLite). No other services.
+The app is a static SPA (SvelteKit, no server rendering) on GitHub Pages.
+The API is a Cloudflare Worker with D1 (SQLite). See `worker/`.
 
-## Cloudflare setup
-
-```sh
-npx wrangler d1 create keylime-db      # copy the database_id into wrangler.toml
-npm run db:migrate:remote              # creates the tables
+```
+browser -> GitHub Pages (static files)
+browser -> Worker /api/* (Bearer token) -> D1
 ```
 
-In the Pages project (Settings → Bindings / Variables and Secrets), for Production and Preview:
+Sign-in is a bearer token kept in localStorage. The app and the API are on different sites, so cookies would be blocked.
+
+## Cloudflare setup (API)
+
+```sh
+npx wrangler d1 create keylime-db      # copy the database_id into worker/wrangler.toml
+npm run db:migrate:remote              # creates the tables
+npm run api:deploy                     # deploys the Worker, prints its URL
+```
+
+Edit `worker/wrangler.toml` `[vars]`:
 
 | Name | Value |
 | --- | --- |
-| `DB` (D1 binding) | `keylime-db` |
-| `RESEND_API_KEY` | Secret. From resend.com. |
+| `APP_URL` | Where the app lives, like `https://name.github.io/keylime`. Emailed links point here. |
+| `APP_ORIGIN` | Allowed origins, like `https://name.github.io`. Comma separated. |
+
+Secrets (`npx wrangler secret put NAME --config worker/wrangler.toml`):
+
+| Name | Value |
+| --- | --- |
+| `RESEND_API_KEY` | From resend.com. |
 | `MAIL_FROM` | `keylime <onboarding@resend.dev>` to start. Use your own domain to email anyone. |
 
-Build command `npm run build`, output directory `.svelte-kit/cloudflare`.
+## GitHub setup (app)
+
+- Settings → Pages → Source: **GitHub Actions**.
+- Settings → Variables → `API_URL`: the Worker URL.
+- Optional, for auto-deploying the API on merge: secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
 
 ## Develop
 
 ```sh
-echo "DEV_SHOW_LINKS=true" > .dev.vars   # sign-in link shows on screen, no email needed
+cp worker/.dev.vars.example worker/.dev.vars   # sign-in link shows on screen, no email needed
 npm run db:migrate:local
-npm run dev                              # localhost:3124
+npm run api:dev                                # Worker on localhost:8787
+npm run dev                                    # app on localhost:3124
 ```
 
 ## Saving

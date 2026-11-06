@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
+	import { buildHref } from '$lib/modules/navigate'
 
 	const status = $page.status
 	const message = $page.error?.message || 'An error occurred'
@@ -8,7 +9,7 @@
 <div class="errorContainer">
 	<h1>{status}</h1>
 	<p>{message}</p>
-	<a href="/dashboard">Return to Dashboard</a>
+	<a href={buildHref('/dashboard')}>Return to Dashboard</a>
 </div>
 
 <style>

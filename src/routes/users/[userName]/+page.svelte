@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
-	import { goto } from '$app/navigation'
+	import { goToPath } from '$lib/modules/navigate'
 	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
 	import { fade } from 'svelte/transition'
 	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
@@ -76,11 +76,11 @@
 	})
 
 	const handleOpenProject = (projectId: string) => {
-		goto(`/project/${projectId}`)
+		goToPath(`/project/${projectId}`)
 	}
 
 	const handleGoBack = () => {
-		goto('/users')
+		goToPath('/users')
 	}
 
 	const formatDate = (date: Date) => {
@@ -95,7 +95,7 @@
 		if (!activeUser) return
 		const result = await cloneProjectById(projectId, activeUser.id)
 		if (result.data) {
-			goto(`/project/${result.data.id}`)
+			goToPath(`/project/${result.data.id}`)
 		}
 	}
 

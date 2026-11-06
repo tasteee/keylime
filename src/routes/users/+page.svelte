@@ -2,7 +2,7 @@
 	import { Input } from '$lib/components/ui/input'
 	import Icon from '@iconify/svelte'
 	import { daysAgo } from '$lib/modules/dateTime'
-	import { goto } from '$app/navigation'
+	import { goToPath } from '$lib/modules/navigate'
 	import { fade } from 'svelte/transition'
 	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
 	import { getPublicUsers } from '$lib/modules/database'
@@ -45,7 +45,7 @@
 	}
 
 	const handleUserClick = (userName: string) => {
-		goto(`/users/${userName}`)
+		goToPath(`/users/${userName}`)
 	}
 
 	const handleSearch = (event: Event) => {

@@ -8,7 +8,7 @@
 	import Divider from '../ui/divider.svelte'
 	import { FloppyDisk, Download, Gear, PencilSimple } from 'phosphor-svelte'
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
-	import { goto } from '$app/navigation'
+	import { goToPath } from '$lib/modules/navigate'
 	import { awaited } from '$lib/modules/the-awaited'
 
 	const projectEditor = useProjectEditor()
@@ -57,7 +57,7 @@
 		isSaving = false
 
 		if (saveCloneResult.data) {
-			goto(`/project/${saveCloneResult.data.newProjectId}`)
+			goToPath(`/project/${saveCloneResult.data.newProjectId}`)
 		}
 	}
 </script>

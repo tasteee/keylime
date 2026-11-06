@@ -1,24 +1,29 @@
 import type { D1Database } from '@cloudflare/workers-types'
-import type { Cookies } from '@sveltejs/kit'
 import { createToken, hashToken } from './crypto'
 import { createUserFromEmail, getUserByEmail } from './repo'
 
 // Sign-in by email link. No passwords. A link works once and
 // dies after 15 minutes. A session lasts 30 days. Only hashes
 // are stored, so a leaked table can't be used to sign in.
+// The browser keeps the session token and sends it as a
+// bearer header, because the app and the API are on
+// different sites and cookies would be blocked.
 
 const LINK_MINUTES = 15
 const SESSION_DAYS = 30
 const RESEND_COOLDOWN_SECONDS = 60
-export const SESSION_COOKIE = 'keylime_session'
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const addMinutes = (minutes: number): string => new Date(Date.now() + minutes * 60_000).toISOString()
 
-type SessionUserT = { id: string; email: string }
+export type SessionUserT = { id: string; email: string }
 
-type EnvT = {
+export type EnvT = {
 	DB: D1Database
+	// Where the app lives, like https://name.github.io/keylime
+	APP_URL: string
+	// Origins allowed to call the API, comma separated.
+	APP_ORIGIN: string
 	RESEND_API_KEY?: string
 	MAIL_FROM?: string
 	DEV_SHOW_LINKS?: string
@@ -47,7 +52,7 @@ const sendLinkEmail = async (env: EnvT, email: string, link: string): Promise<bo
 
 type RequestLinkResultT = { status: 'sent'; devLink?: string } | { status: 'invalid-email' } | { status: 'email-unavailable' }
 
-export const requestLoginLink = async (env: EnvT, origin: string, rawEmail: string): Promise<RequestLinkResultT> => {
+export const requestLoginLink = async (env: EnvT, rawEmail: string): Promise<RequestLinkResultT> => {
 	const email = rawEmail.trim().toLowerCase()
 	const isValid = EMAIL_PATTERN.test(email) && email.length <= 254
 	if (!isValid) return { status: 'invalid-email' }
@@ -68,7 +73,8 @@ export const requestLoginLink = async (env: EnvT, origin: string, rawEmail: stri
 	// Old and used-up rows don't need to stay around.
 	await env.DB.prepare('DELETE FROM login_tokens WHERE expires_at < ?').bind(nowText).run()
 
-	const link = `${origin}/api/auth/verify?token=${token}`
+	// The link opens the app, which then trades the token for a session.
+	const link = `${env.APP_URL}/auth/verify?token=${token}`
 	if (env.DEV_SHOW_LINKS === 'true') return { status: 'sent', devLink: link }
 
 	const wasSent = await sendLinkEmail(env, email, link)
@@ -78,21 +84,18 @@ export const requestLoginLink = async (env: EnvT, origin: string, rawEmail: stri
 
 // ---------- using the link ----------
 
-const buildCookieOptions = (url: URL, maxAgeSeconds: number) => {
-	return { path: '/', httpOnly: true, sameSite: 'lax' as const, secure: url.protocol === 'https:', maxAge: maxAgeSeconds }
-}
-
-// Takes the token and creates the session. The first sign-in for
-// an email also creates the account.
-export const completeLogin = async (env: EnvT, url: URL, cookies: Cookies, token: string): Promise<boolean> => {
-	const tokenHash = await hashToken(token)
+// Takes the link token and creates the session. The first
+// sign-in for an email also creates the account.
+// Returns the session token, or null if the link is bad.
+export const completeLogin = async (env: EnvT, linkToken: string): Promise<string | null> => {
+	const tokenHash = await hashToken(linkToken)
 	const nowText = new Date().toISOString()
 
 	// Taking the row and deleting it in one statement makes
 	// the link single-use even if clicked twice at once.
 	const takeSql = 'DELETE FROM login_tokens WHERE token_hash = ? AND expires_at > ? RETURNING email'
 	const row = await env.DB.prepare(takeSql).bind(tokenHash, nowText).first<{ email: string }>()
-	if (!row) return false
+	if (!row) return null
 
 	const existingUser = await getUserByEmail(env.DB, row.email)
 	const user = existingUser ?? (await createUserFromEmail(env.DB, row.email))
@@ -102,25 +105,16 @@ export const completeLogin = async (env: EnvT, url: URL, cookies: Cookies, token
 	const sessionSql = 'INSERT INTO sessions (session_hash, user_id, expires_at) VALUES (?, ?, ?)'
 	const expiresAt = addMinutes(SESSION_DAYS * 24 * 60)
 	await env.DB.prepare(sessionSql).bind(sessionHash, user.id, expiresAt).run()
-
-	cookies.set(SESSION_COOKIE, sessionToken, buildCookieOptions(url, SESSION_DAYS * 24 * 60 * 60))
-	return true
+	return sessionToken
 }
 
-export const endSession = async (env: EnvT, url: URL, cookies: Cookies): Promise<void> => {
-	const sessionToken = cookies.get(SESSION_COOKIE)
-
-	if (sessionToken) {
-		const sessionHash = await hashToken(sessionToken)
-		await env.DB.prepare('DELETE FROM sessions WHERE session_hash = ?').bind(sessionHash).run()
-	}
-
-	cookies.set(SESSION_COOKIE, '', buildCookieOptions(url, 0))
+export const endSession = async (env: EnvT, sessionToken: string): Promise<void> => {
+	const sessionHash = await hashToken(sessionToken)
+	await env.DB.prepare('DELETE FROM sessions WHERE session_hash = ?').bind(sessionHash).run()
 }
 
-// The signed-in user, or null. No cookie means no database read.
-export const getSessionUser = async (db: D1Database, cookies: Cookies): Promise<SessionUserT | null> => {
-	const sessionToken = cookies.get(SESSION_COOKIE)
+// The signed-in user, or null.
+export const getSessionUser = async (db: D1Database, sessionToken: string): Promise<SessionUserT | null> => {
 	if (!sessionToken) return null
 	const sessionHash = await hashToken(sessionToken)
 	const nowText = new Date().toISOString()

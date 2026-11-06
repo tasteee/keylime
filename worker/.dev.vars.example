@@ -1,3 +1,5 @@
 DEV_SHOW_LINKS=true
+APP_URL=http://localhost:3124
+APP_ORIGIN=http://localhost:3124
 # RESEND_API_KEY=
 # MAIL_FROM=keylime <onboarding@resend.dev>

@@ -1,0 +1,19 @@
+# The Keylime API: a Cloudflare Worker with a D1 database.
+# Run from this folder: `wrangler dev`, `wrangler deploy`.
+name = "keylime-api"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Where the app lives. Sign-in emails link here.
+APP_URL = "https://tasteee.github.io/keylime"
+# Origins allowed to call this API (comma separated).
+APP_ORIGIN = "https://tasteee.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "keylime-db"
+# Replace with the id printed by `npx wrangler d1 create keylime-db`.
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "../migrations"

@@ -2,7 +2,7 @@
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
 	import { daysAgo } from '$lib/modules/dateTime'
-	import { goto } from '$app/navigation'
+	import { goToPath } from '$lib/modules/navigate'
 	import { fade } from 'svelte/transition'
 	import TopBar from '$lib/components/Dashboard/TopBar.svelte'
 	import { getPublicProjects, cloneProjectById } from '$lib/modules/database'
@@ -89,7 +89,7 @@
 	}
 
 	const handleOpenProject = (projectId: string) => {
-		goto(`/project/${projectId}`)
+		goToPath(`/project/${projectId}`)
 	}
 
 	const handleFilterSubmit = (options: FilterOptionsT) => {
@@ -100,7 +100,7 @@
 		if (!activeUser) return
 		const result = await cloneProjectById(projectId, activeUser.id)
 		if (result.data) {
-			goto(`/project/${result.data.id}`)
+			goToPath(`/project/${result.data.id}`)
 		}
 	}
 
