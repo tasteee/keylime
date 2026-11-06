@@ -10,6 +10,7 @@
 		MAX_CELL_PIXELS,
 		MIN_CELL_PIXELS,
 		TICKS_PER_BEAT,
+		VELOCITY_LANE_COLLAPSED_HEIGHT,
 		VELOCITY_LANE_HEIGHT
 	} from '$lib/midiGrid/constants'
 	import { getRowIdForPitch } from '$lib/midiGrid/rows'
