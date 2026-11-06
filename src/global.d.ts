@@ -59,6 +59,8 @@ type SignalT = {
   duration: number // beats (can be decimal, e.g., 0.25 = 1/4 beat)
   octaveOffset: number
   modifiedTime?: number
+  velocity?: number // 0 - 1. Missing on older signals: they get a random velocity
+  isMuted?: boolean // a muted signal stays in the grid but does not play
 }
 
 // A performed note, straight from scaled: midiNote, startBeat, durationBeats,

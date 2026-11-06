@@ -6,7 +6,8 @@ import { WebMidi } from 'webmidi'
 import { getChordMidiNotes, toMidiNote } from '$lib/music'
 import { generatePerformance } from '$lib/helpers/performance'
 
-type PlayArgsT = { note: number | string }
+// velocity is 1 - 127. Without it, a note gets a random one between the output's min and max.
+type PlayArgsT = { note: number | string; velocity?: number }
 
 type PerformProjectArgsT = {
 	id: string
@@ -199,7 +200,7 @@ class PlaybackStore {
 
 		this.activeChords.add(midiNote)
 		const midiOutput = getMidiOutput()
-		const velocity = getRandomBetween({ min: output.minVelocity, max: output.maxVelocity })
+		const velocity = args.velocity ?? getRandomBetween({ min: output.minVelocity, max: output.maxVelocity })
 		if (!midiOutput) {
 			this.piano?.start({ note: midiNote, velocity })
 			return
