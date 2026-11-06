@@ -1,4 +1,4 @@
-# keylime
+# tasteee/keylime
 
 Runs on Cloudflare Pages with D1 (SQLite). No other services.
 
