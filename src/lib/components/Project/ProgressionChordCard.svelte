@@ -174,8 +174,8 @@
 		align-items: center;
 		justify-content: center;
 		height: auto;
-		background: var(--color-neutral-1);
-		border: 1px solid var(--chord-rest, var(--border));
+		background: var(--chord-bg, var(--color-neutral-1));
+		border: 1px solid var(--chord-border, var(--border));
 		border-radius: var(--radius-sm);
 		color: var(--foreground);
 		cursor: default;

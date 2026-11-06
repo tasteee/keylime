@@ -114,8 +114,8 @@
 	.chordCard {
 		height: 3rem;
 		user-select: none;
-		background: var(--color-neutral-1) !important;
-		border-color: var(--chord-rest, var(--border)) !important;
+		background: var(--chord-bg, var(--color-neutral-1)) !important;
+		border-color: var(--chord-border, var(--border)) !important;
 		transition:
 			background var(--motion-fast) var(--ease-enter),
 			border-color var(--motion-fast) var(--ease-enter);
