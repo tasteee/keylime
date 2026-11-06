@@ -52,13 +52,7 @@
 </z-scroll>
 
 <style>
-	/*
-	 * z-scroll only scrolls once its viewport has a max height. Capping the
-	 * viewport at the height of this flex item makes it scroll when the
-	 * chords do not fit.
-	 */
 	.chordCardScroll {
-		--z-scroll-max-height: 100%;
 		flex: 1 1 0;
 		min-height: 0;
 		width: 100%;
