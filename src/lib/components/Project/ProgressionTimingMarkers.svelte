@@ -44,9 +44,10 @@
 	})
 </script>
 
-{#each markers as marker}
+{#each markers as marker, markerIndex}
+	{@const isFirstMarker = markerIndex === 0}
 	<div class="barMarker" style="left: {marker.pixel}px;">
-		<div class="barMarkerLine"></div>
+		<div class="barMarkerLine" class:isHidden={isFirstMarker}></div>
 		<span class="barMarkerText">{marker.label}</span>
 		{#each gridLines as line}
 			<div class="beatLine" class:isSubdivision={!line.isBeat} style="left: {line.pixel}px;"></div>
@@ -67,11 +68,31 @@
 		width: 328px !important;
 	}
 
+	/* Lines fade out above and below the chords. The stops come
+	   from the panel, so they follow the chord height. */
+	.barMarkerLine,
+	.beatLine {
+		--grid-fade: linear-gradient(
+			to bottom,
+			transparent 0,
+			black var(--progression-pad-top, 25%),
+			black calc(var(--progression-pad-top, 25%) + var(--progression-chord-height, 50%)),
+			transparent 100%
+		);
+		-webkit-mask-image: var(--grid-fade);
+		mask-image: var(--grid-fade);
+	}
+
 	.barMarkerLine {
 		width: 1px;
 		height: 100%;
 		background-color: var(--color-neutral-5);
 		opacity: 0.5;
+	}
+
+	/* The first line sits on the panel edge, so it stays out of sight. */
+	.barMarkerLine.isHidden {
+		visibility: hidden;
 	}
 
 	.beatLine {

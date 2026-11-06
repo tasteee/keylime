@@ -1,4 +1,5 @@
 <script lang="ts">
+	import PanelHeader from './PanelHeader.svelte'
 	import ProgressionChordCard from './ProgressionChordCard.svelte'
 	import ProgressionSelectionControls from './ProgressionSelectionControls.svelte'
 	import ProgressionTimingMarkers from './ProgressionTimingMarkers.svelte'
@@ -406,6 +407,7 @@
 <svelte:window onkeydown={handleKeyDown} onmousemove={handleMouseMove} onmouseup={handleMouseUp} />
 
 <z-column class="progressionPanelContainer">
+	<PanelHeader label="Progression" />
 
 	<!-- Main Progression Area -->
 	<div class="mainProgressionPanel" data-is-dragging={isDraggingItem || isResizingItem} data-is-resizing={isResizingItem}>

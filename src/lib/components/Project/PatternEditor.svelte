@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getContext, onMount } from 'svelte'
+	import PanelHeader from './PanelHeader.svelte'
 	import PatternGrid from './PatternGrid.svelte'
 	import PatternLibrarySelect from './PatternLibrarySelect.svelte'
 	import SelectPatternLength from './SelectPatternLength.svelte'
@@ -226,6 +227,8 @@
 </script>
 
 <div class="pattern-editor" style={editorStyle}>
+	<PanelHeader label="Pattern" />
+
 	<PatternGrid
 		{editor}
 		{rowNoteNames}
