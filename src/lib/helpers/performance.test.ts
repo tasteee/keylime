@@ -258,14 +258,14 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
     })
 
     it('should combine wrapping and band offsets correctly', () => {
-      // N4-1 = position -5 = third voice, 2 octaves down
+      // N4-1 = position -5 = second voice, 2 octaves down
       const note = getNoteFromSignalRow({
         signalRowId: 'N4-1',
         chord: null,
         chordNotes: cMajorNotes
       })
 
-      expect(note).toBe('G1')
+      expect(note).toBe('E1')
     })
 
     it('should handle negative band offsets', () => {
