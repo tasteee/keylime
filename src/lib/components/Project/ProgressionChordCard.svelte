@@ -3,7 +3,6 @@
 	import { HandGrabbing, DotsSixVertical } from 'phosphor-svelte'
 	import { getChordColor } from '$lib/helpers/chordColors'
 	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
-	import DialogChordModifier from './DialogChordModifier.svelte'
 	import { getContext } from 'svelte'
 
 	type ProjectEditorContextT = {
@@ -42,11 +41,12 @@
 		selectItem: (event: MouseEvent) => void
 		onItemMouseDown: (event: MouseEvent) => void
 		onResizeMouseDown: (event: MouseEvent) => void
+		// The panel owns one shared modifier dialog, so opening is instant.
+		onOpenModifier: (item: ProgressionItemT) => void
 	}
 
 	const context = getContext<ProjectEditorContextT>('projectEditor')
 	const props: ProgressionChordCardPropsT = $props()
-	let isModifierDialogOpen = $state(false)
 	const isRest = $derived(props.item.type === 'rest')
 	const chordColor = $derived.by(() => {
 		return getChordColor({ symbol: props.item.symbol })
@@ -71,20 +71,7 @@
 		event.preventDefault()
 		event.stopPropagation()
 		if (isRest) return
-		isModifierDialogOpen = true
-	}
-
-	const handleModifierClose = () => {
-		isModifierDialogOpen = false
-	}
-
-	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: VoicingT }) => {
-		context.updateProgressionItem({
-			id: props.item.id,
-			octaveOffset: args.octaveOffset,
-			inversion: args.inversion,
-			voicing: args.voicing
-		})
+		props.onOpenModifier(props.item)
 	}
 
 	const handleResizeRight = (event: MouseEvent) => {
@@ -154,16 +141,6 @@
 		{/if}
 	</div>
 </div>
-
-{#if props.item.type === 'chord' && isModifierDialogOpen}
-	<DialogChordModifier
-		isOpen={isModifierDialogOpen}
-		chord={props.item as ProgressionChordT}
-		projectOctave={context.state.project.octave}
-		onClose={handleModifierClose}
-		onSave={handleModifierSave}
-	/>
-{/if}
 
 <style>
 	.progressionItem {

@@ -4,10 +4,11 @@
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { getChordColor } from '$lib/helpers/chordColors'
 	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
-	import DialogChordModifier from './DialogChordModifier.svelte'
 
 	type ChordCardPropsT = {
 		chord: ChordT
+		// The grid owns one shared modifier dialog, so opening is instant.
+		onOpenModifier: (chord: ChordT) => void
 	}
 
 	const props: ChordCardPropsT = $props()
@@ -18,8 +19,6 @@
 	const chordColor = $derived(
 		getChordColor({ symbol: props.chord.symbol })
 	)
-
-	let isModifierDialogOpen = $state(false)
 
 	const addChordToProgression = () => {
 		const chordToAdd: ChordT = {
@@ -34,20 +33,7 @@
 	const handleContextMenu = (event: MouseEvent) => {
 		event.preventDefault()
 		event.stopPropagation()
-		isModifierDialogOpen = true
-	}
-
-	const handleModifierClose = () => {
-		isModifierDialogOpen = false
-	}
-
-	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: VoicingT }) => {
-		projectEditor.updateGridChordModifiers({
-			chordId: props.chord.id,
-			octaveOffset: args.octaveOffset,
-			inversion: args.inversion,
-			voicing: args.voicing
-		})
+		props.onOpenModifier(props.chord)
 	}
 
 	const handleAddButtonClick = (event: MouseEvent) => {
@@ -98,16 +84,6 @@
 			</z-button>
 		</z-tooltip>
 	</z-row>
-
-	{#if isModifierDialogOpen}
-		<DialogChordModifier
-			isOpen={isModifierDialogOpen}
-			chord={props.chord as ProgressionChordT}
-			projectOctave={project.octave}
-			onClose={handleModifierClose}
-			onSave={handleModifierSave}
-		/>
-	{/if}
 </z-surface>
 
 <style>
