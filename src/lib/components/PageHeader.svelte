@@ -15,7 +15,7 @@
 </script>
 
 <z-row alignsX="between" alignsY="center" gap="md" doesWrap isFullWidth>
-	<z-column gap="xs">
+	<z-column gap="2xs">
 		{#if hasEyebrow}
 			<z-eyebrow label={props.eyebrow}></z-eyebrow>
 		{/if}

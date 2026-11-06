@@ -231,7 +231,7 @@
 				<z-box slot="icon" isInline><MusicNotes size={32} /></z-box>
 			</z-empty-state>
 		{:else}
-			<z-grid minColumnWidth="20rem" gap="lg">
+			<z-grid minColumnWidth="20rem" gap="md">
 				{#each paginatedProjects as project (project.id)}
 					<ProjectCard
 						project={project as any}

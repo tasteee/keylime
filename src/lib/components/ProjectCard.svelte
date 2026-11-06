@@ -106,7 +106,7 @@
 	}
 </script>
 
-<z-card isReactive role="button" tabindex="0" gap="md" onclick={handleCardClick} onkeydown={handleCardKeyDown} class="projectCard">
+<z-card isReactive role="button" tabindex="0" onclick={handleCardClick} onkeydown={handleCardKeyDown} class="projectCard">
 	<z-row alignsY="center" alignsX="between" gap="sm">
 		<z-row alignsY="center" gap="sm" class="projectCardAuthor">
 			<z-button kind="plain" size="sm" onclick={handleAuthorClick} aria-label={`View ${authorName}`}>
@@ -127,15 +127,12 @@
 		{/if}
 	</z-row>
 
-	<z-row gap="xs" doesWrap>
-		<z-badge kind="outline" tone="neutral" size="sm">
-			<z-box slot="prefix" isInline><MusicNotes size={12} /></z-box>
-			{keyAndScaleLabel}
-		</z-badge>
-		<z-badge kind="outline" tone="neutral" size="sm">
-			<z-box slot="prefix" isInline><Clock size={12} /></z-box>
-			{bpmLabel}
-		</z-badge>
+	<z-row gap="xs" alignsY="center" class="projectCardMeta">
+		<MusicNotes size={14} />
+		<z-text size="xs" color="muted">{keyAndScaleLabel}</z-text>
+		<span class="projectCardDot"></span>
+		<Clock size={14} />
+		<z-text size="xs" color="muted">{bpmLabel}</z-text>
 	</z-row>
 
 	<z-surface level="1" kind="soft" inset="sm" radius="md" isFullWidth class="projectCardChords">
@@ -171,7 +168,21 @@
 
 <style>
 	.projectCard {
+		--z-card-gap: var(--spacing-2);
+		padding: var(--space-md);
 		cursor: pointer;
+	}
+
+	.projectCardMeta {
+		color: var(--muted-foreground);
+	}
+
+	.projectCardDot {
+		width: 2px;
+		height: 2px;
+		border-radius: 50%;
+		background: var(--border);
+		margin-inline: var(--space-2xs);
 	}
 
 	.projectCardAuthor {

@@ -14,7 +14,7 @@
 
 	<z-scroll class="pageScroll">
 		<z-container size="xl" gutter="lg">
-			<z-column gap="xl" insetY="xl">
+			<z-column gap="lg" insetY="lg">
 				{@render props.children?.()}
 			</z-column>
 		</z-container>

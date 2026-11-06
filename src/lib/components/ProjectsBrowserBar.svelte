@@ -1,8 +1,9 @@
 <script lang="ts">
 	import fuzzy from 'fuzzy'
-	import { MagnifyingGlass, Plus } from 'phosphor-svelte'
+	import { MagnifyingGlass, Plus, X } from 'phosphor-svelte'
 	import ALL_CHORD_NAMES from '$lib/constants/allChordNames.json'
 	import chordsByScale from '$lib/constants/chordsByScale.json'
+	import SelectControl from '$lib/components/Project/SelectControl.svelte'
 
 	type FilterOptionsT = {
 		searchText: string
@@ -20,6 +21,9 @@
 
 	const MAX_CHORD_FILTERS = 4
 	const ALL_OPTION_VALUE = 'All'
+	const BPM_MIN = 20
+	const BPM_MAX = 300
+	const SEARCH_DEBOUNCE_MS = 300
 
 	const props: ProjectsBrowserBarPropsT = $props()
 
@@ -33,8 +37,8 @@
 	let searchText = $state('')
 	let selectedKey = $state(ALL_OPTION_VALUE)
 	let selectedScale = $state(ALL_OPTION_VALUE)
-	let bpmMinValue = $state<number | undefined>(undefined)
-	let bpmMaxValue = $state<number | undefined>(undefined)
+	let bpmRange = $state<number[]>([BPM_MIN, BPM_MAX])
+	let searchDebounceTimer: ReturnType<typeof setTimeout> | undefined
 	let chordSearchText = $state('')
 	let selectedChordSymbols = $state<string[]>([])
 	let chordMatchMode = $state<'all' | 'any'>('any')
@@ -61,40 +65,63 @@
 	const hasSelectedChords = $derived(selectedChordSymbols.length > 0)
 	const hasNoVisibleChords = $derived(visibleChords.length === 0)
 
+	const isBpmRangeActive = $derived(bpmRange[0] !== BPM_MIN || bpmRange[1] !== BPM_MAX)
+	const bpmRangeLabel = $derived(`${bpmRange[0]}–${bpmRange[1]}`)
+
 	const hasActiveFilters = $derived.by(() => {
 		const hasSearch = searchText.trim().length > 0
 		const hasKey = selectedKey !== ALL_OPTION_VALUE
 		const hasScale = selectedScale !== ALL_OPTION_VALUE
-		const hasBpmMin = bpmMinValue !== undefined
-		const hasBpmMax = bpmMaxValue !== undefined
-		return hasSearch || hasKey || hasScale || hasBpmMin || hasBpmMax || hasSelectedChords
+		return hasSearch || hasKey || hasScale || isBpmRangeActive || hasSelectedChords
 	})
+
+	const buildFilterOptions = (): FilterOptionsT => {
+		const key = selectedKey === ALL_OPTION_VALUE ? null : selectedKey
+		const scale = selectedScale === ALL_OPTION_VALUE ? null : selectedScale
+		const bpmMin = bpmRange[0] === BPM_MIN ? null : bpmRange[0]
+		const bpmMax = bpmRange[1] === BPM_MAX ? null : bpmRange[1]
+
+		return {
+			searchText: searchText.trim(),
+			key,
+			scale,
+			bpmMin,
+			bpmMax,
+			chordSymbols: selectedChordSymbols,
+			chordMatchMode
+		}
+	}
+
+	const applyFilters = () => {
+		clearTimeout(searchDebounceTimer)
+		props.onsubmit(buildFilterOptions())
+	}
 
 	const handleSearchInput = (event: CustomEvent) => {
 		searchText = event.detail.value
+		clearTimeout(searchDebounceTimer)
+		searchDebounceTimer = setTimeout(applyFilters, SEARCH_DEBOUNCE_MS)
 	}
 
 	const handleSearchKeyDown = (event: KeyboardEvent) => {
 		const isEnterKey = event.key === 'Enter'
-		if (isEnterKey) handleApplyFilters()
+		if (isEnterKey) applyFilters()
 	}
 
-	const handleKeyChange = (event: CustomEvent) => {
-		selectedKey = event.detail.value
+	const handleKeyChange = (nextKey: string) => {
+		selectedKey = nextKey
+		applyFilters()
 	}
 
-	const handleScaleChange = (event: CustomEvent) => {
-		selectedScale = event.detail.value
+	const handleScaleChange = (nextScale: string) => {
+		selectedScale = nextScale
+		applyFilters()
 	}
 
-	const handleBpmMinChange = (event: CustomEvent) => {
-		const rawValue = event.detail.value
-		bpmMinValue = Number.isFinite(rawValue) ? rawValue : undefined
-	}
-
-	const handleBpmMaxChange = (event: CustomEvent) => {
-		const rawValue = event.detail.value
-		bpmMaxValue = Number.isFinite(rawValue) ? rawValue : undefined
+	const handleBpmRangeChange = (event: CustomEvent) => {
+		const nextRange: number[] = event.detail.value
+		bpmRange = nextRange
+		applyFilters()
 	}
 
 	const handleChordPickerToggle = (event: CustomEvent) => {
@@ -107,6 +134,7 @@
 
 	const handleMatchModeChange = (nextMode: 'all' | 'any') => {
 		chordMatchMode = nextMode
+		if (hasSelectedChords) applyFilters()
 	}
 
 	const handleAddChordSymbol = (symbol: string) => {
@@ -115,142 +143,165 @@
 		if (hasReachedMaxChords) return
 		selectedChordSymbols = [...selectedChordSymbols, symbol]
 		chordSearchText = ''
+		applyFilters()
 	}
 
 	const handleRemoveChordSymbol = (symbol: string) => {
 		selectedChordSymbols = selectedChordSymbols.filter((selectedSymbol) => selectedSymbol !== symbol)
+		applyFilters()
 	}
 
-	const buildFilterOptions = (): FilterOptionsT => {
-		const key = selectedKey === ALL_OPTION_VALUE ? null : selectedKey
-		const scale = selectedScale === ALL_OPTION_VALUE ? null : selectedScale
-
-		return {
-			searchText: searchText.trim(),
-			key,
-			scale,
-			bpmMin: bpmMinValue ?? null,
-			bpmMax: bpmMaxValue ?? null,
-			chordSymbols: selectedChordSymbols,
-			chordMatchMode
-		}
-	}
-
-	const handleApplyFilters = () => {
-		props.onsubmit(buildFilterOptions())
+	const handleRemoveChordBadge = (event: CustomEvent) => {
+		const symbol: string = event.detail.value
+		handleRemoveChordSymbol(symbol)
 	}
 
 	const handleClearFilters = () => {
 		searchText = ''
 		selectedKey = ALL_OPTION_VALUE
 		selectedScale = ALL_OPTION_VALUE
-		bpmMinValue = undefined
-		bpmMaxValue = undefined
+		bpmRange = [BPM_MIN, BPM_MAX]
 		selectedChordSymbols = []
 		chordSearchText = ''
 		chordMatchMode = 'any'
-		props.onsubmit(buildFilterOptions())
+		applyFilters()
 	}
 </script>
 
-<z-surface level="1" kind="soft" inset="md" radius="lg" isBordered isFullWidth>
-	<z-column gap="md">
-		<z-row gap="md" doesWrap alignsY="end">
-			<z-field class="filterField" label="Key" size="sm">
-				<z-select value={selectedKey} options={keyOptions} size="sm" isInline onchange={handleKeyChange}></z-select>
-			</z-field>
+<z-row gap="md" doesWrap alignsY="center" isFullWidth class="filterBar">
+	<div class="filterSearch">
+		<z-input
+			type="search"
+			value={searchText}
+			placeholder="Search projects…"
+			label="Search projects"
+			size="sm"
+			oninput={handleSearchInput}
+			onkeydown={handleSearchKeyDown}
+		>
+			<z-box slot="prefix" isInline><MagnifyingGlass size={14} /></z-box>
+		</z-input>
+	</div>
 
-			<z-field class="filterField" label="Scale" size="sm">
-				<z-select value={selectedScale} options={scaleOptions} size="sm" isInline onchange={handleScaleChange}></z-select>
-			</z-field>
+	<SelectControl label="Key" value={selectedKey} options={keyOptions} onValueChange={handleKeyChange} />
+	<SelectControl label="Scale" value={selectedScale} options={scaleOptions} onValueChange={handleScaleChange} />
 
-			<z-field class="filterField" label="Min BPM" size="sm">
-				<z-number-input value={bpmMinValue} min={20} max={300} placeholder="20" size="sm" onchange={handleBpmMinChange}
-				></z-number-input>
-			</z-field>
+	<z-row gap="xs" alignsY="center" class="bpmFilter">
+		<z-text size="xs" color="muted" weight={600} class="filterLabel">BPM</z-text>
+		<div class="bpmRange">
+			<z-range
+				min={BPM_MIN}
+				max={BPM_MAX}
+				step={1}
+				value={bpmRange}
+				label="BPM range"
+				onchange={handleBpmRangeChange}
+			></z-range>
+		</div>
+		<z-text size="xs" color="strong" weight={600} class="bpmValue">{bpmRangeLabel}</z-text>
+	</z-row>
 
-			<z-field class="filterField" label="Max BPM" size="sm">
-				<z-number-input value={bpmMaxValue} min={20} max={300} placeholder="300" size="sm" onchange={handleBpmMaxChange}
-				></z-number-input>
-			</z-field>
+	<z-row gap="xs" alignsY="center" doesWrap>
+		<z-text size="xs" color="muted" weight={600} class="filterLabel">Chords</z-text>
 
-			<z-field class="filterField" label="Chords" size="sm">
-				<z-popover placement="bottom-start" isOpen={isChordPickerOpen} ontoggle={handleChordPickerToggle}>
-					<z-button slot="trigger" kind="outline" size="sm">
-						<Plus size={14} weight="bold" />
-						Add chord
-					</z-button>
+		<z-popover placement="bottom-start" isOpen={isChordPickerOpen} ontoggle={handleChordPickerToggle}>
+			<z-button slot="trigger" kind="outline" size="sm">
+				<Plus size={14} weight="bold" />
+				Add chord
+			</z-button>
 
-					<z-column gap="sm" class="chordPicker">
-						<z-toggle-button-group size="sm" kind="outline">
-							<z-toggle-button-group-item
-								value="any"
-								isPressed={chordMatchMode === 'any'}
-								onpress={() => handleMatchModeChange('any')}>Match any</z-toggle-button-group-item
-							>
-							<z-toggle-button-group-item
-								value="all"
-								isPressed={chordMatchMode === 'all'}
-								onpress={() => handleMatchModeChange('all')}>Match all</z-toggle-button-group-item
-							>
-						</z-toggle-button-group>
+			<z-column gap="sm" class="chordPicker">
+				<z-toggle-button-group size="sm" kind="outline">
+					<z-toggle-button-group-item
+						value="any"
+						isPressed={chordMatchMode === 'any'}
+						onpress={() => handleMatchModeChange('any')}>Match any</z-toggle-button-group-item
+					>
+					<z-toggle-button-group-item
+						value="all"
+						isPressed={chordMatchMode === 'all'}
+						onpress={() => handleMatchModeChange('all')}>Match all</z-toggle-button-group-item
+					>
+				</z-toggle-button-group>
 
-						{#if hasReachedMaxChords}
-							<z-text size="sm" color="muted">You can filter by up to {MAX_CHORD_FILTERS} chords.</z-text>
-						{:else}
-							<z-input value={chordSearchText} placeholder="Search chords…" size="sm" label="Search chords" oninput={handleChordSearchInput}>
-								<z-box slot="prefix" isInline><MagnifyingGlass size={14} /></z-box>
-							</z-input>
+				{#if hasReachedMaxChords}
+					<z-text size="sm" color="muted">You can filter by up to {MAX_CHORD_FILTERS} chords.</z-text>
+				{:else}
+					<z-input value={chordSearchText} placeholder="Search chords…" size="sm" label="Search chords" oninput={handleChordSearchInput}>
+						<z-box slot="prefix" isInline><MagnifyingGlass size={14} /></z-box>
+					</z-input>
 
-							<z-scroll maxHeight="12rem">
-								<z-grid columns="3" gap="2xs">
-									{#each visibleChords as chord (chord)}
-										<z-button kind="ghost" size="sm" onclick={() => handleAddChordSymbol(chord)}>{chord}</z-button>
-									{/each}
-								</z-grid>
-								{#if hasNoVisibleChords}
-									<z-text size="sm" color="muted">No chords found</z-text>
-								{/if}
-							</z-scroll>
+					<z-scroll maxHeight="12rem">
+						<z-grid columns="3" gap="2xs">
+							{#each visibleChords as chord (chord)}
+								<z-button kind="ghost" size="sm" onclick={() => handleAddChordSymbol(chord)}>{chord}</z-button>
+							{/each}
+						</z-grid>
+						{#if hasNoVisibleChords}
+							<z-text size="sm" color="muted">No chords found</z-text>
 						{/if}
-					</z-column>
-				</z-popover>
-			</z-field>
+					</z-scroll>
+				{/if}
+			</z-column>
+		</z-popover>
 
-			{#each selectedChordSymbols as symbol (symbol)}
+		<!--
+			Each badge sits in a span on purpose. z-badge defines a "remove" event,
+			which shadows the DOM's own element.remove(). Svelte removes the keyed
+			block's root with element.remove(), so a bare z-badge would fire the
+			event instead of leaving the page. The span is what Svelte removes.
+		-->
+		{#each selectedChordSymbols as symbol (symbol)}
+			<span class="chordChip">
 				<z-badge
-					kind="solid"
+					kind="soft"
 					tone="primary"
+					size="sm"
 					value={symbol}
 					label={symbol}
 					isRemovable
-					onremove={() => handleRemoveChordSymbol(symbol)}
+					onremove={handleRemoveChordBadge}
 				></z-badge>
-			{/each}
-		</z-row>
+			</span>
+		{/each}
+	</z-row>
 
-		<z-row gap="sm" alignsY="center">
-			<z-input
-				type="search"
-				value={searchText}
-				placeholder="Search projects…"
-				label="Search projects"
-				oninput={handleSearchInput}
-				onkeydown={handleSearchKeyDown}
-			>
-				<z-box slot="prefix" isInline><MagnifyingGlass size={16} /></z-box>
-			</z-input>
-
-			<z-button kind="outline" isDisabled={!hasActiveFilters} onclick={handleClearFilters}>Clear</z-button>
-			<z-button tone="primary" onclick={handleApplyFilters}>Apply</z-button>
-		</z-row>
-	</z-column>
-</z-surface>
+	{#if hasActiveFilters}
+		<z-button kind="ghost" size="sm" onclick={handleClearFilters}>
+			<X size={14} />
+			Clear
+		</z-button>
+	{/if}
+</z-row>
 
 <style>
-	/* z-field fills its row by default. Let the fields in the row hug their controls. */
-	.filterField {
-		width: auto;
+	.filterBar {
+		padding-block: var(--space-xs);
+	}
+
+	.filterSearch {
+		flex: 1 1 14rem;
+		max-width: 20rem;
+		min-width: 12rem;
+	}
+
+	.filterLabel {
+		white-space: nowrap;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.bpmRange {
+		width: 9rem;
+	}
+
+	.bpmValue {
+		min-width: 4.5rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.chordChip {
+		display: inline-flex;
 	}
 
 	.chordPicker {
