@@ -1,8 +1,16 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			// Set the saved theme before first paint so there is no flash.
+			try {
+				var savedTheme = localStorage.getItem('keylime-theme')
+				var theme = savedTheme === 'light' ? 'light' : 'dark'
+				document.documentElement.setAttribute('data-theme', theme)
+			} catch (error) {}
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
