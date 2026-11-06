@@ -452,35 +452,37 @@
 		{/if}
 
 		<div class="progressionControls">
-			<z-tooltip content="Add rest" placement="top">
-				<z-button kind="outline" size="sm" onclick={handleAddRest} aria-label="Add rest">
-					<Pause size={16} weight="bold" />
-				</z-button>
-			</z-tooltip>
+			<div class="progressionFloatingControls">
+				<z-tooltip content="Add rest" placement="top">
+					<z-button kind="outline" size="sm" onclick={handleAddRest} aria-label="Add rest">
+						<Pause size={16} weight="bold" />
+					</z-button>
+				</z-tooltip>
 
-			<z-tooltip content="Follow playhead" placement="top">
-				<z-toggle-button
-					kind="outline"
-					tone="neutral"
-					size="sm"
-					class="followToggle"
-					class:isActive={isFollowEnabled}
-					isPressed={isFollowEnabled}
-					onpress={toggleFollow}
-					aria-label="Follow playhead"
-				>
-					<ArrowRight size={16} />
-				</z-toggle-button>
-			</z-tooltip>
+				<z-tooltip content="Follow playhead" placement="top">
+					<z-toggle-button
+						kind="outline"
+						tone="neutral"
+						size="sm"
+						class="followToggle"
+						class:isActive={isFollowEnabled}
+						isPressed={isFollowEnabled}
+						onpress={toggleFollow}
+						aria-label="Follow playhead"
+					>
+						<ArrowRight size={16} />
+					</z-toggle-button>
+				</z-tooltip>
 
-			<z-button-group>
-				<z-button kind="outline" size="sm" onclick={zoomOut} aria-label="Zoom out">
-					<MagnifyingGlassMinus size={16} weight="bold" />
-				</z-button>
-				<z-button kind="outline" size="sm" onclick={zoomIn} aria-label="Zoom in">
-					<MagnifyingGlassPlus size={16} weight="bold" />
-				</z-button>
-			</z-button-group>
+				<z-button-group>
+					<z-button kind="outline" size="sm" onclick={zoomOut} aria-label="Zoom out">
+						<MagnifyingGlassMinus size={16} weight="bold" />
+					</z-button>
+					<z-button kind="outline" size="sm" onclick={zoomIn} aria-label="Zoom in">
+						<MagnifyingGlassPlus size={16} weight="bold" />
+					</z-button>
+				</z-button-group>
+			</div>
 
 			<ProgressionSelectionControls />
 		</div>
@@ -515,6 +517,18 @@
 
 	.progressionControls > :global(*) {
 		pointer-events: auto;
+	}
+
+	/* The same floating surface as the pattern controls. */
+	.progressionFloatingControls {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: var(--spacing-2);
+		padding: var(--spacing-2);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-md);
 	}
 
 	/* Active follow is strong neutral, like the rest of the UI. */
@@ -557,7 +571,7 @@
 		flex-direction: row;
 		align-items: stretch;
 		padding-top: calc(var(--spacing-6) + var(--progression-gutter));
-		padding-bottom: calc(var(--spacing-7) + var(--spacing-3) + var(--progression-gutter));
+		padding-bottom: calc(var(--spacing-7) + var(--spacing-5) + var(--progression-gutter));
 		left: -2px;
 	}
 
