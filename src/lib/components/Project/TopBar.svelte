@@ -57,11 +57,11 @@
 
 			<ProjectPlayButton />
 
-			{#if isDirty}
-				<z-status-dot status="away" doesPulse label="Unsaved"></z-status-dot>
-			{/if}
-
 			<z-button kind="ghost" size="sm" onclick={openProjectSettings} aria-label="Edit project settings">
+				{#if isDirty}
+					<z-status-dot class="unsavedDot" status="away" doesPulse></z-status-dot>
+				{/if}
+
 				<span class="projectTitle">{project.title}</span>
 				<PencilSimple size={14} />
 			</z-button>
@@ -111,6 +111,10 @@
 
 	.topBarTitleSection {
 		flex-shrink: 1;
+	}
+
+	.unsavedDot {
+		margin-inline-end: var(--space-xs);
 	}
 
 	.projectTitle {
