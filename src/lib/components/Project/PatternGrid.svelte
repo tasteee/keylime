@@ -68,6 +68,10 @@
 		grid-template-columns: var(--labels-width) minmax(0, 1fr);
 		grid-template-rows: var(--ruler-height) minmax(0, 1fr) var(--lane-height);
 		outline: none;
+		/* Matches the editor frame, inside its 1px border, so the
+		   corners and the focus ring follow the same curve. */
+		border-radius: calc(var(--radius-lg) - 1px);
+		overflow: hidden;
 	}
 
 	.pattern-grid:focus-visible {
