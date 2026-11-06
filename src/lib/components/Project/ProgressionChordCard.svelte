@@ -168,7 +168,7 @@
 		flex-shrink: 0;
 		align-items: center;
 		justify-content: center;
-		height: 90%;
+		height: auto;
 		background-color: var(--card);
 		border: 1px solid var(--color-neutral-4);
 		border-radius: var(--radius-md);

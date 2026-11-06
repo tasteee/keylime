@@ -627,8 +627,9 @@
 		overflow: hidden;
 		display: flex;
 		flex-direction: row;
-		align-items: flex-start;
-		padding-top: var(--spacing-6);
+		align-items: stretch;
+		padding-top: calc(var(--spacing-6) + var(--progression-gutter));
+		padding-bottom: var(--progression-gutter);
 		left: -2px;
 	}
 
