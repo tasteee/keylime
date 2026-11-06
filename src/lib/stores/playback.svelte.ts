@@ -1,4 +1,5 @@
-import { Soundfont, SplendidGrandPiano } from 'smplr'
+import { Soundfont, Soundfont2Sampler, SplendidGrandPiano } from 'smplr'
+import { SoundFont2 } from 'soundfont2'
 import INSTRUMENTS_CONFIG from '$lib/constants/instruments.json'
 import GENERAL_CONFIG from '$lib/constants/general.json'
 import output from './output.svelte.js'
@@ -51,12 +52,44 @@ const getProgressionTotalDuration = (progressionItems: ProgressionItemT[]): numb
 	return progressionItems.reduce((total, item) => total + item.durationBeats, 0)
 }
 
-type PlaybackInstrumentT = SplendidGrandPiano | Soundfont
+type PlaybackInstrumentT = SplendidGrandPiano | Soundfont | Soundfont2Sampler
 
 type PlaybackInstrumentConfigT = {
 	label: string
 	value: string
 	soundfontInstrumentName?: string
+	sf2File?: string
+	sf2PresetName?: string
+}
+
+// Where the .sf2 files are hosted (e.g. a Cloudflare R2 bucket).
+const SOUNDFONT_BASE_URL = (import.meta.env.VITE_SOUNDFONT_BASE_URL ?? '/soundfonts') as string
+
+const findPresetName = (args: { presetNames: string[]; wantedName: string }): string | undefined => {
+	const wantedLowerCase = args.wantedName.toLowerCase()
+	const exactMatch = args.presetNames.find((presetName) => presetName.toLowerCase() === wantedLowerCase)
+	if (exactMatch) return exactMatch
+	const partialMatch = args.presetNames.find((presetName) => presetName.toLowerCase().includes(wantedLowerCase))
+	if (partialMatch) return partialMatch
+	return args.presetNames[0]
+}
+
+const createSf2Instrument = async (args: {
+	context: AudioContext
+	config: PlaybackInstrumentConfigT
+}): Promise<Soundfont2Sampler> => {
+	const soundfontUrl = `${SOUNDFONT_BASE_URL}/${args.config.sf2File}`
+
+	const sampler = await new Soundfont2Sampler(args.context, {
+		url: soundfontUrl,
+		createSoundfont: (data) => new SoundFont2(data)
+	}).load
+
+	const wantedName = args.config.sf2PresetName ?? ''
+	const presetName = findPresetName({ presetNames: sampler.instrumentNames, wantedName })
+	console.log('SF2 presets', { file: args.config.sf2File, presetNames: sampler.instrumentNames, chosen: presetName })
+	if (presetName) sampler.loadInstrument(presetName)
+	return sampler
 }
 
 const getSelectedInstrumentKey = () => {
@@ -78,6 +111,9 @@ const createPlaybackInstrument = async (args: { context: AudioContext }): Promis
 	if (selectedInstrumentKey === 'piano') return new SplendidGrandPiano(args.context).load
 
 	const selectedInstrumentConfig = getSelectedInstrumentConfig()
+	const hasSf2File = Boolean(selectedInstrumentConfig.sf2File)
+	if (hasSf2File) return createSf2Instrument({ context: args.context, config: selectedInstrumentConfig })
+
 	const soundfontInstrumentName = selectedInstrumentConfig.soundfontInstrumentName
 	if (!soundfontInstrumentName) return new SplendidGrandPiano(args.context).load
 
