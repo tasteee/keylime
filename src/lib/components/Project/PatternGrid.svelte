@@ -13,6 +13,7 @@
 		onRowPress: (rowId: string) => void
 		onRowRelease: () => void
 		onZoomStep: (direction: 1 | -1) => void
+		onCellPixelsChange: (cellPixels: number) => void
 	}
 
 	const props: PatternGridPropsT = $props()
@@ -41,7 +42,11 @@
 >
 	<div class="pattern-grid-corner"></div>
 	<div class="pattern-grid-ruler">
-		<PatternRuler editor={props.editor} onZoomStep={props.onZoomStep} />
+		<PatternRuler
+				editor={props.editor}
+				onZoomStep={props.onZoomStep}
+				onCellPixelsChange={props.onCellPixelsChange}
+			/>
 	</div>
 
 	<div class="pattern-grid-labels">

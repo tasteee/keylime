@@ -1,4 +1,12 @@
-import { DEFAULT_NOTE_VELOCITY, MAX_PATTERN_TICKS, MIN_NOTE_TICKS, ROW_COUNT, TICKS_PER_BAR } from './constants'
+import {
+	DEFAULT_NOTE_VELOCITY,
+	MAX_PATTERN_TICKS,
+	MIN_NOTE_TICKS,
+	ROW_COUNT,
+	TICKS_PER_BAR,
+	TICKS_PER_BEAT
+} from './constants'
+import { getGridStepTicks } from './gridStep'
 import { resolveOverlaps } from './overlaps'
 import { clampPitch } from './rows'
 import { clampLoopEndTick, clampNumber } from './time'
@@ -58,6 +66,7 @@ export type PatternEditorT = {
 export const DEFAULT_VIEW: ViewT = {
 	pxPerTick: 32 / 240,
 	rowHeight: 32,
+	gridStepTicks: TICKS_PER_BEAT / 4,
 	scrollTick: 0,
 	scrollRow: 0,
 	cursorTick: 0,
@@ -207,7 +216,9 @@ export const createPatternEditor = (hooks: PatternEditorHooksT): PatternEditorT 
 	}
 
 	const setView = (changes: Partial<ViewT>) => {
-		const nextView = clampScroll({ ...view, ...changes })
+		const mergedView = { ...view, ...changes }
+		const gridStepTicks = getGridStepTicks({ pxPerTick: mergedView.pxPerTick })
+		const nextView = clampScroll({ ...mergedView, gridStepTicks })
 		if (checkIsSameView(nextView, view)) return
 		view = nextView
 		clearNoteCaches()

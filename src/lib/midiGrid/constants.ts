@@ -24,10 +24,30 @@ export const DEFAULT_NOTE_VELOCITY = 0.8
 export const VELOCITY_STEP = 0.05
 
 // A cell is this many pixels wide at zoom level 1.
-// patternZoomLevel (16 - 48) is the width of one cell and the height of one row.
+// patternZoomLevel (8 - 96) is the width of one cell. Row height is separate.
 export const CELLS_PER_BEAT = 4
 
 export const RULER_HEIGHT = 32
 export const VELOCITY_LANE_HEIGHT = 88
 export const ROW_LABELS_WIDTH = 80
 export const DRAG_THRESHOLD_PX = 3
+
+// Horizontal zoom is the width of one cell, in pixels. It is dragged
+// on the ruler. Vertical zoom is the height of one row, dragged on the labels.
+export const MIN_CELL_PIXELS = 8
+export const MAX_CELL_PIXELS = 96
+export const DEFAULT_CELL_PIXELS = 32
+export const MIN_ROW_HEIGHT = 16
+export const MAX_ROW_HEIGHT = 64
+
+// Grid steps in ticks, from coarsest to finest: 1/4, 1/8, 1/16, 1/32, 1/64.
+export const GRID_STEPS_TICKS = [
+	TICKS_PER_BEAT,
+	TICKS_PER_BEAT / 2,
+	TICKS_PER_BEAT / 4,
+	TICKS_PER_BEAT / 8,
+	TICKS_PER_BEAT / 16
+]
+
+// A grid step never gets narrower than this many pixels.
+export const MIN_GRID_STEP_PIXELS = 20

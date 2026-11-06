@@ -290,7 +290,12 @@
 		}
 
 		const view = editor.getView()
-		const startTick = snapTick({ tick: getTickAtX({ view, x: point.x }), mode: 'floor', isSnapOff: event.altKey })
+		const startTick = snapTick({
+			tick: getTickAtX({ view, x: point.x }),
+			mode: 'floor',
+			isSnapOff: event.altKey,
+			stepTicks: view.gridStepTicks
+		})
 		const pitch = getPitchAtY({ view, y: point.y })
 		const duration = view.noteLength ?? TICKS_PER_CELL
 		const drafts = [{ pitch, start: startTick, duration, velocity: view.noteVelocity }]
