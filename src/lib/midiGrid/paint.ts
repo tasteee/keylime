@@ -1,4 +1,4 @@
-import { ROW_COUNT, ROWS_IN_BAND, TICKS_PER_BAR, TICKS_PER_BEAT } from './constants'
+import { GRID_END_TICKS, MAX_PATTERN_TICKS, ROW_COUNT, ROWS_IN_BAND, TICKS_PER_BAR, TICKS_PER_BEAT } from './constants'
 import { getXAtTick, getNoteRect } from './geometry'
 import { withAlpha, type PaletteT } from './palette'
 import type { NoteT, ViewT } from './types'
@@ -142,6 +142,36 @@ export const drawLoopEnd = (args: PaintLoopArgsT) => {
 
 	context.fillStyle = palette.accent
 	context.fillRect(Math.round(loopEndX) - 0.5, args.top, 1.5, args.height)
+}
+
+type PaintOverscrollArgsT = PaintBaseArgsT & {
+	top: number
+	height: number
+}
+
+// The stretch past the last bar fades from half to nothing. It is drawn
+// over the grid and the notes, so everything in it fades together.
+export const drawOverscrollFade = (args: PaintOverscrollArgsT) => {
+	const context = args.context
+	const palette = args.palette
+	const fadeStartX = getXAtTick({ view: args.view, tick: MAX_PATTERN_TICKS })
+	const fadeEndX = getXAtTick({ view: args.view, tick: GRID_END_TICKS })
+	const isOffscreen = fadeStartX >= args.width
+	if (isOffscreen) return
+
+	const gradient = context.createLinearGradient(fadeStartX, 0, fadeEndX, 0)
+	gradient.addColorStop(0, withAlpha(palette.background, 0.45))
+	gradient.addColorStop(1, withAlpha(palette.background, 1))
+
+	const left = Math.max(0, fadeStartX)
+	const solidStart = Math.min(args.width, fadeEndX)
+	context.fillStyle = gradient
+	context.fillRect(left, args.top, Math.max(0, solidStart - left), args.height)
+
+	const hasSolidPart = fadeEndX < args.width
+	if (!hasSolidPart) return
+	context.fillStyle = palette.background
+	context.fillRect(Math.max(0, fadeEndX), args.top, args.width - Math.max(0, fadeEndX), args.height)
 }
 
 type PaintNotesArgsT = PaintBaseArgsT & {

@@ -33,6 +33,16 @@ z-toggle-button-group-item > svg {
 	--purple: var(--foreground);
 }
 
+/* The accent for the pattern editor: marquee, focus ring, loop bar. */
+:root,
+:root[data-theme='dark'] {
+	--active-accent: oklch(0.64 0.17 250);
+}
+
+:root[data-theme='light'] {
+	--active-accent: oklch(0.54 0.17 250);
+}
+
 /* Chord palette. Seven families, eleven tones each:
    50 is the palest tint, 950 is the deepest shade. */
 :root {

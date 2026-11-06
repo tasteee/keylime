@@ -13,7 +13,7 @@
 	import type { PatternEditorT } from '$lib/midiGrid/editor'
 	import { focusPatternFrame } from '$lib/midiGrid/focus'
 	import { getTickAtX, getXAtTick, snapTick } from '$lib/midiGrid/geometry'
-	import { drawRoundedRect, getCrispPosition } from '$lib/midiGrid/paint'
+	import { drawOverscrollFade, drawRoundedRect, getCrispPosition } from '$lib/midiGrid/paint'
 	import { withAlpha } from '$lib/midiGrid/palette'
 	import { snapTickToCell } from '$lib/midiGrid/time'
 	import { createWheelHandler } from '$lib/midiGrid/wheel'
@@ -31,9 +31,9 @@
 	const LOOP_STRIP_HEIGHT = 14
 	const HANDLE_REACH_PX = 8
 
-	// Dragging the ruler sideways doubles or halves the zoom
-	// for every this many pixels.
-	const ZOOM_DRAG_PX_PER_DOUBLE = 160
+	// Dragging the ruler up or down doubles or halves the zoom
+	// for every this many pixels. Dragging sideways scrolls.
+	const ZOOM_DRAG_PX_PER_DOUBLE = 120
 
 	let canvasElement: HTMLCanvasElement
 	let layer: CanvasLayerT | null = null
@@ -42,6 +42,7 @@
 	let isPressingRuler = false
 	let isZoomDragging = false
 	let pressStartX = 0
+	let pressStartY = 0
 	let pressStartCellPixels = 0
 	let pressAnchorTick = 0
 
@@ -114,6 +115,8 @@
 			context.fillText(String(bar + 1), barX + 5, height / 2 + 4)
 		}
 
+		drawOverscrollFade({ context, palette, view, width, top: 0, height })
+
 		const hasHover = hoverX !== null
 		if (hasHover) {
 			context.fillStyle = withAlpha(palette.text, 0.18)
@@ -152,8 +155,8 @@
 	}
 
 	// Drag the end of the loop bar, or click in the strip to end the
-	// pattern at that cell. Below it, click to move the paste cursor
-	// and drag sideways to zoom.
+	// pattern at that cell. Below it, click to move the paste cursor,
+	// drag up or down to zoom, and drag sideways to scroll.
 	const handlePointerDown = (event: PointerEvent) => {
 		if (event.button !== 0) return
 		focusPatternFrame(canvasElement)
@@ -170,25 +173,29 @@
 			return
 		}
 
-		// Below the strip, a click moves the paste cursor and a drag zooms.
+		// Below the strip, a click moves the paste cursor. Dragging up or
+		// down zooms and dragging sideways scrolls.
 		const view = props.editor.getView()
 		isPressingRuler = true
 		isZoomDragging = false
 		pressStartX = getLocalX(event)
+		pressStartY = getLocalY(event)
 		pressStartCellPixels = view.pxPerTick * TICKS_PER_CELL
 		pressAnchorTick = getTickAtX({ view, x: pressStartX })
 	}
 
-	const applyZoomDrag = (event: PointerEvent) => {
+	// Up zooms in, down zooms out. Sideways drags the grid along with the
+	// pointer. The tick that was under the pointer stays under it.
+	const applyRulerDrag = (event: PointerEvent) => {
 		const dragX = getLocalX(event) - pressStartX
-		const doublings = dragX / ZOOM_DRAG_PX_PER_DOUBLE
+		const dragY = getLocalY(event) - pressStartY
+		const doublings = -dragY / ZOOM_DRAG_PX_PER_DOUBLE
 		const rawCellPixels = pressStartCellPixels * Math.pow(2, doublings)
 		const clampedCellPixels = Math.min(MAX_CELL_PIXELS, Math.max(MIN_CELL_PIXELS, rawCellPixels))
 		const cellPixels = Math.round(clampedCellPixels)
 		const pxPerTick = cellPixels / TICKS_PER_CELL
 
-		// Keep the tick under the pointer where it was.
-		const scrollTick = pressAnchorTick - pressStartX / pxPerTick
+		const scrollTick = pressAnchorTick - (pressStartX + dragX) / pxPerTick
 		props.editor.setView({ pxPerTick, scrollTick })
 		props.onCellPixelsChange(cellPixels)
 	}
@@ -220,11 +227,12 @@
 		}
 
 		if (isPressingRuler) {
-			const dragDistance = Math.abs(getLocalX(event) - pressStartX)
-			const hasMovedEnough = dragDistance >= DRAG_THRESHOLD_PX
+			const dragDistanceX = Math.abs(getLocalX(event) - pressStartX)
+			const dragDistanceY = Math.abs(getLocalY(event) - pressStartY)
+			const hasMovedEnough = Math.max(dragDistanceX, dragDistanceY) >= DRAG_THRESHOLD_PX
 			if (hasMovedEnough) isZoomDragging = true
-			if (isZoomDragging) canvasElement.dataset.cursor = 'ew-resize'
-			if (isZoomDragging) applyZoomDrag(event)
+			if (isZoomDragging) canvasElement.dataset.cursor = 'move'
+			if (isZoomDragging) applyRulerDrag(event)
 			return
 		}
 
@@ -291,5 +299,9 @@
 
 	.pattern-ruler:global([data-cursor='ew-resize']) {
 		cursor: ew-resize;
+	}
+
+	.pattern-ruler:global([data-cursor='move']) {
+		cursor: move;
 	}
 </style>

@@ -1,6 +1,6 @@
 import {
 	DEFAULT_NOTE_VELOCITY,
-	MAX_PATTERN_TICKS,
+	GRID_END_TICKS,
 	MIN_NOTE_TICKS,
 	ROW_COUNT,
 	TICKS_PER_BAR,
@@ -194,7 +194,7 @@ export const createPatternEditor = (hooks: PatternEditorHooksT): PatternEditorT 
 
 	const getMaxScrollTick = (): number => {
 		const viewportTicks = viewport.width / view.pxPerTick
-		return Math.max(0, MAX_PATTERN_TICKS - viewportTicks)
+		return Math.max(0, GRID_END_TICKS - viewportTicks)
 	}
 
 	const getMaxScrollRow = (rowHeight: number = view.rowHeight): number => {

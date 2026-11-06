@@ -1,4 +1,4 @@
-import { DEFAULT_NOTE_VELOCITY, MIN_NOTE_TICKS, ROW_COUNT, TICKS_PER_CELL } from './constants'
+import { DEFAULT_NOTE_VELOCITY, GRID_END_TICKS, MIN_NOTE_TICKS, ROW_COUNT, TICKS_PER_CELL } from './constants'
 import type { PatternEditorT } from './editor'
 import { stepTickByCell, clampNumber } from './time'
 import type { NoteDraftT, NoteT } from './types'
@@ -95,7 +95,9 @@ type BuildMovedNotesArgsT = {
 }
 
 // Where a group of notes ends up. The group stops at the edges of the
-// grid instead of squashing together, and stays inside the pattern.
+// grid instead of squashing together. Its first active note stays inside
+// the pattern, so a lone note can never be pushed out. The rest of a group
+// may spill past the end: they stay visible but go inactive.
 export const buildMovedNotes = (args: BuildMovedNotesArgsT): NoteT[] => {
 	const notes = args.notes
 	const hasNothing = notes.length === 0
@@ -104,9 +106,11 @@ export const buildMovedNotes = (args: BuildMovedNotesArgsT): NoteT[] => {
 	const earliestStart = Math.min(...notes.map((note) => note.start))
 	const activeNotes = notes.filter((note) => checkIsActive({ note, loopEndTick: args.loopEndTick }))
 	const hasActiveNotes = activeNotes.length > 0
-	const latestActiveStart = Math.max(...activeNotes.map((note) => note.start))
-	const mostTicksForward = args.loopEndTick - MIN_NOTE_TICKS - latestActiveStart
-	const furthestForward = hasActiveNotes ? Math.max(mostTicksForward, -earliestStart) : Infinity
+	const latestStart = Math.max(...notes.map((note) => note.start))
+	const mostTicksBeforeLoopEnd = args.loopEndTick - MIN_NOTE_TICKS - earliestStart
+	const furthestByLoop = hasActiveNotes ? mostTicksBeforeLoopEnd : Infinity
+	const furthestByGrid = GRID_END_TICKS - MIN_NOTE_TICKS - latestStart
+	const furthestForward = Math.max(Math.min(furthestByLoop, furthestByGrid), -earliestStart)
 	const ticks = clampNumber({ value: args.ticks, min: -earliestStart, max: furthestForward })
 
 	const lowestPitch = Math.min(...notes.map((note) => note.pitch))
