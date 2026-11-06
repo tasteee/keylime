@@ -11,6 +11,7 @@
 	import { OverlayScrollbars, ClickScrollPlugin } from 'overlayscrollbars'
 	import { ModeWatcher } from 'mode-watcher'
 	import { page } from '$app/stores'
+	import { base } from '$app/paths'
 	import favicon from '$lib/assets/favicon.svg'
 	import DialogChordModifier from '$lib/components/Project/DialogChordModifier.svelte'
 	import PlaybackContextFrame from '$lib/components/PlaybackContextFrame.svelte'
@@ -19,15 +20,15 @@
 
 	let { children, data } = $props()
 
-	setContext('activeUser', () => data.activeUser)
-	setContext('authUser', () => data.authUser)
+	setContext('activeUser', () => data?.activeUser)
+	setContext('authUser', () => data?.authUser)
 
 	OverlayScrollbars.plugin(ClickScrollPlugin)
 
-	const currentPath = $derived($page.url.pathname)
+	const currentPath = $derived($page.url.pathname.replace(base, '') || '/')
 	const isRootPath = $derived(currentPath === '/')
 	const isAuthPath = $derived(currentPath.startsWith('/auth'))
-	const shouldShowBottomBar = $derived(data.isAuthenticated && !isRootPath && !isAuthPath)
+	const shouldShowBottomBar = $derived(data?.isAuthenticated && !isRootPath && !isAuthPath)
 </script>
 
 <svelte:head>
