@@ -70,7 +70,7 @@
 		const height = drawArgs.height
 		const span = height - PADDING_TOP - PADDING_BOTTOM
 
-		context.fillStyle = palette.background
+		context.fillStyle = palette.laneBackground
 		context.fillRect(0, 0, width, height)
 
 		drawTimeGrid({ context, palette, view, width, top: 0, height, shouldShadeBars: true })
