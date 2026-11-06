@@ -72,22 +72,23 @@ z-toggle-button-group-item > svg {
 	--palette-pink-4: #ffa5d0;
 }
 
-/* Naturals wear the vivid tone of a family, around the wheel:
-   C red, D orange, E yellow, F green, G blue, A purple, B pink.
-   Sharps wear the deep tone of the family below them. */
+/* Each note has its own tone. Light tones are 3, dark tones are 1.
+   D light purple, D# dark red, E light yellow, F dark purple,
+   F# light orange, G light pink, G# light red, A dark orange,
+   A# dark yellow, B light pink, C dark green, C# dark pink. */
 :root {
-	--chord-c: var(--palette-red-2);
-	--chord-c-sharp: var(--palette-red-1);
-	--chord-d: var(--palette-orange-2);
-	--chord-d-sharp: var(--palette-orange-1);
-	--chord-e: var(--palette-yellow-2);
-	--chord-f: var(--palette-green-2);
-	--chord-f-sharp: var(--palette-green-1);
-	--chord-g: var(--palette-blue-2);
-	--chord-g-sharp: var(--palette-blue-1);
-	--chord-a: var(--palette-purple-2);
-	--chord-a-sharp: var(--palette-purple-1);
-	--chord-b: var(--palette-pink-2);
+	--chord-c: var(--palette-green-1);
+	--chord-c-sharp: var(--palette-pink-1);
+	--chord-d: var(--palette-purple-3);
+	--chord-d-sharp: var(--palette-red-1);
+	--chord-e: var(--palette-yellow-3);
+	--chord-f: var(--palette-purple-1);
+	--chord-f-sharp: var(--palette-orange-3);
+	--chord-g: var(--palette-pink-3);
+	--chord-g-sharp: var(--palette-red-3);
+	--chord-a: var(--palette-orange-1);
+	--chord-a-sharp: var(--palette-yellow-1);
+	--chord-b: var(--palette-pink-3);
 }
 
 /* Ink is the tone used for small text, so it must read on the
@@ -119,22 +120,22 @@ z-toggle-button-group-item > svg {
 
 [data-chord-color='c'] {
 	--chord-hue: var(--chord-c);
-	--chord-ink: var(--ink-red);
+	--chord-ink: var(--ink-green);
 }
 
 [data-chord-color='c-sharp'] {
 	--chord-hue: var(--chord-c-sharp);
-	--chord-ink: var(--ink-red);
+	--chord-ink: var(--ink-pink);
 }
 
 [data-chord-color='d'] {
 	--chord-hue: var(--chord-d);
-	--chord-ink: var(--ink-orange);
+	--chord-ink: var(--ink-purple);
 }
 
 [data-chord-color='d-sharp'] {
 	--chord-hue: var(--chord-d-sharp);
-	--chord-ink: var(--ink-orange);
+	--chord-ink: var(--ink-red);
 }
 
 [data-chord-color='e'] {
@@ -144,32 +145,32 @@ z-toggle-button-group-item > svg {
 
 [data-chord-color='f'] {
 	--chord-hue: var(--chord-f);
-	--chord-ink: var(--ink-green);
+	--chord-ink: var(--ink-purple);
 }
 
 [data-chord-color='f-sharp'] {
 	--chord-hue: var(--chord-f-sharp);
-	--chord-ink: var(--ink-green);
+	--chord-ink: var(--ink-orange);
 }
 
 [data-chord-color='g'] {
 	--chord-hue: var(--chord-g);
-	--chord-ink: var(--ink-blue);
+	--chord-ink: var(--ink-pink);
 }
 
 [data-chord-color='g-sharp'] {
 	--chord-hue: var(--chord-g-sharp);
-	--chord-ink: var(--ink-blue);
+	--chord-ink: var(--ink-red);
 }
 
 [data-chord-color='a'] {
 	--chord-hue: var(--chord-a);
-	--chord-ink: var(--ink-purple);
+	--chord-ink: var(--ink-orange);
 }
 
 [data-chord-color='a-sharp'] {
 	--chord-hue: var(--chord-a-sharp);
-	--chord-ink: var(--ink-purple);
+	--chord-ink: var(--ink-yellow);
 }
 
 [data-chord-color='b'] {
