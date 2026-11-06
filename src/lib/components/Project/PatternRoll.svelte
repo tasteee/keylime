@@ -6,7 +6,15 @@
 	import type { PatternEditorT } from '$lib/midiGrid/editor'
 	import { focusPatternFrame } from '$lib/midiGrid/focus'
 	import { getPitchAtY, getTickAtX, hitTestNote, snapTick } from '$lib/midiGrid/geometry'
-	import { drawCursorLine, drawLoopEnd, drawNotes, drawPlayhead, drawRows, drawTimeGrid } from '$lib/midiGrid/paint'
+	import {
+		drawCursorLine,
+		drawLoopEnd,
+		drawNotes,
+		drawOverscrollFade,
+		drawPlayhead,
+		drawRows,
+		drawTimeGrid
+	} from '$lib/midiGrid/paint'
 	import {
 		createMarqueeGesture,
 		createMoveGesture,
@@ -85,6 +93,7 @@
 		})
 
 		drawLoopEnd({ ...baseArgs, top: 0, height: drawArgs.height, loopEndTick })
+		drawOverscrollFade({ ...baseArgs, top: 0, height: drawArgs.height })
 		drawCursorLine({ ...baseArgs, height: drawArgs.height, playheadTick, cursorTick: view.cursorTick })
 		drawPlayhead({ ...baseArgs, height: drawArgs.height, playheadTick })
 	}

@@ -16,6 +16,12 @@ export const MIN_NOTE_TICKS = TICKS_PER_BEAT / 16
 export const MAX_PATTERN_BARS = 16
 export const MAX_PATTERN_TICKS = MAX_PATTERN_BARS * TICKS_PER_BAR
 
+// The grid scrolls this far past the last bar. That stretch is disabled
+// and fades out: nothing can be placed there, only spilled into by a
+// group move.
+export const OVERSCROLL_TICKS = TICKS_PER_BAR * 1.5
+export const GRID_END_TICKS = MAX_PATTERN_TICKS + OVERSCROLL_TICKS
+
 // Rows are chord tones, not keys. Pitch 0 is the bottom row.
 export const ROW_COUNT = SIGNAL_IDS.length
 export const ROWS_IN_BAND = ROWS_PER_BAND

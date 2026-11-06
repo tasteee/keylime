@@ -5,7 +5,7 @@
 	import type { PatternEditorT } from '$lib/midiGrid/editor'
 	import { focusPatternFrame } from '$lib/midiGrid/focus'
 	import { getTickAtX, getXAtTick } from '$lib/midiGrid/geometry'
-	import { checkIsNotePlaying, drawTimeGrid } from '$lib/midiGrid/paint'
+	import { checkIsNotePlaying, drawOverscrollFade, drawTimeGrid } from '$lib/midiGrid/paint'
 	import { withAlpha } from '$lib/midiGrid/palette'
 	import { clampNumber } from '$lib/midiGrid/time'
 	import type { NoteT } from '$lib/midiGrid/types'
@@ -124,6 +124,8 @@
 
 			context.globalAlpha = 1
 		}
+
+		drawOverscrollFade({ context, palette, view, width, top: 0, height })
 
 		context.fillStyle = palette.border
 		context.fillRect(0, 0, width, 1)
