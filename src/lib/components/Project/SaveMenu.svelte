@@ -3,8 +3,6 @@
 	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 	import { goToPath } from '$lib/modules/navigate'
 	import { awaited } from '$lib/modules/the-awaited'
-	import ProjectPlayButton from './ProjectPlayButton.svelte'
-	import DownloadMenu from './DownloadMenu.svelte'
 
 	const projectEditor = useProjectEditor()
 	const isDirty = $derived(projectEditor.state.isDirty)
@@ -51,33 +49,17 @@
 	}
 </script>
 
-<z-column>
-	<z-row insetX="lg" insetY="sm" alignsX="between" alignsY="center" gap="lg" isFullWidth>
-		<z-row gap="sm" alignsY="center">
-			<ProjectPlayButton />
-			{#if isDirty}
-				<z-status-dot status="away" doesPulse label="Unsaved"></z-status-dot>
-			{/if}
-		</z-row>
-
-		<z-row gap="md" alignsY="center">
-			<DownloadMenu />
-
-			<z-menu items={saveMenuItems} align="end" onselect={handleSaveMenuSelect}>
-				<z-button
-					slot="trigger"
-					kind={saveButtonKind}
-					tone={saveButtonTone}
-					size="sm"
-					isLoading={isSaving}
-					aria-label="Save options"
-					ondblclick={handleSave}
-				>
-					<FloppyDisk size={16} />
-					Save
-				</z-button>
-			</z-menu>
-		</z-row>
-	</z-row>
-	<z-separator></z-separator>
-</z-column>
+<z-menu items={saveMenuItems} align="end" onselect={handleSaveMenuSelect}>
+	<z-button
+		slot="trigger"
+		kind={saveButtonKind}
+		tone={saveButtonTone}
+		size="sm"
+		isLoading={isSaving}
+		aria-label="Save options"
+		ondblclick={handleSave}
+	>
+		<FloppyDisk size={16} />
+		Save
+	</z-button>
+</z-menu>
