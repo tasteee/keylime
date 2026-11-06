@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { updateUserSettings } from '$lib/database/auth'
+	import { themeStore } from '$lib/stores/theme.svelte'
 	import { useActiveUser, useAuthUser } from '$lib/helpers/useActiveUser.svelte'
 
 	type DialogUserSettingsPropsT = {
@@ -20,6 +21,13 @@
 	let errorMessage = $state<string | null>(null)
 	let successMessage = $state<string | null>(null)
 	let isSubmitting = $state(false)
+
+	const isDarkTheme = $derived(themeStore.theme === 'dark')
+
+	const handleThemeChange = (event: CustomEvent) => {
+		const isChecked: boolean = event.detail.checked
+		themeStore.setTheme(isChecked ? 'dark' : 'light')
+	}
 
 	const email = $derived(authUser?.email ?? '')
 	const saveButtonLabel = $derived(isSubmitting ? 'Saving…' : 'Save changes')
@@ -77,6 +85,8 @@
 		{#if hasSuccessMessage}
 			<z-alert tone="success">{successMessage}</z-alert>
 		{/if}
+
+		<z-switch size="sm" isChecked={isDarkTheme} onchange={handleThemeChange}>Dark theme</z-switch>
 
 		<z-field label="Username" isRequired>
 			<z-input value={userName} placeholder="username" isRequired oninput={handleUserNameInput}></z-input>
