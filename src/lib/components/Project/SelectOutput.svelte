@@ -1,13 +1,26 @@
 <script lang="ts">
 	import store from 'store'
 	import { SpeakerHigh } from 'phosphor-svelte'
+	import INSTRUMENTS_CONFIG from '$lib/constants/instruments.json'
 	import output from '$lib/stores/output.svelte'
 	import playbackStore from '$lib/stores/playback.svelte'
+	import SelectOutputInstrument from './SelectOutputInstrument.svelte'
+	import SelectMidiDevice from './SelectMidiDevice.svelte'
+	import SelectMidiChannel from './SelectMidiChannel.svelte'
+	import SelectVelocity from './SelectVelocity.svelte'
+	import SelectChordPreview from './SelectChordPreview.svelte'
 
 	const TICK_POP_MS = 140
 
-	const volumeLabel = $derived(String(output.volume))
+	const isMidi = $derived(output.type === 'MIDI')
+	const isMidiDeviceSelected = $derived(isMidi && Boolean(output.midiDeviceName))
 	const isMetronomeSliderDisabled = $derived(!output.isMetronomeEnabled)
+
+	const instrumentConfig = $derived(
+		INSTRUMENTS_CONFIG.availableInstruments[output.instrument as keyof typeof INSTRUMENTS_CONFIG.availableInstruments]
+	)
+	const instrumentLabel = $derived(isMidi ? 'MIDI' : (instrumentConfig?.label ?? output.instrument))
+	const triggerLabel = $derived(`${instrumentLabel} · ${output.volume}`)
 
 	let isTickPopping = $state(false)
 	let tickPopTimer: ReturnType<typeof setTimeout> | undefined
@@ -56,17 +69,29 @@
 </script>
 
 <z-popover placement="top-end">
-	<z-button slot="trigger" kind="outline" size="sm" aria-label="Volume">
+	<z-button slot="trigger" kind="outline" size="sm" aria-label="Output">
 		<span class={iconClassName}>
 			<SpeakerHigh size={16} />
 		</span>
-		{volumeLabel}
+		{triggerLabel}
 	</z-button>
 
-	<z-column gap="md" class="volume-panel">
-		<z-slider label="Volume" min={0} max={100} step={1} value={output.volume} doesShowValue oninput={handleVolumeInput}></z-slider>
+	<z-column gap="md" class="output-panel">
+		<SelectOutputInstrument />
+
+		{#if isMidi}
+			<SelectMidiDevice />
+		{/if}
+
+		{#if isMidiDeviceSelected}
+			<SelectMidiChannel />
+		{/if}
+
+		<SelectVelocity />
 
 		<z-separator></z-separator>
+
+		<z-slider label="Volume" min={0} max={100} step={1} value={output.volume} doesShowValue oninput={handleVolumeInput}></z-slider>
 
 		<z-switch size="sm" isChecked={output.isMetronomeEnabled} onchange={handleMetronomeToggle}>Metronome</z-switch>
 		<z-slider
@@ -79,12 +104,17 @@
 			doesShowValue
 			oninput={handleMetronomeVolumeInput}
 		></z-slider>
+
+		<z-separator></z-separator>
+
+		<SelectChordPreview />
+		<z-text size="xs" color="muted">Press ~ to switch between chord and pattern.</z-text>
 	</z-column>
 </z-popover>
 
 <style>
-	.volume-panel {
-		width: 16rem;
+	.output-panel {
+		width: 18rem;
 	}
 
 	.volume-icon {

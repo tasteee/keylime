@@ -15,4 +15,4 @@
 	}
 </script>
 
-<SelectControl label="Scale" value={scale} options={scaleOptions} onValueChange={handleSelect} />
+<SelectControl label="Scale" labelPlacement="top" value={scale} options={scaleOptions} onValueChange={handleSelect} />

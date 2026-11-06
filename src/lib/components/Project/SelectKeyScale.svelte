@@ -10,6 +10,8 @@
 </script>
 
 <ValuePopoverButton label="Key and scale" valueLabel={keyScaleLabel}>
-	<SelectKey />
-	<SelectScale />
+	<z-row gap="md" alignsY="end">
+		<SelectKey />
+		<SelectScale />
+	</z-row>
 </ValuePopoverButton>

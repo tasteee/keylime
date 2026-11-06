@@ -4,6 +4,15 @@
 	import { getPatternLibrary, buildLibraryPattern } from '$lib/helpers/patternLibrary'
 	import { createChord } from '$lib/music'
 
+	type PlacementT = 'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'
+
+	type PatternLibrarySelectPropsT = {
+		placement?: PlacementT
+	}
+
+	const props: PatternLibrarySelectPropsT = $props()
+	const popoverPlacement = $derived(props.placement ?? 'bottom-start')
+
 	const projectEditor = useProjectEditor()
 	const library = getPatternLibrary()
 	const FALLBACK_CHORD_SYMBOL = 'C'
@@ -56,7 +65,7 @@
 	}
 </script>
 
-<z-popover class="pattern-library-popover" placement="bottom-start" isOpen={isOpen} ontoggle={handleToggle}>
+<z-popover class="pattern-library-popover" placement={popoverPlacement} isOpen={isOpen} ontoggle={handleToggle}>
 	<z-button slot="trigger" kind="outline" size="sm" aria-label="Pattern library">
 		<Books size={16} weight="bold" />
 		Library

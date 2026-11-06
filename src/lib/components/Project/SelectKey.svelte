@@ -13,4 +13,4 @@
 	}
 </script>
 
-<SelectControl label="Key" value={project.key} options={keyOptions} onValueChange={handleSelect} />
+<SelectControl label="Key" labelPlacement="top" value={project.key} options={keyOptions} onValueChange={handleSelect} />

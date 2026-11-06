@@ -13,6 +13,7 @@
 	import { hmu } from '$lib/modules/hitmeup'
 	import { calculateStartTimes } from '$lib/helpers/progression'
 	import { isTypingInTextField } from '$lib/helpers/typing'
+	import output from '$lib/stores/output.svelte'
 
 	const projectEditor = useProjectEditor()
 	const project = $derived(projectEditor.state.project)
@@ -69,6 +70,14 @@
 		if (isSaveShortcut) {
 			event.preventDefault()
 			if (projectEditor.checkIsDirty()) await projectEditor.save()
+			return
+		}
+
+		const isTildeKey = event.code === 'Backquote'
+		if (isTildeKey && !isTypingInTextField(event)) {
+			event.preventDefault()
+			const isChordMode = output.chordPreviewMode === 'chord'
+			output.chordPreviewMode = isChordMode ? 'pattern' : 'chord'
 			return
 		}
 

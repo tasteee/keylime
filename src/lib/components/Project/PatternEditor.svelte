@@ -3,8 +3,8 @@
 	import PatternEditorSignal from './PatternEditorSignal.svelte'
 	import PatternTimingHeader from './PatternTimingHeader.svelte'
 	import PatternLibrarySelect from './PatternLibrarySelect.svelte'
-	import { toFractionString } from '$lib/helpers/numbers'
-	import { MagnifyingGlassPlus, MagnifyingGlassMinus, MusicNotes } from 'phosphor-svelte'
+	import SelectPatternLength from './SelectPatternLength.svelte'
+	import { MagnifyingGlassPlus, MagnifyingGlassMinus, Gear } from 'phosphor-svelte'
 	import { SIGNAL_IDS, SIGNAL_ROWS } from '$lib/constants/signalRows'
 	import { createSignal } from '$lib/helpers/creators'
 	import { resolveSignalConflicts, getSignalRowMidiNotes } from '$lib/helpers/signalRows'
@@ -675,39 +675,6 @@
 <svelte:window onclick={handleClickOutside} onkeydown={handleKeyDown} />
 
 <div class="PatternEditor">
-	<z-row insetX="lg" insetY="sm" gap="lg" alignsY="center" isFullWidth>
-		<z-row gap="sm" alignsY="center">
-			<MusicNotes size={20} />
-
-			<z-column>
-				<z-subheading size="md">Pattern</z-subheading>
-				<z-text size="xs" color="muted" class="patternBarCount">
-					{toFractionString(context.state.project.patternDurationBars)}
-					{context.state.project.patternDurationBars <= 1 ? 'bar' : 'bars'}
-				</z-text>
-			</z-column>
-		</z-row>
-
-		<z-separator isVertical></z-separator>
-
-		<z-button-group>
-			<z-button kind="outline" size="sm" onclick={zoomOutPattern} aria-label="Zoom out">
-				<MagnifyingGlassMinus size={16} weight="bold" />
-			</z-button>
-			<z-button kind="outline" size="sm" onclick={zoomInPattern} aria-label="Zoom in">
-				<MagnifyingGlassPlus size={16} weight="bold" />
-			</z-button>
-		</z-button-group>
-
-		<PatternLibrarySelect />
-
-		<z-spacer canGrow></z-spacer>
-
-		<z-tooltip content="Restart the pattern at the start of every chord" placement="bottom">
-			<z-switch size="sm" isChecked={doesPatternReset} onchange={handleResetOnChordChange}>Reset on chord change</z-switch>
-		</z-tooltip>
-	</z-row>
-	<z-separator></z-separator>
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="signalGridBox" bind:this={signalGridBox}>
@@ -774,20 +741,67 @@
 			<div class="inactivePatternOverlay" style="left: {activePatternWidthPx}px;"></div>
 		</div>
 	</div>
+
+	<div class="patternFloatingControls">
+		<PatternLibrarySelect placement="top-end" />
+
+		<z-button-group>
+			<z-button kind="outline" size="sm" onclick={zoomOutPattern} aria-label="Zoom out">
+				<MagnifyingGlassMinus size={16} weight="bold" />
+			</z-button>
+			<z-button kind="outline" size="sm" onclick={zoomInPattern} aria-label="Zoom in">
+				<MagnifyingGlassPlus size={16} weight="bold" />
+			</z-button>
+		</z-button-group>
+
+		<z-popover placement="top-end">
+			<z-button slot="trigger" kind="outline" size="sm" aria-label="Pattern settings">
+				<Gear size={16} />
+			</z-button>
+
+			<z-column gap="md" class="patternSettingsPanel">
+				<SelectPatternLength />
+				<z-tooltip content="Restart the pattern at the start of every chord" placement="top">
+					<z-switch size="sm" isChecked={doesPatternReset} onchange={handleResetOnChordChange}>Reset on chord change</z-switch>
+				</z-tooltip>
+			</z-column>
+		</z-popover>
+	</div>
 </div>
 
 <style>
+	/* A rounded segment of the page, not the frame of it. */
 	.PatternEditor {
-		width: 100%;
+		position: relative;
 		flex: 1;
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
+		margin: var(--spacing-3) var(--spacing-4) 0;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		background: var(--card);
+		overflow: hidden;
 	}
 
-	.patternBarCount {
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
+	/* Floats over the bottom right of the signal grid. */
+	.patternFloatingControls {
+		position: absolute;
+		right: var(--spacing-5);
+		bottom: var(--spacing-5);
+		z-index: 130;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: var(--spacing-2);
+		padding: var(--spacing-2);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-md);
+	}
+
+	.patternSettingsPanel {
+		min-width: 14rem;
 	}
 
 	.signalGridBox {

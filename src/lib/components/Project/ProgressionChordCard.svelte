@@ -1,6 +1,7 @@
 <script lang="ts">
 	import playbackStore from '$lib/stores/playback.svelte'
 	import { HandGrabbing, DotsSixVertical } from 'phosphor-svelte'
+	import { getChordColor } from '$lib/helpers/chordColors'
 	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
 	import DialogChordModifier from './DialogChordModifier.svelte'
 	import { getContext } from 'svelte'
@@ -47,6 +48,10 @@
 	const props: ProgressionChordCardPropsT = $props()
 	let isModifierDialogOpen = $state(false)
 	const isRest = $derived(props.item.type === 'rest')
+	const chordColor = $derived.by(() => {
+		const project = context.state.project
+		return getChordColor({ symbol: props.item.symbol, key: project.key, scale: project.scale })
+	})
 	const isSelected = $derived(props.item.id === context.state.selectedProgressionItemId)
 	const width = $derived(`${(props.item.durationBeats ?? 0) * props.pixelsPerBeat + (props.index === 0 ? 0 : 0)}px`)
 
@@ -115,6 +120,7 @@
 	data-is-resizing={props.isResizing}
 	class:isRest
 	class:isSelected
+	data-chord-color={chordColor}
 	onclick={props.selectItem}
 	onmousedown={onMouseDown}
 	oncontextmenu={handleContextMenu}
@@ -169,8 +175,8 @@
 		align-items: center;
 		justify-content: center;
 		height: auto;
-		background-color: var(--card);
-		border: 1px solid var(--color-neutral-4);
+		background-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 8%, var(--card));
+		border: 1px solid color-mix(in oklch, var(--chord-hue, var(--foreground)) 26%, var(--border));
 		border-radius: var(--radius-md);
 		color: var(--foreground);
 		cursor: default;
@@ -182,12 +188,13 @@
 	}
 
 	.progressionItem:hover {
-		background: var(--background-light);
+		background-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 13%, var(--card));
 	}
 
+	/* Selected is one step up in tone: deeper tint, stronger border. */
 	.progressionItem.isSelected {
-		background-color: var(--color-neutral-3);
-		border-color: var(--color-neutral-5);
+		background-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 22%, var(--card));
+		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 70%, var(--border));
 		z-index: 20;
 	}
 
@@ -198,6 +205,7 @@
 	}
 
 	.progressionItem.isRest.isSelected {
+		border-color: var(--color-neutral-5);
 		background-color: var(--color-neutral-3);
 		color: var(--foreground);
 	}
@@ -311,9 +319,9 @@
 	}
 
 	/* Disable hover effects on every card while one is dragged or resized. */
-	:global([data-is-dragging='true']) .progressionItem:hover,
-	:global([data-is-resizing='true']) .progressionItem:hover {
-		background-color: var(--card);
+	:global([data-is-dragging='true']) .progressionItem:not(.isSelected):hover,
+	:global([data-is-resizing='true']) .progressionItem:not(.isSelected):hover {
+		background-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 8%, var(--card));
 	}
 
 	:global([data-is-dragging='true']) .progressionItem.isRest:hover,

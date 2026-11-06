@@ -2,6 +2,7 @@
 	import { Plus } from 'phosphor-svelte'
 	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 	import playbackStore from '$lib/stores/playback.svelte'
+	import { getChordColor } from '$lib/helpers/chordColors'
 	import ChordSymbolDisplay from './ChordSymbolDisplay.svelte'
 	import DialogChordModifier from './DialogChordModifier.svelte'
 
@@ -13,6 +14,10 @@
 	const projectEditor = useProjectEditor()
 	const project = $derived(projectEditor.state.project)
 	const isPlaying = $derived(playbackStore.currentlyPlayingChordId === props.chord.id)
+
+	const chordColor = $derived(
+		getChordColor({ symbol: props.chord.symbol, key: project.key, scale: project.scale })
+	)
 
 	let isModifierDialogOpen = $state(false)
 
@@ -75,9 +80,10 @@
 	isInteractive
 	isFullWidth
 	radius="md"
-	insetX="lg"
+	insetX="md"
 	class="chordCard"
 	class:isPlaying
+	data-chord-color={chordColor}
 	role="button"
 	tabindex="0"
 	onmousedown={handleMouseDown}
@@ -106,12 +112,23 @@
 
 <style>
 	.chordCard {
-		height: 3.5rem;
+		height: 3rem;
 		user-select: none;
+		background: color-mix(in oklch, var(--chord-hue, var(--foreground)) 7%, var(--card));
+		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 24%, var(--border));
+		transition:
+			background var(--motion-fast) var(--ease-enter),
+			border-color var(--motion-fast) var(--ease-enter);
+	}
+
+	.chordCard:hover {
+		background: color-mix(in oklch, var(--chord-hue, var(--foreground)) 13%, var(--card));
+		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 45%, var(--border));
 	}
 
 	.chordCard.isPlaying {
-		border-color: var(--foreground);
+		background: color-mix(in oklch, var(--chord-hue, var(--foreground)) 20%, var(--card));
+		border-color: var(--chord-hue, var(--foreground));
 	}
 
 	.chordCard :global(.chordCardAction) {
