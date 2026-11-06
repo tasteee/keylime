@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goToPath } from '$lib/modules/navigate'
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
 	import { fade } from 'svelte/transition'
@@ -74,7 +74,7 @@
 	$effect(() => {
 		if (browser && !props.data.isAuthenticated) {
 			console.log('[dashboard] Not authenticated, redirecting to /auth/login')
-			goto('/auth/login')
+			goToPath('/auth/login')
 		}
 	})
 
@@ -104,7 +104,7 @@
 		console.log('\n\n\nhandleCreateProject result:', { result, newProjectData, userId })
 		if (!result.data) return
 		const project = result.data as ProjectT
-		goto(`/project/${project.id}`)
+		goToPath(`/project/${project.id}`)
 	}
 
 	const handleDeleteProject = async (id: string) => {
@@ -178,7 +178,7 @@
 	})
 
 	const handleOpenProject = (id: string) => {
-		goto(`/project/${id}`)
+		goToPath(`/project/${id}`)
 	}
 
 	const handleCloneProject = async (projectId: string) => {
@@ -186,7 +186,7 @@
 		const result = await cloneProjectById(projectId, props.data.activeUser.id)
 		if (result.data) {
 			await loadUserProjects()
-			goto(`/project/${result.data.id}`)
+			goToPath(`/project/${result.data.id}`)
 		}
 	}
 

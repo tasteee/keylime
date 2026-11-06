@@ -1,4 +1,4 @@
-import { goto } from "$app/navigation"
+import { goToPath } from '$lib/modules/navigate'
 import { SIGNAL_ROWS } from "$lib/constants/signalRows"
 import { deleteProjectById, getProjectById, saveProjectData } from "$lib/modules/database"
 
@@ -65,7 +65,7 @@ export const deleteProject = async (id: string) => {
 }
 
 export const goToProjectEditor = (id: string) => {
-  goto(`/project/editor/${id}`)
+  goToPath(`/project/editor/${id}`)
 }
 
 export const loadProject = async (id: string): Promise<{ data: ProjectT | null; error: Error | null }> => {

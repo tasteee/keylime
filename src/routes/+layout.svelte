@@ -20,15 +20,15 @@
 
 	let { children, data } = $props()
 
-	setContext('activeUser', () => data?.activeUser)
-	setContext('authUser', () => data?.authUser)
+	setContext('activeUser', () => data.activeUser)
+	setContext('authUser', () => data.authUser)
 
 	OverlayScrollbars.plugin(ClickScrollPlugin)
 
 	const currentPath = $derived($page.url.pathname.replace(base, '') || '/')
 	const isRootPath = $derived(currentPath === '/')
 	const isAuthPath = $derived(currentPath.startsWith('/auth'))
-	const shouldShowBottomBar = $derived(data?.isAuthenticated && !isRootPath && !isAuthPath)
+	const shouldShowBottomBar = $derived(data.isAuthenticated && !isRootPath && !isAuthPath)
 </script>
 
 <svelte:head>

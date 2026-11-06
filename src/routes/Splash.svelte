@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { goToPath } from '$lib/modules/navigate'
 	import { Button } from '$lib/components/ui/button'
 	import Icon from '@iconify/svelte'
 	import { fade } from 'svelte/transition'
 
 	const handleGoToLogin = () => {
-		goto('/auth/login')
+		goToPath('/auth/login')
 	}
 
 	const handleGoToSignup = () => {
-		goto('/auth/login')
+		goToPath('/auth/login')
 	}
 </script>
 

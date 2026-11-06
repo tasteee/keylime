@@ -1,21 +1,7 @@
 // Browser-side data access. Every call goes to the /api routes,
 // which read and write D1. Return shapes match what pages expect.
 import { warnWhen } from "$lib/modules/warnWhen"
-
-type ApiResultT<DataT> = { data: DataT | null; error: Error | null; status: number }
-
-const callApi = async <DataT = any>(path: string, init: RequestInit = {}): Promise<ApiResultT<DataT>> => {
-  try {
-    const hasBody = init.body !== undefined
-    const headers = hasBody ? { 'content-type': 'application/json' } : undefined
-    const response = await fetch(path, { credentials: 'same-origin', headers, ...init })
-    const payload = await response.json().catch(() => ({}))
-    if (!response.ok) return { data: null, error: new Error(payload.error ?? `Request failed (${response.status})`), status: response.status }
-    return { data: payload as DataT, error: null, status: response.status }
-  } catch (error) {
-    return { data: null, error: error as Error, status: 0 }
-  }
-}
+import { callApi } from "$lib/modules/api"
 
 const toQuery = (params: Record<string, unknown>): string => {
   const search = new URLSearchParams()
