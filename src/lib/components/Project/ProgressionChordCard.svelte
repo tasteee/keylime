@@ -163,6 +163,7 @@
 	.progressionItem {
 		position: relative;
 		display: flex;
+		box-sizing: border-box;
 		flex-shrink: 0;
 		align-items: center;
 		justify-content: center;

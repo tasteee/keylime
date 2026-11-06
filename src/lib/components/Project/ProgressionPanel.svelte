@@ -200,7 +200,6 @@
 	const DRAG_THRESHOLD_PIXELS = 24
 	const MIN_DURATION_BEATS = 1 // Minimum item duration (1 beat)
 	const RESIZE_INCREMENT_BEATS = 0.5 // Snap to 0.5 beats when resizing
-	const GAP_BETWEEN_ITEMS = 1 // Gap in pixels between items
 	const MAX_MARKER_BARS = 64 // Render markers up to this many bars
 
 	// Derived: PIXELS_PER_BEAT from store
@@ -213,9 +212,8 @@
 
 	// Derived: item area width in pixels (including gaps)
 	const itemAreaWidth = $derived.by(() => {
-		const numItems = progressionItems.length
-		const totalGaps = numItems > 0 ? (numItems - 1) * GAP_BETWEEN_ITEMS : 0
-		return totalBeats * PIXELS_PER_BEAT + totalGaps
+		// Cards sit flush. Width must match the beat grid exactly.
+		return totalBeats * PIXELS_PER_BEAT
 	})
 
 	// Derived: ghost item data when dragging
