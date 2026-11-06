@@ -1,7 +1,27 @@
 import { describe, it, expect, beforeEach } from 'vitest'
+import { getChordMidiNotes, midiToNoteName, noteNameToMidi } from '$lib/music'
 import { generatePerformance } from './performance'
-import { chordToNotes } from './chordToNotes'
-import { getNoteFromSignalRow } from './signalRows'
+import { getSignalRowMidiNotes } from './signalRows'
+
+// The chord's notes as names, e.g. ['C3', 'E3', 'G3'].
+const chordToNotes = (args: { chord: ChordT; rootOctave: string }): string[] => {
+  return getChordMidiNotes(args.chord, Number(args.rootOctave)).map(midiToNoteName)
+}
+
+// What a signal row plays against a chord with these notes, as a note name.
+const getNoteFromSignalRow = (args: { signalRowId: string; chord: null; chordNotes: string[] }): string | null => {
+  const midiNotes = args.chordNotes.map((name) => noteNameToMidi(name)!)
+  const lowestNote = midiNotes[0]
+  const chord = {
+    symbol: 'test',
+    rootPitch: lowestNote % 12,
+    chordType: 'test',
+    intervals: midiNotes.map((midiNote) => midiNote - lowestNote),
+    midiNotes
+  }
+  const midiNote = getSignalRowMidiNotes(chord, [args.signalRowId]).get(args.signalRowId)
+  return midiNote === undefined ? null : midiToNoteName(midiNote)
+}
 
 describe('Chord-Relative MIDI Pattern Engine', () => {
   /**
@@ -15,26 +35,20 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 4
         },
         {
           id: 'chord-2',
           type: 'chord',
-          name: 'G',
           symbol: 'G',
-          rootNote: 'G',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'G',
           startTime: 4,
           durationBeats: 4
         }
@@ -55,7 +69,7 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 8,
         progressionLengthBeats: 8,
-        octave: '3'
+        octave: 3
       })
 
       expect(performance).toHaveLength(2)
@@ -68,26 +82,20 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 2
         },
         {
           id: 'chord-2',
           type: 'chord',
-          name: 'G',
           symbol: 'G',
-          rootNote: 'G',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'G',
           startTime: 2,
           durationBeats: 2
         }
@@ -106,13 +114,13 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       // Signal should be clipped to chord boundary (1.5 + 1.0 = 2.5, but chord ends at 2.0)
       expect(performance).toHaveLength(1)
-      expect(performance[0].startTime).toBe(1.5)
-      expect(performance[0].duration).toBe(0.5) // Clipped to chord boundary
+      expect(performance[0].startBeat).toBe(1.5)
+      expect(performance[0].durationBeats).toBe(0.5) // Clipped to chord boundary
       expect(performance[0].chordId).toBe('chord-1')
     })
   })
@@ -126,13 +134,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
     it('should produce ordered pitch lists from chords', () => {
       const chord: ChordT = {
         id: 'c-maj',
-        name: 'C',
         symbol: 'C',
-        rootNote: 'C',
         octaveOffset: 0,
         voicing: 'closed',
         inversion: 0,
-        bassNote: 'C'
       }
 
       const notes = chordToNotes({ chord, rootOctave: '3' })
@@ -144,13 +149,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
     it('should apply octave offsets to all voices', () => {
       const chord: ChordT = {
         id: 'c-maj',
-        name: 'C',
         symbol: 'C',
-        rootNote: 'C',
         octaveOffset: 1,
         voicing: 'closed',
         inversion: 0,
-        bassNote: 'C'
       }
 
       const notes = chordToNotes({ chord, rootOctave: '3' })
@@ -161,13 +163,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
     it('should apply inversions correctly', () => {
       const chord: ChordT = {
         id: 'c-maj',
-        name: 'C',
         symbol: 'C',
-        rootNote: 'C',
         octaveOffset: 0,
         voicing: 'closed',
         inversion: 1,
-        bassNote: '' // Empty to allow inversion to determine bass note
       }
 
       const notes = chordToNotes({ chord, rootOctave: '3' })
@@ -307,13 +306,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 8
         }
@@ -332,15 +328,15 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 2,
         progressionLengthBeats: 8,
-        octave: '3'
+        octave: 3
       })
 
       // Should repeat 4 times (8 beats / 2 beats per pattern)
       expect(performance).toHaveLength(4)
-      expect(performance[0].startTime).toBe(0)
-      expect(performance[1].startTime).toBe(2)
-      expect(performance[2].startTime).toBe(4)
-      expect(performance[3].startTime).toBe(6)
+      expect(performance[0].startBeat).toBe(0)
+      expect(performance[1].startBeat).toBe(2)
+      expect(performance[2].startBeat).toBe(4)
+      expect(performance[3].startBeat).toBe(6)
     })
 
     it('should translate pattern-relative times to absolute beats', () => {
@@ -348,13 +344,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 8
         }
@@ -373,13 +366,13 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 8,
-        octave: '3'
+        octave: 3
       })
 
       // Should appear at beats 1.5 and 5.5
       expect(performance).toHaveLength(2)
-      expect(performance[0].startTime).toBe(1.5)
-      expect(performance[1].startTime).toBe(5.5)
+      expect(performance[0].startBeat).toBe(1.5)
+      expect(performance[1].startBeat).toBe(5.5)
     })
 
     it('should resolve signals against chord active at onset time', () => {
@@ -387,26 +380,20 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 2
         },
         {
           id: 'chord-2',
           type: 'chord',
-          name: 'G',
           symbol: 'G',
-          rootNote: 'G',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'G',
           startTime: 2,
           durationBeats: 2
         }
@@ -430,20 +417,20 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       expect(performance).toHaveLength(4)
       // First two signals resolve to C chord
       expect(performance[0].chordId).toBe('chord-1')
-      expect(performance[0].note).toBe('C3')
+      expect(midiToNoteName(performance[0].midiNote)).toBe('C3')
       expect(performance[1].chordId).toBe('chord-1')
-      expect(performance[1].note).toBe('C3')
+      expect(midiToNoteName(performance[1].midiNote)).toBe('C3')
       // Last two signals resolve to G chord
       expect(performance[2].chordId).toBe('chord-2')
-      expect(performance[2].note).toBe('G3')
+      expect(midiToNoteName(performance[2].midiNote)).toBe('G3')
       expect(performance[3].chordId).toBe('chord-2')
-      expect(performance[3].note).toBe('G3')
+      expect(midiToNoteName(performance[3].midiNote)).toBe('G3')
     })
 
     it('should not stop at chord boundaries mid-pattern', () => {
@@ -451,26 +438,20 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 1
         },
         {
           id: 'chord-2',
           type: 'chord',
-          name: 'G',
           symbol: 'G',
-          rootNote: 'G',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'G',
           startTime: 1,
           durationBeats: 1
         }
@@ -489,12 +470,12 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 2,
         progressionLengthBeats: 2,
-        octave: '3'
+        octave: 3
       })
 
       // Pattern should loop normally, not be affected by chord boundary
       expect(performance).toHaveLength(1)
-      expect(performance[0].startTime).toBe(0)
+      expect(performance[0].startBeat).toBe(0)
     })
   })
 
@@ -513,13 +494,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 4
         }
@@ -540,7 +518,7 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       const performance2 = generatePerformance({
@@ -549,16 +527,16 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       // Should produce identical output (velocity is randomized, so check other fields)
       expect(performance1.length).toBe(performance2.length)
       performance1.forEach((note1, index) => {
         const note2 = performance2[index]
-        expect(note1.note).toBe(note2.note)
-        expect(note1.startTime).toBe(note2.startTime)
-        expect(note1.duration).toBe(note2.duration)
+        expect(note1.midiNote).toBe(note2.midiNote)
+        expect(note1.startBeat).toBe(note2.startBeat)
+        expect(note1.durationBeats).toBe(note2.durationBeats)
         expect(note1.chordId).toBe(note2.chordId)
       })
     })
@@ -568,13 +546,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 4
         }
@@ -592,21 +567,21 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       const note = performance[0]
       expect(note).toHaveProperty('id')
-      expect(note).toHaveProperty('note')
-      expect(note).toHaveProperty('startTime')
-      expect(note).toHaveProperty('duration')
+      expect(note).toHaveProperty('midiNote')
+      expect(note).toHaveProperty('startBeat')
+      expect(note).toHaveProperty('durationBeats')
       expect(note).toHaveProperty('velocity')
       expect(note).toHaveProperty('chordId')
-      expect(note).toHaveProperty('signalId')
+      expect(note).toHaveProperty('eventId')
 
-      expect(typeof note.note).toBe('string')
-      expect(typeof note.startTime).toBe('number')
-      expect(typeof note.duration).toBe('number')
+      expect(typeof note.midiNote).toBe('number')
+      expect(typeof note.startBeat).toBe('number')
+      expect(typeof note.durationBeats).toBe('number')
       expect(typeof note.velocity).toBe('number')
     })
 
@@ -615,13 +590,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 8
         }
@@ -644,13 +616,13 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 8,
         progressionLengthBeats: 8,
-        octave: '3'
+        octave: 3
       })
 
       expect(performance).toHaveLength(3)
-      expect(performance[0].startTime).toBe(2)
-      expect(performance[1].startTime).toBe(4)
-      expect(performance[2].startTime).toBe(6)
+      expect(performance[0].startBeat).toBe(2)
+      expect(performance[1].startBeat).toBe(4)
+      expect(performance[2].startBeat).toBe(6)
     })
   })
 
@@ -677,13 +649,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 4
         }
@@ -694,13 +663,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-2',
           type: 'chord',
-          name: 'G',
           symbol: 'G',
-          rootNote: 'G',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'G',
           startTime: 0,
           durationBeats: 4
         }
@@ -712,7 +678,7 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       const performanceG = generatePerformance({
@@ -721,19 +687,19 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       // Rhythm should be identical
       expect(performanceC.length).toBe(performanceG.length)
       performanceC.forEach((noteC, index) => {
         const noteG = performanceG[index]
-        expect(noteC.startTime).toBe(noteG.startTime)
-        expect(noteC.duration).toBe(noteG.duration)
+        expect(noteC.startBeat).toBe(noteG.startBeat)
+        expect(noteC.durationBeats).toBe(noteG.durationBeats)
       })
 
       // But pitches should differ
-      expect(performanceC[0].note).not.toBe(performanceG[0].note)
+      expect(performanceC[0].midiNote).not.toBe(performanceG[0].midiNote)
     })
 
     it('INVARIANT: All pitches derived from current chord context', () => {
@@ -741,26 +707,20 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 2
         },
         {
           id: 'chord-2',
           type: 'chord',
-          name: 'Am',
           symbol: 'Am',
-          rootNote: 'A',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'A',
           startTime: 2,
           durationBeats: 2
         }
@@ -782,37 +742,31 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       // N1 in C chord should be C
-      expect(performance[0].note).toBe('C3')
+      expect(midiToNoteName(performance[0].midiNote)).toBe('C3')
       // N1 in Am chord should be A
-      expect(performance[1].note).toBe('A3')
+      expect(midiToNoteName(performance[1].midiNote)).toBe('A3')
     })
 
     it('INVARIANT: Degree indices refer to realized voices (post-voicing)', () => {
       // This is implicitly tested by the voicing tests, but worth emphasizing
       const chordClosed: ChordT = {
         id: 'c-closed',
-        name: 'C',
         symbol: 'C',
-        rootNote: 'C',
         octaveOffset: 0,
         voicing: 'closed',
         inversion: 0,
-        bassNote: ''
       }
 
       const chordInverted: ChordT = {
         id: 'c-inverted',
-        name: 'C',
         symbol: 'C',
-        rootNote: 'C',
         octaveOffset: 0,
         voicing: 'closed',
         inversion: 1,
-        bassNote: ''
       }
 
       const notesClosed = chordToNotes({ chord: chordClosed, rootOctave: '3' })
@@ -857,7 +811,7 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         },
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       expect(performance).toEqual([])
@@ -869,13 +823,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
           {
             id: 'chord-1',
             type: 'chord',
-            name: 'C',
             symbol: 'C',
-            rootNote: 'C',
             octaveOffset: 0,
             voicing: 'closed',
             inversion: 0,
-            bassNote: 'C',
             startTime: 0,
             durationBeats: 4
           }
@@ -884,7 +835,7 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows: {},
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       expect(performance).toEqual([])
@@ -896,13 +847,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
           {
             id: 'chord-1',
             type: 'chord',
-            name: 'C',
             symbol: 'C',
-            rootNote: 'C',
             octaveOffset: 0,
             voicing: 'closed',
             inversion: 0,
-            bassNote: 'C',
             startTime: 0,
             durationBeats: 4
           }
@@ -913,7 +861,7 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         },
         patternLengthBeats: 0,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       expect(performance).toEqual([])
@@ -924,13 +872,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 4
         }
@@ -948,11 +893,11 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       expect(performance).toHaveLength(1)
-      expect(performance[0].duration).toBe(0.01)
+      expect(performance[0].durationBeats).toBe(0.01)
     })
 
     it('should handle signal extending beyond progression end', () => {
@@ -960,13 +905,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 4
         }
@@ -985,13 +927,13 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       // Should be clipped to progression end
       expect(performance).toHaveLength(1)
-      expect(performance[0].startTime).toBe(3)
-      expect(performance[0].duration).toBe(1) // Clipped to beat 4
+      expect(performance[0].startBeat).toBe(3)
+      expect(performance[0].durationBeats).toBe(1) // Clipped to beat 4
     })
 
     it('should handle multiple signals in same signal row', () => {
@@ -999,13 +941,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 4
         }
@@ -1027,13 +966,13 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 4,
         progressionLengthBeats: 4,
-        octave: '3'
+        octave: 3
       })
 
       expect(performance).toHaveLength(3)
-      expect(performance[0].note).toBe('C3')
-      expect(performance[1].note).toBe('C3')
-      expect(performance[2].note).toBe('C3')
+      expect(midiToNoteName(performance[0].midiNote)).toBe('C3')
+      expect(midiToNoteName(performance[1].midiNote)).toBe('C3')
+      expect(midiToNoteName(performance[2].midiNote)).toBe('C3')
     })
 
     it('should handle complex chord with many voices', () => {
@@ -1041,19 +980,16 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'Cmaj13',
           symbol: 'Cmaj13',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 4
         }
       ]
 
-      const notes = chordToNotes({ chord: progression[0], rootOctave: '3' })
+      const notes = chordToNotes({ chord: progression[0] as ProgressionChordT, rootOctave: '3' })
 
       // Cmaj13 should have many voices
       expect(notes.length).toBeGreaterThan(3)
@@ -1069,7 +1005,7 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
       const firstNote = notes[0]
       const firstNoteOctave = parseInt(firstNote.match(/\d+/)?.[0] || '0')
       expect(degree1).toContain(firstNote.replace(/\d+/, ''))
-      expect(parseInt(degree1.match(/\d+/)?.[0] || '0')).toBe(firstNoteOctave + 1)
+      expect(parseInt(degree1!.match(/\d+/)?.[0] || '0')).toBe(firstNoteOctave + 1)
     })
   })
 
@@ -1083,52 +1019,40 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 2
         },
         {
           id: 'chord-2',
           type: 'chord',
-          name: 'Am',
           symbol: 'Am',
-          rootNote: 'A',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'A',
           startTime: 2,
           durationBeats: 2
         },
         {
           id: 'chord-3',
           type: 'chord',
-          name: 'F',
           symbol: 'F',
-          rootNote: 'F',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'F',
           startTime: 4,
           durationBeats: 2
         },
         {
           id: 'chord-4',
           type: 'chord',
-          name: 'G',
           symbol: 'G',
-          rootNote: 'G',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'G',
           startTime: 6,
           durationBeats: 2
         }
@@ -1153,7 +1077,7 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 2,
         progressionLengthBeats: 8,
-        octave: '3'
+        octave: 3
       })
 
       // Pattern repeats 4 times, 3 signals each = 12 total notes
@@ -1171,10 +1095,10 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
       repetition4.forEach((note) => expect(note.chordId).toBe('chord-4'))
 
       // Verify rhythm is consistent across all repetitions
-      expect(repetition1[0].startTime).toBe(0)
-      expect(repetition2[0].startTime).toBe(2)
-      expect(repetition3[0].startTime).toBe(4)
-      expect(repetition4[0].startTime).toBe(6)
+      expect(repetition1[0].startBeat).toBe(0)
+      expect(repetition2[0].startBeat).toBe(2)
+      expect(repetition3[0].startBeat).toBe(4)
+      expect(repetition4[0].startBeat).toBe(6)
     })
 
     it('should handle arpeggio pattern across changing chords', () => {
@@ -1182,26 +1106,20 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         {
           id: 'chord-1',
           type: 'chord',
-          name: 'C',
           symbol: 'C',
-          rootNote: 'C',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'C',
           startTime: 0,
           durationBeats: 4
         },
         {
           id: 'chord-2',
           type: 'chord',
-          name: 'G',
           symbol: 'G',
-          rootNote: 'G',
           octaveOffset: 0,
           voicing: 'closed',
           inversion: 0,
-          bassNote: 'G',
           startTime: 4,
           durationBeats: 4
         }
@@ -1228,23 +1146,23 @@ describe('Chord-Relative MIDI Pattern Engine', () => {
         signalRows,
         patternLengthBeats: 1,
         progressionLengthBeats: 8,
-        octave: '3'
+        octave: 3
       })
 
       // 8 beats / 1 beat per pattern = 8 repetitions × 4 notes = 32 notes
       expect(performance).toHaveLength(32)
 
       // First 4 notes should be C major arpeggio
-      const cNotes = chordToNotes({ chord: progression[0], rootOctave: '3' })
-      expect(performance[0].note).toBe(cNotes[0]) // C3
-      expect(performance[1].note).toBe(cNotes[1]) // E3
-      expect(performance[2].note).toBe(cNotes[2]) // G3
-      expect(performance[3].note).toBe(cNotes[0].replace(/3/, '4')) // C4 (wrapped)
+      const cNotes = chordToNotes({ chord: progression[0] as ProgressionChordT, rootOctave: '3' })
+      expect(midiToNoteName(performance[0].midiNote)).toBe(cNotes[0]) // C3
+      expect(midiToNoteName(performance[1].midiNote)).toBe(cNotes[1]) // E3
+      expect(midiToNoteName(performance[2].midiNote)).toBe(cNotes[2]) // G3
+      expect(midiToNoteName(performance[3].midiNote)).toBe(cNotes[0].replace(/3/, '4')) // C4 (wrapped)
 
       // Notes at beat 4+ should be G major arpeggio
-      const gNotes = chordToNotes({ chord: progression[1], rootOctave: '3' })
-      const notesAtBeat4 = performance.filter((note) => note.startTime >= 4 && note.startTime < 5)
-      expect(notesAtBeat4[0].note).toBe(gNotes[0]) // G3
+      const gNotes = chordToNotes({ chord: progression[1] as ProgressionChordT, rootOctave: '3' })
+      const notesAtBeat4 = performance.filter((note) => note.startBeat >= 4 && note.startBeat < 5)
+      expect(midiToNoteName(notesAtBeat4[0].midiNote)).toBe(gNotes[0]) // G3
     })
   })
 })

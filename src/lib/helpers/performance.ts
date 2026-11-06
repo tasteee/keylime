@@ -1,7 +1,6 @@
-import { Note } from 'tonal'
-import { getNoteFromSignalRow } from './signalRows'
-import { chordToNotes } from './chordToNotes'
-import { chordNotesToSignalRowNotes } from './chordNotesToSignalRowNotes'
+import { applyPerformanceSafely, voiceProgression } from '$lib/music'
+import type { ScaledT } from '@tasteee/scaled/types'
+import { getChordToneIndex } from './signalRows'
 
 type GeneratePerformanceArgsT = {
   chords: ProgressionItemT[]
@@ -12,7 +11,7 @@ type GeneratePerformanceArgsT = {
   // Restart the pattern at the start of every chord instead of letting
   // it run on through chord changes.
   doesPatternResetOnChordChange?: boolean
-  octave: string
+  octave: number
   minVelocity?: number
   maxVelocity?: number
 }
@@ -27,130 +26,6 @@ const getSignalRowById = (args: { signalRows: SignalRowsT; signalId: string }): 
   if (!foundEntry) return null
   return foundEntry[1]
 }
-
-const mapSignalToNote = (args: {
-  signal: SignalT
-  chord: ChordT
-  signalRow: SignalRowT
-  chordNotes: string[]
-}): string | null => {
-  // Use the signal row ID to derive the note, just like getNoteFromSignalRow does
-  const note = getNoteFromSignalRow({
-    signalRowId: args.signalRow.id,
-    chord: null,
-    chordNotes: args.chordNotes
-  })
-
-  if (!note) return null
-
-  const hasSignalOctaveOffset = args.signal.octaveOffset !== 0
-  if (!hasSignalOctaveOffset) return note
-
-  const octaveOffset = args.signal.octaveOffset
-  const interval = octaveOffset > 0
-    ? `${octaveOffset * 7 + 1}P`
-    : `-${Math.abs(octaveOffset) * 7 + 1}P`
-
-  const transposedNote = Note.transpose(note, interval)
-  return transposedNote
-}
-
-type FindChordAtTimeArgsT = {
-  chords: ProgressionItemT[]
-  absoluteTime: number
-}
-
-const findChordAtTime = (args: FindChordAtTimeArgsT): ProgressionChordT | null => {
-  const foundItem = args.chords.find((item) => {
-    const itemStart = item.startTime ?? 0
-    const itemEnd = itemStart + item.durationBeats
-    const isTimeWithinItem = args.absoluteTime >= itemStart && args.absoluteTime < itemEnd
-    return isTimeWithinItem
-  })
-
-  // Return null if it's a rest or if nothing was found
-  // if (!foundItem || foundItem.type === 'rest') return null
-
-  return foundItem as ProgressionChordT
-}
-
-export const generatePerformance = (args: GeneratePerformanceArgsT): PerformanceNoteT[] => {
-  const performanceNotes: PerformanceNoteT[] = []
-
-  const hasNoChords = args.chords.length === 0
-  if (hasNoChords) return performanceNotes
-
-  const hasNoSignals = args.signals.length === 0
-  if (hasNoSignals) return performanceNotes
-
-  const hasNoPatternLength = args.patternLengthBeats <= 0
-  if (hasNoPatternLength) return performanceNotes
-
-  const hasNoProgressionLength = args.progressionLengthBeats <= 0
-  if (hasNoProgressionLength) return performanceNotes
-
-  if (args.doesPatternResetOnChordChange) return generateResettingPerformance(args)
-
-  // Calculate how many times the pattern tiles across the progression
-  const numberOfPatternRepeats = Math.ceil(args.progressionLengthBeats / args.patternLengthBeats)
-
-  for (let repeatIndex = 0; repeatIndex < numberOfPatternRepeats; repeatIndex++) {
-    const patternStartOffset = repeatIndex * args.patternLengthBeats
-
-    args.signals.forEach((signal) => {
-      const signalRow = getSignalRowById({ signalRows: args.signalRows, signalId: signal.id })
-      if (!signalRow) return
-
-      const absoluteStartTime = patternStartOffset + signal.startTime
-
-      const isSignalBeyondProgression = absoluteStartTime >= args.progressionLengthBeats
-      if (isSignalBeyondProgression) return
-
-      const activeChord = findChordAtTime({ chords: args.chords, absoluteTime: absoluteStartTime })
-
-      if (!activeChord) return
-
-      // Derive notes from chord at performance generation time
-      const chordNotes = chordToNotes({ chord: activeChord, rootOctave: args.octave })
-
-      // Calculate the end of this chord
-      const chordStart = activeChord.startTime ?? 0
-      const chordEnd = chordStart + activeChord.durationBeats
-
-      // Clip signal duration to chord boundary and progression end
-      const absoluteEndTime = absoluteStartTime + signal.duration
-      const clippedEndTime = Math.min(absoluteEndTime, chordEnd, args.progressionLengthBeats)
-      const effectiveDuration = clippedEndTime - absoluteStartTime
-
-      const isNoDuration = effectiveDuration <= 0
-      if (isNoDuration) return
-
-      // Map signal to the note in the active chord
-      const note = mapSignalToNote({ signal, chord: activeChord, signalRow, chordNotes })
-      if (!note) return
-
-      const minVelocity = args.minVelocity ?? 70
-      const maxVelocity = args.maxVelocity ?? 80
-      const velocity = getRandomBetween({ min: minVelocity, max: maxVelocity })
-
-      const performanceNote: PerformanceNoteT = {
-        id: `${activeChord.id}-${signal.id}-${repeatIndex}`,
-        note,
-        startTime: absoluteStartTime,
-        duration: effectiveDuration,
-        velocity,
-        chordId: activeChord.id,
-        signalId: signal.id
-      }
-
-      performanceNotes.push(performanceNote)
-    })
-  }
-
-  const sortedNotes = performanceNotes.sort((noteA, noteB) => noteA.startTime - noteB.startTime)
-  return sortedNotes
-}
-
 
 type ChordSegmentT = {
   item: ProgressionItemT
@@ -173,61 +48,94 @@ const getChordSegments = (chords: ProgressionItemT[]): ChordSegmentT[] => {
   return segments
 }
 
-// The pattern starts over at every chord. Inside a chord it repeats
-// for as long as the chord lasts. Notes are cut off at the chord's end.
-const generateResettingPerformance = (args: GeneratePerformanceArgsT): PerformanceNoteT[] => {
-  const performanceNotes: PerformanceNoteT[] = []
-  const segments = getChordSegments(args.chords)
+// The editor's signals, written as a scaled pattern: each signal plays one
+// chord tone (its row) for as long as the signal lasts. Rows the signal is no
+// longer in, and signals that start outside the pattern, are left out.
+const getPattern = (args: GeneratePerformanceArgsT): ScaledT.PerformancePatternT => {
+  const events: ScaledT.PatternEventT[] = []
 
-  segments.forEach((segment, segmentIndex) => {
-    const isRest = segment.item.type !== 'chord'
-    if (isRest) return
+  for (const signal of args.signals) {
+    const signalRow = getSignalRowById({ signalRows: args.signalRows, signalId: signal.id })
+    if (!signalRow) continue
 
-    const chord = segment.item as ProgressionChordT
-    const chordNotes = chordToNotes({ chord, rootOctave: args.octave })
-    const chordLengthBeats = segment.end - segment.start
-    const numberOfRepeats = Math.ceil(chordLengthBeats / args.patternLengthBeats)
+    const isSignalOutsidePattern = signal.startTime >= args.patternLengthBeats
+    if (isSignalOutsidePattern) continue
 
-    for (let repeatIndex = 0; repeatIndex < numberOfRepeats; repeatIndex++) {
-      const repeatStart = segment.start + repeatIndex * args.patternLengthBeats
+    const hasNoDuration = signal.duration <= 0
+    if (hasNoDuration) continue
 
-      args.signals.forEach((signal) => {
-        const isSignalOutsidePattern = signal.startTime >= args.patternLengthBeats
-        if (isSignalOutsidePattern) return
+    events.push({
+      id: signal.id,
+      startBeat: signal.startTime,
+      durationBeats: signal.duration,
+      pitch: { type: 'chordTone', index: getChordToneIndex(signalRow.id), octaveOffset: signal.octaveOffset }
+    })
+  }
 
-        const signalRow = getSignalRowById({ signalRows: args.signalRows, signalId: signal.id })
-        if (!signalRow) return
+  return { id: 'keylime-pattern', name: 'Keylime pattern', durationBeats: args.patternLengthBeats, events }
+}
 
-        const absoluteStartTime = repeatStart + signal.startTime
-        const isSignalAfterChord = absoluteStartTime >= segment.end
-        if (isSignalAfterChord) return
-
-        const absoluteEndTime = absoluteStartTime + signal.duration
-        const clippedEndTime = Math.min(absoluteEndTime, segment.end)
-        const effectiveDuration = clippedEndTime - absoluteStartTime
-        const isNoDuration = effectiveDuration <= 0
-        if (isNoDuration) return
-
-        const note = mapSignalToNote({ signal, chord, signalRow, chordNotes })
-        if (!note) return
-
-        const minVelocity = args.minVelocity ?? 70
-        const maxVelocity = args.maxVelocity ?? 80
-
-        performanceNotes.push({
-          id: `${chord.id}-${signal.id}-${segmentIndex}-${repeatIndex}`,
-          note,
-          startTime: absoluteStartTime,
-          duration: effectiveDuration,
-          velocity: getRandomBetween({ min: minVelocity, max: maxVelocity }),
-          chordId: chord.id,
-          signalId: signal.id
-        })
-      })
-    }
+// scaled plays every note at a fixed velocity. Keylime wants each note
+// somewhere between the project's min and max.
+const withRandomVelocity = (args: {
+  notes: readonly ScaledT.PerformanceNoteT[]
+  minVelocity: number
+  maxVelocity: number
+}): PerformanceNoteT[] => {
+  return args.notes.map((note) => {
+    const velocity = getRandomBetween({ min: args.minVelocity, max: args.maxVelocity })
+    return { ...note, velocity }
   })
+}
 
-  return performanceNotes.sort((noteA, noteB) => noteA.startTime - noteB.startTime)
+export const generatePerformance = (args: GeneratePerformanceArgsT): PerformanceNoteT[] => {
+  const hasNoChords = args.chords.length === 0
+  if (hasNoChords) return []
+
+  const hasNoSignals = args.signals.length === 0
+  if (hasNoSignals) return []
+
+  const hasNoPatternLength = args.patternLengthBeats <= 0
+  if (hasNoPatternLength) return []
+
+  const hasNoProgressionLength = args.progressionLengthBeats <= 0
+  if (hasNoProgressionLength) return []
+
+  const pattern = getPattern(args)
+  const hasNoEvents = pattern.events.length === 0
+  if (hasNoEvents) return []
+
+  const voicedChords = voiceProgression(args.chords, args.octave)
+  const segments = getChordSegments(args.chords)
+  const chordSegments = segments.filter((segment) => segment.item.type === 'chord')
+  const minVelocity = args.minVelocity ?? 70
+  const maxVelocity = args.maxVelocity ?? 80
+
+  const notes: ScaledT.PerformanceNoteT[] = []
+
+  if (args.doesPatternResetOnChordChange) {
+    // The pattern starts over at every chord, and runs for as long as the chord lasts.
+    chordSegments.forEach((segment, segmentIndex) => {
+      const chord = voicedChords.get(segment.item.id)
+      if (!chord) return
+      const progression = [{ id: segment.item.id, chord, durationBeats: segment.end - segment.start }]
+      const clipNotes = applyPerformanceSafely({ progression, performance: pattern })
+      for (const note of clipNotes) {
+        notes.push({ ...note, id: `${segmentIndex}-${note.id}`, startBeat: note.startBeat + segment.start })
+      }
+    })
+  } else {
+    // The pattern runs on through chord changes. Rests are gaps between chords.
+    const progression = chordSegments.flatMap((segment) => {
+      const chord = voicedChords.get(segment.item.id)
+      if (!chord) return []
+      return [{ id: segment.item.id, chord, startBeat: segment.start, durationBeats: segment.end - segment.start }]
+    })
+    notes.push(...applyPerformanceSafely({ progression, performance: pattern }))
+  }
+
+  const velocityNotes = withRandomVelocity({ notes, minVelocity, maxVelocity })
+  return velocityNotes.sort((noteA, noteB) => noteA.startBeat - noteB.startBeat)
 }
 
 type GetPatternBeatArgsT = {

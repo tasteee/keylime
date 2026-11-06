@@ -1,16 +1,14 @@
+import { midiToNoteName } from '$lib/music'
 import { describe, it, expect } from 'vitest'
 import { generatePerformance, getPatternBeat } from './performance'
 
 const makeChord = (id: string, symbol: string, startTime: number, durationBeats: number): ProgressionItemT => ({
   id,
   type: 'chord',
-  name: symbol,
   symbol,
-  rootNote: symbol,
   octaveOffset: 0,
   voicing: 'closed',
   inversion: 0,
-  bassNote: symbol,
   startTime,
   durationBeats
 })
@@ -25,18 +23,18 @@ const signalRows: SignalRowsT = {
   N1: { id: 'N1', label: 'N1', totalIndex: 0, index: 0, octave: 0, signalIds: ['s1'] }
 }
 
-const baseArgs = { chords, signals, signalRows, patternLengthBeats: 2, progressionLengthBeats: 6, octave: '3' }
+const baseArgs = { chords, signals, signalRows, patternLengthBeats: 2, progressionLengthBeats: 6, octave: 3 }
 
 describe('pattern reset on chord change', () => {
   it('keeps one running pattern across chords by default', () => {
     const performance = generatePerformance(baseArgs)
-    const startTimes = performance.map((note) => note.startTime)
+    const startTimes = performance.map((note) => note.startBeat)
     expect(startTimes).toEqual([0, 2, 4])
   })
 
   it('starts the pattern over at the start of each chord', () => {
     const performance = generatePerformance({ ...baseArgs, doesPatternResetOnChordChange: true })
-    const startTimes = performance.map((note) => note.startTime)
+    const startTimes = performance.map((note) => note.startBeat)
     expect(startTimes).toEqual([0, 2, 3, 5])
   })
 
@@ -49,14 +47,14 @@ describe('pattern reset on chord change', () => {
   it('cuts notes off at the end of the chord', () => {
     const longSignals: SignalT[] = [{ id: 's1', startTime: 0, duration: 2, noteIndex: 1, octaveOffset: 0 }]
     const performance = generatePerformance({ ...baseArgs, signals: longSignals, doesPatternResetOnChordChange: true })
-    const secondRepeat = performance.find((note) => note.startTime === 2)
-    expect(secondRepeat?.duration).toBe(1)
+    const secondRepeat = performance.find((note) => note.startBeat === 2)
+    expect(secondRepeat?.durationBeats).toBe(1)
   })
 
   it('leaves rests silent and still resets after them', () => {
     const withRest: ProgressionItemT[] = [
       makeChord('c1', 'C', 0, 2),
-      { id: 'r1', type: 'rest', symbol: 'REST', rootNote: 'REST', startTime: 2, durationBeats: 1 },
+      { id: 'r1', type: 'rest', symbol: 'REST', startTime: 2, durationBeats: 1 },
       makeChord('c2', 'G', 3, 2)
     ]
     const performance = generatePerformance({
@@ -65,7 +63,7 @@ describe('pattern reset on chord change', () => {
       progressionLengthBeats: 5,
       doesPatternResetOnChordChange: true
     })
-    const startTimes = performance.map((note) => note.startTime)
+    const startTimes = performance.map((note) => note.startBeat)
     expect(startTimes).toEqual([0, 3])
   })
 })

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import fuzzy from 'fuzzy'
 	import { MagnifyingGlass, Plus, X } from 'phosphor-svelte'
-	import ALL_CHORD_NAMES from '$lib/constants/allChordNames.json'
-	import chordsByScale from '$lib/constants/chordsByScale.json'
+	import { getAllChordSymbols, getScaleChordSymbols } from '$lib/music'
 	import SelectControl from '$lib/components/Project/SelectControl.svelte'
 
 	type FilterOptionsT = {
@@ -47,11 +46,9 @@
 	const availableChords = $derived.by(() => {
 		const hasKey = selectedKey !== ALL_OPTION_VALUE
 		const hasScale = selectedScale !== ALL_OPTION_VALUE
-		if (!hasKey || !hasScale) return ALL_CHORD_NAMES
+		if (!hasKey || !hasScale) return getAllChordSymbols()
 
-		const scaleName = `${selectedKey} ${selectedScale}`
-		const chordsForScale = (chordsByScale as Record<string, string[]>)[scaleName]
-		return chordsForScale ?? ALL_CHORD_NAMES
+		return getScaleChordSymbols(selectedKey, selectedScale)
 	})
 
 	const visibleChords = $derived.by(() => {

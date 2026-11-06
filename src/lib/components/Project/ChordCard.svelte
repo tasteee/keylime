@@ -36,12 +36,12 @@
 		isModifierDialogOpen = false
 	}
 
-	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: string }) => {
+	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: VoicingT }) => {
 		projectEditor.updateGridChordModifiers({
 			chordId: props.chord.id,
 			octaveOffset: args.octaveOffset,
 			inversion: args.inversion,
-			voicing: args.voicing as VoicingT
+			voicing: args.voicing
 		})
 	}
 
@@ -96,7 +96,7 @@
 		<DialogChordModifier
 			isOpen={isModifierDialogOpen}
 			chord={props.chord as ProgressionChordT}
-			projectOctave={String(project.octave)}
+			projectOctave={project.octave}
 			onClose={handleModifierClose}
 			onSave={handleModifierSave}
 		/>

@@ -1,6 +1,4 @@
 import playbackStore from './playback.svelte'
-import { generateChord, applyVoicingAndInversion } from '$lib/helpers/chords'
-import { Note } from 'tonal'
 import { getContext } from 'svelte'
 
 type ProjectEditorContextT = {
@@ -107,12 +105,12 @@ class ChordModifierStore {
     // Load existing modifiers from the grid chord
     this.state.octaveOffset = gridChord.octaveOffset
     this.state.inversion = gridChord.inversion
-    this.state.voicing = gridChord.voicing as VoicingT
+    this.state.voicing = gridChord.voicing
     // Save initial state for discard functionality
     this.initialStateSnapshot = {
       octaveOffset: gridChord.octaveOffset,
       inversion: gridChord.inversion,
-      voicing: gridChord.voicing as VoicingT
+      voicing: gridChord.voicing
     }
   }
 
@@ -128,12 +126,12 @@ class ChordModifierStore {
     // Load existing modifiers from the progression chord
     this.state.octaveOffset = progressionChord.octaveOffset
     this.state.inversion = progressionChord.inversion
-    this.state.voicing = progressionChord.voicing as VoicingT
+    this.state.voicing = progressionChord.voicing
     // Save initial state for discard functionality
     this.initialStateSnapshot = {
       octaveOffset: progressionChord.octaveOffset,
       inversion: progressionChord.inversion,
-      voicing: progressionChord.voicing as VoicingT
+      voicing: progressionChord.voicing
     }
 
     console.log('Opened chord modifier for progression chord', chordId, 'with state', this.state)
@@ -226,7 +224,7 @@ class ChordModifierStore {
     const chord = this.currentChord
     if (!chord) return
     const context = this.getProjectEditorContext()
-    playbackStore.playChord(chord, String(context.state.project.octave), 500)
+    playbackStore.playChord(chord, context.state.project.octave, 500)
   }
 
   private applyModifiersToChord = (baseChord: ChordT): ChordT => {

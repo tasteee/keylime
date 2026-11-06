@@ -11,7 +11,7 @@
 		const octaveNumber = parseInt(value, 10)
 		const isValidNumber = !isNaN(octaveNumber)
 		if (!isValidNumber) return
-		projectEditor.updateProject({ octave: String(octaveNumber) })
+		projectEditor.updateProject({ octave: octaveNumber })
 	}
 </script>
 

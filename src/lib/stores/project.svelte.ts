@@ -1,5 +1,6 @@
 import { SIGNAL_ROWS } from '$lib/constants/signalRows'
 import { numbers } from '$lib/helpers/numbers'
+import { CURRENT_DATA_VERSION } from '$lib/modules/migrateProject'
 import { deleteProjectById, getProjectById, saveProjectData } from '$lib/modules/database'
 import { createNewProjectData, getFreshPatternSignalRows } from '$lib/modules/projects'
 import { asCleanAsync, cleanAsync, type CleanAsyncReturnT } from '$lib/modules/promises'
@@ -21,7 +22,7 @@ class ProjectStore {
 	userId = $state('')
 	key = $state('C')
 	scale = $state('Major')
-	octave = $state('3')
+	octave = $state(3)
 	bpm = $state(124)
 	minVelocity = $state(70)
 	maxVelocity = $state(80)
@@ -163,7 +164,6 @@ class ProjectStore {
 			id: `rest-${Date.now()}`,
 			type: 'rest',
 			symbol: 'REST',
-			rootNote: 'REST',
 			startTime: 0,
 			durationBeats: 4
 		}
@@ -284,6 +284,7 @@ class ProjectStore {
 			minVelocity: this.minVelocity,
 			octave: this.octave,
 			originalProjectId: null,
+			dataVersion: CURRENT_DATA_VERSION,
 			patternDurationBars: this.patternDurationBars,
 			patternSignalRows: this.patternSignalRows,
 			patternSignals: this.patternSignals,
