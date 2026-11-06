@@ -114,22 +114,23 @@
 	.chordCard {
 		height: 3rem;
 		user-select: none;
-		--chord-tint: 22%;
+		--chord-tint: 6%;
+		--chord-border: 72%;
 		background: color-mix(in oklch, var(--chord-hue, var(--foreground)) var(--chord-tint), var(--card)) !important;
-		border-color: color-mix(in oklch, var(--chord-hue, var(--foreground)) 70%, var(--card)) !important;
+		border-color: color-mix(in oklch, var(--chord-hue, var(--border)) var(--chord-border), var(--card)) !important;
 		transition:
 			background var(--motion-fast) var(--ease-enter),
 			border-color var(--motion-fast) var(--ease-enter);
 	}
 
 	.chordCard:hover {
-		--chord-tint: 32%;
-		border-color: var(--chord-hue, var(--foreground)) !important;
+		--chord-tint: 10%;
+		--chord-border: 100%;
 	}
 
 	.chordCard.isPlaying {
-		--chord-tint: 42%;
-		border-color: var(--chord-hue, var(--foreground)) !important;
+		--chord-tint: 16%;
+		--chord-border: 100%;
 	}
 
 	.chordCard :global(.chordCardAction) {
