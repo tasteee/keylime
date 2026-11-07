@@ -19,6 +19,7 @@
 			cleanProjectSnapshot: string
 			activeView: 'chords' | 'pattern'
 			selectedProgressionItemId: string | null
+			isPatternEditorActive: boolean
 		}
 
 		updateProject: (updates: Partial<ProjectT>) => void
@@ -251,6 +252,11 @@
 	const handleKeyDown = (event: KeyboardEvent) => {
 		// While typing in a field, keys belong to the field.
 		if (isTypingInTextField(event)) return
+		// Another surface (the pattern grid) already used this key.
+		if (event.defaultPrevented) return
+		// While the user works on the pattern, edit keys belong to it.
+		const isPatternEditorActive = context.state.isPatternEditorActive
+		if (isPatternEditorActive) return
 		const isDeleteKey = event.key === 'Delete' || event.key === 'Backspace'
 		if (isDeleteKey && context.state.selectedProgressionItemId) {
 			context.removeProgressionItem(context.state.selectedProgressionItemId)

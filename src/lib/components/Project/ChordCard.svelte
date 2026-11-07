@@ -78,13 +78,6 @@
 		props.onOpenModifier(props.chord)
 	}
 
-	const handleDoubleClick = (event: MouseEvent) => {
-		const target = event.target as HTMLElement
-		const isButtonTarget = target.closest('z-button')
-		if (isButtonTarget) return
-		addChordToProgression()
-	}
-
 	const handleMouseDown = (event: MouseEvent) => {
 		const target = event.target as HTMLElement
 		// Clicks on the action buttons or inside the modifier dialog are not previews.
@@ -141,7 +134,6 @@
 	role="group"
 	aria-label={props.chord.symbol}
 	onmousedown={handleMouseDown}
-	ondblclick={handleDoubleClick}
 	oncontextmenu={handleContextMenu}
 >
 	<button

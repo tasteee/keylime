@@ -7,6 +7,8 @@
 	import { createChord, getScaleChordSymbols } from '$lib/music'
 	import { calculateStartTimes } from '$lib/helpers/progression'
 	import { clearDraft, readDraft, writeDraft } from '$lib/modules/localDraft'
+	import { checkIsSameHistorySnapshot, describeHistoryChange, type HistorySnapshotT } from '$lib/helpers/historyDescriptions'
+	import { toaster } from '@tasteee/zest'
 
 	type PropsT = {
 		children: () => any
@@ -40,6 +42,9 @@
 		cleanProjectSnapshot: string
 		activeView: 'chords' | 'pattern'
 		selectedProgressionItemId: string | null
+		// True while the user works in the pattern editor. The
+		// progression's keyboard commands stand down meanwhile.
+		isPatternEditorActive: boolean
 		gridChordModifiers: GridChordMapT
 	}
 
@@ -59,8 +64,8 @@
 		removePatternSignal: (signalId: string) => void
 		movePatternSignalToRow: (args: MoveSignalToRowOptionsT) => void
 		replacePattern: (pattern: PatternSnapshotT) => void
-		undoPatternChange: () => boolean
-		redoPatternChange: () => boolean
+		undoChange: () => string | null
+		redoChange: () => string | null
 		getGridChord: (chordId: string) => ChordT | undefined
 		updateGridChordModifiers: (args: {
 			chordId: string
@@ -143,6 +148,7 @@
 				cleanProjectSnapshot: createCleanSnapshot(loadedProject),
 				activeView: 'chords',
 				selectedProgressionItemId,
+				isPatternEditorActive: false,
 				gridChordModifiers: {}
 			}
 		}
@@ -182,6 +188,7 @@
 			cleanProjectSnapshot: '{}',
 			activeView: 'chords',
 			selectedProgressionItemId: null,
+			isPatternEditorActive: false,
 			gridChordModifiers: {}
 		}
 	}
@@ -193,90 +200,142 @@
 		return currentSnapshot !== editorState.cleanProjectSnapshot
 	}
 
-	// Undo history for the pattern. Every snapshot is a deep copy taken
-	// AFTER a change, so edits that mutate rows in place cannot leak
-	// into older entries. "baseline" is the pattern as it is right now.
+	// One undo history for the pattern and the progression.
+	// Every snapshot is a deep copy taken AFTER a change, so
+	// edits that mutate rows in place cannot leak into older
+	// entries. "baseline" is the project as it is right now.
 	const HISTORY_LIMIT = 100
 	// Edits this close together (a drag, a resize) count as one step.
 	const HISTORY_GROUP_MS = 400
-	let undoStack: PatternSnapshotT[] = []
-	let redoStack: PatternSnapshotT[] = []
-	let lastPatternEditAt = 0
+	// Each entry holds the project on one side of a step. A
+	// label names the step when the edit knows better than a
+	// diff can (a duplicate looks like an add otherwise).
+	type HistoryEntryT = {
+		snapshot: HistorySnapshotT
+		label: string | null
+	}
+
+	let undoStack: HistoryEntryT[] = []
+	let redoStack: HistoryEntryT[] = []
+	// Set just before an edit to name its step, then cleared.
+	let pendingHistoryLabel: string | null = null
+	let lastHistoryEditAt = 0
 	let isRestoringHistory = false
 
-	const takePatternSnapshot = (): PatternSnapshotT => {
+	const takeHistorySnapshot = (): HistorySnapshotT => {
 		const project = editorState.project
 		return structuredClone({
 			patternSignals: $state.snapshot(project.patternSignals),
 			patternSignalRows: $state.snapshot(project.patternSignalRows),
-			patternDurationBars: project.patternDurationBars
+			patternDurationBars: project.patternDurationBars,
+			progressionChords: $state.snapshot(project.progressionChords)
 		})
 	}
 
-	let baseline: PatternSnapshotT | null = null
+	let baseline: HistorySnapshotT | null = null
 
-	const resetPatternHistory = () => {
+	const resetHistory = () => {
 		undoStack = []
 		redoStack = []
-		lastPatternEditAt = 0
-		baseline = takePatternSnapshot()
+		lastHistoryEditAt = 0
+		baseline = takeHistorySnapshot()
 	}
 
-	resetPatternHistory()
+	resetHistory()
 
-	type RecordPatternChangeOptionsT = { shouldStartNewStep: boolean }
+	type RecordHistoryChangeOptionsT = { shouldStartNewStep: boolean }
 
-	const recordPatternChange = (options: RecordPatternChangeOptionsT) => {
+	const recordHistoryChange = (options: RecordHistoryChangeOptionsT) => {
+		const previousSnapshot = baseline
+		const nextSnapshot = takeHistorySnapshot()
+		const label = pendingHistoryLabel
+		pendingHistoryLabel = null
+		const hasPrevious = previousSnapshot !== null
+		// A drag that lands on the same value changes nothing.
+		const isUnchanged = hasPrevious && checkIsSameHistorySnapshot(previousSnapshot, nextSnapshot)
+		if (isUnchanged) return
+
 		const now = Date.now()
-		const isSameStep = now - lastPatternEditAt < HISTORY_GROUP_MS
-		lastPatternEditAt = now
+		const isSameStep = now - lastHistoryEditAt < HISTORY_GROUP_MS
+		lastHistoryEditAt = now
+		baseline = nextSnapshot
 
-		const previousPattern = baseline
-		baseline = takePatternSnapshot()
-		const shouldKeepPrevious = previousPattern !== null && (options.shouldStartNewStep || !isSameStep)
+		const shouldKeepPrevious = hasPrevious && (options.shouldStartNewStep || !isSameStep)
 		if (!shouldKeepPrevious) return
 
-		undoStack.push(previousPattern)
+		undoStack.push({ snapshot: previousSnapshot, label })
 		if (undoStack.length > HISTORY_LIMIT) undoStack.shift()
 		redoStack = []
 	}
 
-	const restorePattern = (pattern: PatternSnapshotT) => {
+	// Undo can remove the selected chord. Fall back to the
+	// first chord so the pattern editor keeps a reference.
+	const repairProgressionSelection = () => {
+		const items = editorState.project.progressionChords
+		const selectedId = editorState.selectedProgressionItemId
+		const selectedItem = items.find((item) => item.id === selectedId)
+		if (selectedItem) return
+		const firstItem = items[0]
+		editorState.selectedProgressionItemId = firstItem ? firstItem.id : null
+	}
+
+	const restoreSnapshot = (snapshot: HistorySnapshotT) => {
 		isRestoringHistory = true
-		updateProject(structuredClone(pattern))
+		updateProject(structuredClone(snapshot))
 		isRestoringHistory = false
-		baseline = takePatternSnapshot()
-		lastPatternEditAt = 0
+		baseline = takeHistorySnapshot()
+		lastHistoryEditAt = 0
+		repairProgressionSelection()
 	}
 
-	const undoPatternChange = (): boolean => {
-		const previousPattern = undoStack.pop()
-		if (!previousPattern) return false
-		if (baseline) redoStack.push(baseline)
-		restorePattern(previousPattern)
-		return true
+	// Edits grouped into one step can cancel out (add, then
+	// delete within a moment). Such a step would undo nothing,
+	// so it is dropped and the next one is used instead.
+	const popDistinctEntry = (stack: HistoryEntryT[], currentSnapshot: HistorySnapshotT): HistoryEntryT | null => {
+		const entry = stack.pop()
+		if (!entry) return null
+		const isSameAsCurrent = checkIsSameHistorySnapshot(entry.snapshot, currentSnapshot)
+		if (isSameAsCurrent) return popDistinctEntry(stack, currentSnapshot)
+		return entry
 	}
 
-	const redoPatternChange = (): boolean => {
-		const nextPattern = redoStack.pop()
-		if (!nextPattern) return false
-		if (baseline) undoStack.push(baseline)
-		restorePattern(nextPattern)
-		return true
+	// Returns what was undone, or null when there was nothing.
+	const undoChange = (): string | null => {
+		const currentSnapshot = baseline ?? takeHistorySnapshot()
+		const previousEntry = popDistinctEntry(undoStack, currentSnapshot)
+		if (!previousEntry) return null
+		const diffDescription = describeHistoryChange(previousEntry.snapshot, currentSnapshot)
+		const description = previousEntry.label ?? diffDescription
+		redoStack.push({ snapshot: currentSnapshot, label: previousEntry.label })
+		restoreSnapshot(previousEntry.snapshot)
+		return description
 	}
 
-	const getIsPatternUpdate = (updates: Partial<ProjectT>): boolean => {
+	// Returns what was redone, or null when there was nothing.
+	const redoChange = (): string | null => {
+		const currentSnapshot = baseline ?? takeHistorySnapshot()
+		const nextEntry = popDistinctEntry(redoStack, currentSnapshot)
+		if (!nextEntry) return null
+		const diffDescription = describeHistoryChange(currentSnapshot, nextEntry.snapshot)
+		const description = nextEntry.label ?? diffDescription
+		undoStack.push({ snapshot: currentSnapshot, label: nextEntry.label })
+		restoreSnapshot(nextEntry.snapshot)
+		return description
+	}
+
+	const getIsHistoryUpdate = (updates: Partial<ProjectT>): boolean => {
 		const hasSignals = updates.patternSignals !== undefined
 		const hasRows = updates.patternSignalRows !== undefined
 		const hasDuration = updates.patternDurationBars !== undefined
-		return hasSignals || hasRows || hasDuration
+		const hasProgression = updates.progressionChords !== undefined
+		return hasSignals || hasRows || hasDuration || hasProgression
 	}
 
 	const updateProject = (updates: Partial<ProjectT>) => {
 		editorState.project = { ...editorState.project, ...updates }
 
-		const shouldRecordHistory = getIsPatternUpdate(updates) && !isRestoringHistory
-		if (shouldRecordHistory) recordPatternChange({ shouldStartNewStep: false })
+		const shouldRecordHistory = getIsHistoryUpdate(updates) && !isRestoringHistory
+		if (shouldRecordHistory) recordHistoryChange({ shouldStartNewStep: false })
 
 		// Recalculate progressionDurationBars if progressionChords changed
 		const hasProgressionChordsUpdate = updates.progressionChords !== undefined
@@ -357,6 +416,9 @@
 		const updatedItems = [...editorState.project.progressionChords]
 		updatedItems.splice(originalIndex + 1, 0, duplicatedItem)
 
+		const isRest = originalItem.type === 'rest'
+		const itemLabel = isRest ? 'rest' : originalItem.symbol
+		pendingHistoryLabel = `Duplicate ${itemLabel}`
 		updateProject({ progressionChords: updatedItems })
 	}
 
@@ -417,7 +479,7 @@
 		isRestoringHistory = true
 		updateProject(pattern)
 		isRestoringHistory = false
-		recordPatternChange({ shouldStartNewStep: true })
+		recordHistoryChange({ shouldStartNewStep: true })
 	}
 
 	const getDefaultGridChordModifiers = (): GridChordModifiersT => {
@@ -625,7 +687,7 @@
 		}
 
 		editorState.project = loadedProject
-		resetPatternHistory()
+		resetHistory()
 		editorState.cleanProjectSnapshot = createCleanSnapshot(loadedProject)
 		editorState.isDirty = false
 		editorState.isLoading = false
@@ -635,7 +697,7 @@
 		if (isOtherUsersProject) {
 			const clonedTitle = `${loadedProject.title} (Clone)`
 			editorState.project = { ...loadedProject, title: clonedTitle }
-			resetPatternHistory()
+			resetHistory()
 			editorState.isDirty = true
 		}
 
@@ -664,8 +726,8 @@
 		removePatternSignal,
 		movePatternSignalToRow,
 		replacePattern,
-		undoPatternChange,
-		redoPatternChange,
+		undoChange,
+		redoChange,
 		getGridChord,
 		updateGridChordModifiers,
 		getGridChordIdForName,
@@ -703,7 +765,7 @@
 		const draft = readDraft(serverProject.id, serverProject.updatedAt)
 		if (!draft) return
 		editorState.project = parseProjectData(draft)
-		resetPatternHistory()
+		resetHistory()
 		editorState.isDirty = checkIsDirty()
 	}
 
@@ -715,7 +777,29 @@
 		return isFormField || Boolean(element.isContentEditable)
 	}
 
-	// Ctrl/Cmd+Z undoes the last pattern change. Shift+Z (or Ctrl+Y) redoes it.
+	type ShowHistoryToastArgsT = {
+		action: 'undo' | 'redo'
+		description: string | null
+	}
+
+	// One toast id, so quick repeated undos update it in place
+	// instead of stacking.
+	const showHistoryToast = (args: ShowHistoryToastArgsT) => {
+		const isUndo = args.action === 'undo'
+		const hasDescription = args.description !== null
+
+		if (!hasDescription) {
+			const emptyTitle = isUndo ? 'Nothing to undo' : 'Nothing to redo'
+			toaster.show({ id: 'history', title: emptyTitle, tone: 'neutral', duration: 1500 })
+			return
+		}
+
+		const title = isUndo ? 'Undone' : 'Redone'
+		toaster.show({ id: 'history', title, description: args.description ?? '', tone: 'success', duration: 2000 })
+	}
+
+	// Ctrl/Cmd+Z undoes the last pattern or progression change.
+	// Shift+Z (or Ctrl+Y) redoes it. Works in either view.
 	const handleHistoryShortcut = (event: KeyboardEvent) => {
 		const hasModifier = event.ctrlKey || event.metaKey
 		if (!hasModifier) return
@@ -724,14 +808,19 @@
 		const pressedKey = event.key.toLowerCase()
 		const isUndoKey = pressedKey === 'z' && !event.shiftKey
 		const isRedoKey = (pressedKey === 'z' && event.shiftKey) || pressedKey === 'y'
-		if (!isUndoKey && !isRedoKey) return
-
-		const isPatternView = editorState.activeView === 'pattern'
-		if (!isPatternView) return
+		const isHistoryKey = isUndoKey || isRedoKey
+		if (!isHistoryKey) return
 
 		event.preventDefault()
-		if (isUndoKey) undoPatternChange()
-		if (isRedoKey) redoPatternChange()
+
+		if (isUndoKey) {
+			const undoneDescription = undoChange()
+			showHistoryToast({ action: 'undo', description: undoneDescription })
+			return
+		}
+
+		const redoneDescription = redoChange()
+		showHistoryToast({ action: 'redo', description: redoneDescription })
 	}
 
 	onMount(() => {
@@ -752,3 +841,5 @@
 </script>
 
 {@render props.children()}
+
+<z-toaster position="top-end"></z-toaster>

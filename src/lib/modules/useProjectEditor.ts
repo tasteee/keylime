@@ -8,6 +8,9 @@ type ProjectEditorStateT = {
   cleanProjectSnapshot: string
   activeView: 'chords' | 'pattern'
   selectedProgressionItemId: string | null
+  // True while the user works in the pattern editor. The
+  // progression's keyboard commands stand down meanwhile.
+  isPatternEditorActive: boolean
 }
 
 type ProjectEditorContextT = {
@@ -28,8 +31,10 @@ type ProjectEditorContextT = {
     patternSignalRows: SignalRowsT
     patternDurationBars: number
   }) => void
-  undoPatternChange: () => boolean
-  redoPatternChange: () => boolean
+  // Each returns a short description of the step, or null
+  // when there was nothing to undo or redo.
+  undoChange: () => string | null
+  redoChange: () => string | null
   updateGridChordModifiers: (args: {
     chordId: string
     octaveOffset?: number
