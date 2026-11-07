@@ -47,7 +47,7 @@
 </script>
 
 <z-column>
-	<z-row insetX="lg" insetY="sm" alignsX="between" alignsY="center" gap="xl" isFullWidth>
+	<z-row class="projectToolbar" insetX="lg" insetY="sm" alignsX="between" alignsY="center" gap="xl" isFullWidth>
 		<z-row gap="sm" alignsY="center" class="topBarSection topBarTitleSection">
 			<z-tooltip content="Back" placement="bottom">
 				<z-button kind="ghost" size="sm" onclick={handleBackPress} aria-label="Back">
@@ -122,5 +122,15 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+	@media (max-width: 72rem) {
+		.projectToolbar {
+			overflow-x: auto;
+			justify-content: flex-start;
+		}
+
+		.projectToolbar .topBarSection {
+			flex: none;
+		}
 	}
 </style>

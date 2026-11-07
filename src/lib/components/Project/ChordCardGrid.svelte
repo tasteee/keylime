@@ -4,6 +4,7 @@
 	import ChordCard from './ChordCard.svelte'
 	import DialogChordModifier from './DialogChordModifier.svelte'
 	import PanelHeader from './PanelHeader.svelte'
+	import './chordCardGrid.css'
 
 	type ProjectEditorContextT = {
 		gridChords: ChordT[]
@@ -17,6 +18,9 @@
 	const context = getContext<ProjectEditorContextT>('projectEditor')
 	const gridChords = $derived(context.gridChords)
 	const projectEditor = useProjectEditor()
+	const project = $derived(projectEditor.state.project)
+	const gridTitle = $derived(`Chords in ${project.key} ${project.scale.toLowerCase()}`)
+	const isEmpty = $derived(gridChords.length === 0)
 
 	// One dialog serves every card. It stays mounted, so a right-click
 	// only flips it open instead of building it first.
@@ -72,20 +76,23 @@
 	})
 </script>
 
-<div class="chordGrid">
-	<PanelHeader label="Chords" />
+<section class="chordCardGrid" aria-label={gridTitle}>
+	<PanelHeader label={gridTitle} />
 
-	<z-scroll class="chordCardScroll" direction="both" inset="md">
-		<z-row gap="sm" class="chordColumns">
+	<div class="chordCardScroll">
+		<div class="chordColumns">
 			{#each chordColumns as column (column.root)}
-				<z-column gap="sm" class="chordColumn">
+				<div class="chordColumn">
 					{#each column.chords as chord (chord.id)}
 						<ChordCard {chord} onOpenModifier={handleOpenModifier} />
 					{/each}
-				</z-column>
+				</div>
 			{/each}
-		</z-row>
-	</z-scroll>
+		</div>
+		{#if isEmpty}
+			<z-text color="muted">No chords in this scale.</z-text>
+		{/if}
+	</div>
 
 	{#if modifierChord}
 		<DialogChordModifier
@@ -96,34 +103,4 @@
 			onSave={handleModifierSave}
 		/>
 	{/if}
-</div>
-
-<style>
-	/* A rounded segment of the page, like the pattern editor. */
-	.chordGrid {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		min-height: 0;
-		margin: var(--spacing-3) var(--spacing-4) 0;
-		border: 1px solid var(--border);
-		border-radius: var(--radius-lg);
-		background: var(--card);
-		overflow: hidden;
-	}
-
-	.chordCardScroll {
-		flex: 1 1 0;
-		min-height: 0;
-		width: 100%;
-	}
-
-	.chordColumns {
-		min-width: min-content;
-	}
-
-	.chordColumn {
-		flex: 1 1 7rem;
-		min-width: 7rem;
-	}
-</style>
+</section>

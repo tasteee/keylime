@@ -1,0 +1,68 @@
+.chordCard {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+	min-height: var(--spacing-12);
+	padding-inline-end: var(--spacing-1);
+	border: thin solid var(--chord-border, var(--border));
+	border-radius: var(--radius-md);
+	background: var(--chord-bg, var(--card));
+}
+
+.chordCard:hover {
+	background: var(--chord-bg-hover, var(--paper-soft));
+	border-color: var(--chord-border-hover, var(--border));
+}
+
+.chordCard.isPlaying {
+	background: var(--chord-bg-strong-hover, var(--paper-soft));
+	border-color: var(--chord-root, var(--focus-ring));
+}
+
+.previewChord {
+	position: relative;
+	display: flex;
+	align-self: stretch;
+	align-items: center;
+	flex: 1;
+	min-width: 0;
+	padding: var(--spacing-2) var(--spacing-1) var(--spacing-2) var(--spacing-3);
+	border: 0;
+	border-radius: inherit;
+	background: transparent;
+	color: var(--chord-root, var(--foreground));
+	text-align: start;
+	cursor: pointer;
+}
+
+.previewChord:focus-visible {
+	outline: solid var(--focus-ring);
+	outline-offset: calc(-1 * var(--spacing-1));
+}
+
+.chordCard svg {
+	width: var(--spacing-4);
+	height: var(--spacing-4);
+}
+
+.previewChord svg {
+	position: absolute;
+	inset-inline-start: var(--spacing-3);
+	bottom: var(--spacing-1);
+	width: var(--spacing-3);
+	height: var(--spacing-3);
+}
+
+.chordCard z-tooltip {
+	flex: none;
+}
+
+@container (max-width: 36rem) {
+	.chordCard {
+		padding-inline-end: 0;
+	}
+
+	.previewChord {
+		padding-inline: var(--spacing-2) 0;
+	}
+}

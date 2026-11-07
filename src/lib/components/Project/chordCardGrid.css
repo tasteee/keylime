@@ -1,0 +1,54 @@
+.chordCardGrid {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+	margin: var(--spacing-3) var(--spacing-4) 0;
+	border: thin solid var(--border);
+	border-radius: var(--radius-lg);
+	background: var(--card);
+	overflow: hidden;
+	container-type: inline-size;
+}
+
+.chordCardScroll {
+	flex: 1;
+	min-height: 0;
+	padding: var(--spacing-3);
+	overflow: auto;
+}
+
+.chordColumns {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: minmax(0, 1fr);
+	align-items: start;
+	gap: var(--spacing-2);
+}
+
+.chordColumn {
+	display: grid;
+	gap: var(--spacing-2);
+	min-width: 0;
+}
+
+@container (max-width: 76rem) {
+	.chordColumns {
+		grid-auto-flow: row;
+		align-items: stretch;
+		grid-template-columns: repeat(auto-fill, minmax(var(--spacing-40), 1fr));
+	}
+	.chordColumn {
+		display: contents;
+	}
+}
+
+@container (max-width: 36rem) {
+	.chordCardScroll {
+		padding: var(--spacing-2);
+	}
+	.chordColumns {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
