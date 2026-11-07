@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Plus, Minus, ArrowCounterClockwise, Check, SpeakerHigh } from 'phosphor-svelte'
 	import { getChordNoteNames } from '$lib/helpers/chordGridLabels'
-	import SelectInversion from './SelectInversion.svelte'
-	import SelectVoicing from './SelectVoicing.svelte'
+	import ChipSelect from './ChipSelect.svelte'
+	import { getVoicingOptions } from '$lib/music'
 	import playbackStore from '$lib/stores/playback.svelte'
 
 	type DialogChordModifierPropsT = {
@@ -20,6 +20,17 @@
 	let voicing = $state(props.chord.voicing)
 
 	const chordName = $derived(props.chord.symbol)
+
+	const inversionOptions = [
+		{ value: '0', label: 'Root' },
+		{ value: '1', label: '1st' },
+		{ value: '2', label: '2nd' },
+		{ value: '3', label: '3rd' }
+	]
+
+	// Voicings the chord has too few notes for are left out.
+	const voicingOptions = $derived(getVoicingOptions(props.chord.symbol))
+	const inversionValue = $derived(String(inversion))
 
 	const octaveDisplayValue = $derived.by(() => {
 		if (octaveOffset === 0) return '±0'
@@ -60,14 +71,12 @@
 		playCurrentChord()
 	}
 
-	const handleVoicingChange = (value: string | undefined) => {
-		if (!value) return
+	const handleVoicingSelect = (value: string) => {
 		voicing = value as VoicingT
 		playCurrentChord()
 	}
 
-	const handleInversionChange = (value: string | undefined) => {
-		if (!value) return
+	const handleInversionSelect = (value: string) => {
 		inversion = parseInt(value, 10)
 		playCurrentChord()
 	}
@@ -109,7 +118,7 @@
 		</z-row>
 
 		<z-row alignsX="between" alignsY="center">
-			<z-text weight={600}>Octave</z-text>
+			<z-text size="sm" weight={600}>Octave</z-text>
 			<z-row gap="sm" alignsY="center">
 				<z-text weight={600} class="octaveDisplay">{octaveDisplayValue}</z-text>
 				<z-button-group>
@@ -123,10 +132,8 @@
 			</z-row>
 		</z-row>
 
-		<z-grid columns="2" gap="md">
-			<SelectInversion value={inversion} onValueChange={handleInversionChange} />
-			<SelectVoicing value={voicing} symbol={props.chord.symbol} onValueChange={handleVoicingChange} />
-		</z-grid>
+		<ChipSelect label="Inversion" value={inversionValue} options={inversionOptions} onSelect={handleInversionSelect} />
+		<ChipSelect label="Voicing" value={voicing} options={voicingOptions} onSelect={handleVoicingSelect} />
 	</z-column>
 
 	<z-row slot="footer" gap="sm" alignsX="end">
