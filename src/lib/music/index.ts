@@ -96,13 +96,22 @@ export const getAllChordSymbols = (): string[] => {
 type VoiceChordArgsT = {
 	chord: ChordT
 	octave: number
+	// The project's voicing, for a chord that has none of its own.
+	projectVoicing: VoicingT
 	previousMidiNotes?: readonly number[]
 }
 
+// The voicing a chord plays with: its own, else the project's.
+export const resolveChordVoicing = (chord: ChordT, projectVoicing: VoicingT): VoicingT => {
+	return chord.voicing ?? projectVoicing
+}
+
 const getVoicingInput = (args: VoiceChordArgsT): ScaledT.GetChordWithVoicingInputT => {
-	const { chord } = args
+	const chord = args.chord
+	const chosenVoicing = resolveChordVoicing(chord, args.projectVoicing)
 	// A voicing the chord has too few notes for plays as closed rather than failing.
-	const voicing = isVoicingAvailable(chord.symbol, chord.voicing) ? chord.voicing : DEFAULT_VOICING
+	const isChosenVoicingAvailable = isVoicingAvailable(chord.symbol, chosenVoicing)
+	const voicing = isChosenVoicingAvailable ? chosenVoicing : DEFAULT_VOICING
 	const input = {
 		chord: chord.symbol,
 		octave: args.octave + chord.octaveOffset,
@@ -117,15 +126,19 @@ export const getVoicedChord = (args: VoiceChordArgsT): ScaledT.VoicedChordT => {
 	return scaled.getChordWithVoicing(getVoicingInput(args))
 }
 
-export const getChordMidiNotes = (chord: ChordT, octave: number): readonly number[] => {
-	return getVoicedChord({ chord, octave }).midiNotes
+export const getChordMidiNotes = (chord: ChordT, octave: number, projectVoicing: VoicingT): readonly number[] => {
+	return getVoicedChord({ chord, octave, projectVoicing }).midiNotes
 }
 
 // Every chord in a progression, voiced in order so Dynamic voicings
 // follow the chord before them. Rests are skipped. Keyed by chord id.
-export const voiceProgression = (items: ProgressionItemT[], octave: number): Map<string, ScaledT.VoicedChordT> => {
+export const voiceProgression = (
+	items: ProgressionItemT[],
+	octave: number,
+	projectVoicing: VoicingT
+): Map<string, ScaledT.VoicedChordT> => {
 	const chords = items.filter((item): item is ProgressionChordT => item.type === 'chord')
-	const inputs = chords.map((chord) => getVoicingInput({ chord, octave }))
+	const inputs = chords.map((chord) => getVoicingInput({ chord, octave, projectVoicing }))
 	const voicedChords = scaled.getProgressionWithVoicing(inputs)
 	const voicedById = new Map<string, ScaledT.VoicedChordT>()
 	chords.forEach((chord, index) => voicedById.set(chord.id, voicedChords[index]))
@@ -137,7 +150,8 @@ export const createChord = (symbol: string, overrides: Partial<ChordT> = {}): Ch
 		id: crypto.randomUUID(),
 		symbol,
 		octaveOffset: 0,
-		voicing: DEFAULT_VOICING,
+		// New chords follow the project's voicing.
+		voicing: null,
 		inversion: 0,
 		...overrides
 	}

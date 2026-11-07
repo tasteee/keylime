@@ -29,11 +29,13 @@ describe('migrateProject', () => {
       type: 'chord',
       symbol: 'Dmin',
       octaveOffset: 0,
-      voicing: 'closed',
+      // closed was the old default, so the chord now follows the project
+      voicing: null,
       inversion: 0,
       startTime: 0,
       durationBeats: 4
     })
+    expect(project.voicing).toBe('closed')
     expect(project.chordSymbols).toEqual(['Dmin'])
   })
 
@@ -42,9 +44,9 @@ describe('migrateProject', () => {
     expect((project.progressionChords[0] as ProgressionChordT).voicing).toBe('dynamic')
   })
 
-  it('falls back to closed when the chord has too few notes for the voicing', () => {
+  it('falls back to the project voicing when the chord has too few notes for the voicing', () => {
     const project = migrateProject(oldProject([oldChord({ symbol: 'C', name: 'C', voicing: 'drop2' })]))
-    expect((project.progressionChords[0] as ProgressionChordT).voicing).toBe('closed')
+    expect((project.progressionChords[0] as ProgressionChordT).voicing).toBe(null)
   })
 
   it('keeps drop voicings on chords that have enough notes', () => {
@@ -61,5 +63,33 @@ describe('migrateProject', () => {
     const migrated = migrateProject(oldProject([{ id: 'r1', type: 'rest', symbol: 'REST', rootNote: 'REST', startTime: 0, durationBeats: 1 }]))
     expect(migrated.progressionChords[0]).toEqual({ id: 'r1', type: 'rest', symbol: 'REST', startTime: 0, durationBeats: 1 })
     expect(migrateProject(migrated)).toBe(migrated)
+  })
+})
+
+const scaledProject = (progressionChords: unknown[]) =>
+  ({ id: 'p2', octave: 3, dataVersion: 2, progressionChords, chordSymbols: ['Dmin'] }) as unknown as ProjectT
+
+const scaledChord = (voicing: string) => ({
+  id: 'c1',
+  type: 'chord',
+  symbol: 'Dmin',
+  octaveOffset: 0,
+  voicing,
+  inversion: 0,
+  startTime: 0,
+  durationBeats: 4
+})
+
+describe('migrateProject from version 2', () => {
+  it('lets chords on the old default follow the project voicing', () => {
+    const project = migrateProject(scaledProject([scaledChord('closed')]))
+    expect(project.dataVersion).toBe(CURRENT_DATA_VERSION)
+    expect((project.progressionChords[0] as ProgressionChordT).voicing).toBe(null)
+    expect(project.voicing).toBe('closed')
+  })
+
+  it('keeps a voicing someone chose', () => {
+    const project = migrateProject(scaledProject([scaledChord('open')]))
+    expect((project.progressionChords[0] as ProgressionChordT).voicing).toBe('open')
   })
 })

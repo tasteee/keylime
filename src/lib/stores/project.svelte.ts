@@ -82,7 +82,7 @@ class ProjectStore {
 		return this.progressionChords.map((chord) => {
 			const hasOctaveOffset = chord.octaveOffset !== 0
 			const hasInversion = chord.inversion !== 0
-			const hasVoicingModifier = chord.voicing !== 'closed'
+			const hasVoicingModifier = chord.voicing !== null
 			const isModified = hasOctaveOffset || hasInversion || hasVoicingModifier
 
 			const symbolWithModifier = isModified ? chord.symbol + '*' : chord.symbol
@@ -283,6 +283,7 @@ class ProjectStore {
 			maxVelocity: this.maxVelocity,
 			minVelocity: this.minVelocity,
 			octave: this.octave,
+			voicing: 'closed',
 			originalProjectId: null,
 			dataVersion: CURRENT_DATA_VERSION,
 			patternDurationBars: this.patternDurationBars,

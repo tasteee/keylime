@@ -18,10 +18,11 @@
 	const props: PropsT = $props()
 	const activeUser = useActiveUser()
 
+	// voicing null means the chord follows the project's voicing.
 	type GridChordModifiersT = {
 		octaveOffset: number
 		inversion: number
-		voicing: VoicingT
+		voicing: VoicingT | null
 	}
 
 	type PatternSnapshotT = {
@@ -71,7 +72,7 @@
 			chordId: string
 			octaveOffset?: number
 			inversion?: number
-			voicing?: VoicingT
+			voicing?: VoicingT | null
 		}) => void
 		getGridChordIdForName: (name: string) => string
 		getDefaultGridChordModifiers: () => GridChordModifiersT
@@ -163,7 +164,8 @@
 			key: 'C',
 			scale: 'Major',
 			octave: 3,
-			dataVersion: 2,
+			voicing: 'closed',
+			dataVersion: 3,
 			bpm: 120,
 			minVelocity: 70,
 			maxVelocity: 80,
@@ -486,7 +488,7 @@
 		return {
 			octaveOffset: 0,
 			inversion: 0,
-			voicing: 'closed'
+			voicing: null
 		}
 	}
 
@@ -499,14 +501,18 @@
 		chordId: string
 		octaveOffset?: number
 		inversion?: number
-		voicing?: VoicingT
+		voicing?: VoicingT | null
 	}) => {
 		const currentModifiers = editorState.gridChordModifiers[args.chordId] || getDefaultGridChordModifiers()
+		// null is a real choice here (follow the project), so only
+		// a missing voicing keeps the current one.
+		const isVoicingGiven = args.voicing !== undefined
+		const nextVoicing = isVoicingGiven ? (args.voicing as VoicingT | null) : currentModifiers.voicing
 
 		editorState.gridChordModifiers[args.chordId] = {
 			octaveOffset: args.octaveOffset ?? currentModifiers.octaveOffset,
 			inversion: args.inversion ?? currentModifiers.inversion,
-			voicing: args.voicing ?? currentModifiers.voicing
+			voicing: nextVoicing
 		}
 	}
 

@@ -76,7 +76,7 @@
 	// Row id to MIDI note, for the selected chord.
 	const signalRowNotes = $derived.by(() => {
 		if (!selectedChord) return new Map<string, number>()
-		const voicedChord = getVoicedChord({ chord: selectedChord, octave: project.octave })
+		const voicedChord = getVoicedChord({ chord: selectedChord, octave: project.octave, projectVoicing: project.voicing })
 		return getSignalRowMidiNotes(voicedChord)
 	})
 

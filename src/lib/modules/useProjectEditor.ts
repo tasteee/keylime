@@ -39,7 +39,7 @@ type ProjectEditorContextT = {
     chordId: string
     octaveOffset?: number
     inversion?: number
-    voicing?: VoicingT
+    voicing?: VoicingT | null
   }) => void
   save: () => Promise<{ didSucceed: boolean }>
   saveClone: () => Promise<{ didSucceed: boolean; newProjectId: string }>

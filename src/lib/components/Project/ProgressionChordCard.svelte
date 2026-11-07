@@ -62,7 +62,7 @@
 	const isModified = $derived.by(() => {
 		if (props.item.type !== 'chord') return false
 		const chord = props.item as ProgressionChordT
-		return chord.octaveOffset !== 0 || chord.inversion !== 0 || chord.voicing !== 'closed'
+		return chord.octaveOffset !== 0 || chord.inversion !== 0 || chord.voicing !== null
 	})
 
 	const displayText = $derived.by(() => {

@@ -14,6 +14,8 @@ type PerformProjectArgsT = {
 	id: string
 	bpm: number
 	octave: number
+	// Voicing for chords with none of their own.
+	voicing: VoicingT
 	progressionChords: ProgressionItemT[]
 	patternSignals: SignalT[]
 	patternSignalRows: SignalRowsT
@@ -249,7 +251,7 @@ class PlaybackStore {
 		midiOutput.playNote(midiNote, { attack: velocity / 127 })
 	}
 
-	playChord = async (chord: ChordT, octave: number, durationMs: number = 500) => {
+	playChord = async (chord: ChordT, octave: number, projectVoicing: VoicingT, durationMs: number = 500) => {
 		console.log('playChord called with:', { chord, octave, durationMs })
 		// Stop only the previously playing chord notes, not the performance playback
 		this.currentlyPlayingChordNotes.forEach((note) => {
@@ -261,7 +263,7 @@ class PlaybackStore {
 		this.currentlyPlayingChordId = chord.id
 
 		// Derive notes from chord at play time
-		const notes = getChordMidiNotes(chord, octave)
+		const notes = getChordMidiNotes(chord, octave, projectVoicing)
 
 		// A tiny strum keeps the notes from sounding as one hard click.
 		// Velocity still varies per note. Timing stays tight.
@@ -314,12 +316,13 @@ class PlaybackStore {
 			progressionLengthBeats: patternLengthBeats,
 			doesPatternResetOnChordChange: project.doesPatternResetOnChordChange,
 			octave: project.octave,
+			projectVoicing: project.voicing,
 			minVelocity: project.minVelocity,
 			maxVelocity: project.maxVelocity
 		})
 
 		const hasNoNotes = notes.length === 0
-		if (hasNoNotes) return this.playChord(chord, project.octave)
+		if (hasNoNotes) return this.playChord(chord, project.octave, project.voicing)
 
 		const runId = this.patternPreviewRunId
 		const msPerBeat = 60000 / project.bpm
@@ -357,7 +360,7 @@ class PlaybackStore {
 		this.stopChordPreview()
 		const isPatternMode = output.chordPreviewMode === 'pattern'
 		if (isPatternMode) return this.playChordWithPattern(chord, project)
-		return this.playChord(chord, project.octave)
+		return this.playChord(chord, project.octave, project.voicing)
 	}
 
 	stopChord = (chord: ChordT) => {
@@ -424,6 +427,7 @@ class PlaybackStore {
 			progressionLengthBeats,
 			doesPatternResetOnChordChange: project.doesPatternResetOnChordChange,
 			octave: project.octave,
+			projectVoicing: project.voicing,
 			minVelocity: project.minVelocity,
 			maxVelocity: project.maxVelocity
 		})
@@ -467,6 +471,7 @@ class PlaybackStore {
 			progressionLengthBeats,
 			doesPatternResetOnChordChange: project.doesPatternResetOnChordChange,
 			octave: project.octave,
+			projectVoicing: project.voicing,
 			minVelocity: project.minVelocity,
 			maxVelocity: project.maxVelocity
 		})

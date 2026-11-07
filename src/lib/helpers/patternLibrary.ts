@@ -79,6 +79,7 @@ const findNearestRowId = (args: FindNearestRowArgsT): string | null => {
 type BuildLibraryPatternArgsT = {
 	templateId: string
 	referenceChord: ChordT
+	projectVoicing: VoicingT
 	key: string
 	scale: string
 	octave: number
@@ -116,7 +117,11 @@ export const buildLibraryPattern = (args: BuildLibraryPatternArgsT): LibraryPatt
 	const template = scaled.performanceTemplates.find((candidate) => candidate.id === args.templateId)
 	if (!template) return null
 
-	const voicedChord = getVoicedChord({ chord: args.referenceChord, octave: args.octave })
+	const voicedChord = getVoicedChord({
+		chord: args.referenceChord,
+		octave: args.octave,
+		projectVoicing: args.projectVoicing
+	})
 	const performance = scaled.adaptPerformanceTemplate({
 		template,
 		midiNotes: voicedChord.midiNotes,

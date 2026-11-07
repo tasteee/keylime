@@ -122,16 +122,18 @@
 	<PatternRoll editor={props.editor} onZoomStep={props.onZoomStep} />
 
 	<div class="pattern-grid-lane-label">
-		<span>Velocity</span>
-		<button
-			type="button"
-			class="pattern-grid-lane-toggle"
-			aria-label={toggleLabel}
-			aria-expanded={!props.isLaneCollapsed}
-			onclick={handleToggleLane}
-		>
-			<ToggleIcon size={12} weight="bold" />
-		</button>
+		<div class="pattern-grid-lane-label-row">
+			<span>Velocity</span>
+			<button
+				type="button"
+				class="pattern-grid-lane-toggle"
+				aria-label={toggleLabel}
+				aria-expanded={!props.isLaneCollapsed}
+				onclick={handleToggleLane}
+			>
+				<ToggleIcon size={12} weight="bold" />
+			</button>
+		</div>
 	</div>
 	<div class="pattern-grid-lane">
 		{#if !props.isLaneCollapsed}
@@ -195,11 +197,10 @@
 		flex: 1;
 	}
 
+	/* The label sits at the top. Its padding centers it in the
+	   collapsed lane, so it stays put when the lane opens. */
 	.pattern-grid-lane-label {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0 var(--spacing-2);
+		padding: calc(var(--spacing-1) * 1.5) var(--spacing-2) 0;
 		background: var(--card);
 		border-top: 1px solid var(--border);
 		border-right: 1px solid var(--border);
@@ -209,6 +210,12 @@
 		user-select: none;
 	}
 
+	.pattern-grid-lane-label-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		min-height: var(--spacing-5);
+	}
 	.pattern-grid-lane-toggle {
 		display: flex;
 		align-items: center;

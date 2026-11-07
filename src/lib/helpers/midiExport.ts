@@ -36,6 +36,7 @@ export const exportPerformanceAsMidi = (project: ProjectT) => {
     progressionLengthBeats,
     doesPatternResetOnChordChange: project.doesPatternResetOnChordChange,
     octave: project.octave,
+    projectVoicing: project.voicing,
     minVelocity: project.minVelocity,
     maxVelocity: project.maxVelocity
   })
@@ -63,7 +64,7 @@ export const exportChordsAsMidi = (project: ProjectT) => {
   const hasNoChords = project.progressionChords.length === 0
   if (hasNoChords) return console.warn('No chords to export')
 
-  const voicedChords = voiceProgression(project.progressionChords, project.octave)
+  const voicedChords = voiceProgression(project.progressionChords, project.octave, project.voicing)
 
   let startBeat = 0
   const notes: PerformanceNoteT[] = []

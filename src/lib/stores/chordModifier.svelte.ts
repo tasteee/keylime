@@ -25,7 +25,7 @@ type ProjectEditorContextT = {
   removePatternSignal: (signalId: string) => void
   movePatternSignalToRow: (args: MoveSignalToRowOptionsT) => void
   getGridChord: (chordId: string) => ChordT | undefined
-  updateGridChordModifiers: (args: { chordId: string; octaveOffset?: number; inversion?: number; voicing?: VoicingT }) => void
+  updateGridChordModifiers: (args: { chordId: string; octaveOffset?: number; inversion?: number; voicing?: VoicingT | null }) => void
   save: () => Promise<{ didSucceed: boolean }>
   saveClone: () => Promise<{ didSucceed: boolean; newProjectId: string }>
   checkIsDirty: () => boolean
@@ -40,13 +40,13 @@ type ChordModifierStateT = {
   // Modifiers (used by both grid and progression chords)
   octaveOffset: number
   inversion: number
-  voicing: VoicingT
+  voicing: VoicingT | null
 }
 
 type InitialStateSnapshotT = {
   octaveOffset: number
   inversion: number
-  voicing: VoicingT
+  voicing: VoicingT | null
 }
 
 class ChordModifierStore {
@@ -224,7 +224,7 @@ class ChordModifierStore {
     const chord = this.currentChord
     if (!chord) return
     const context = this.getProjectEditorContext()
-    playbackStore.playChord(chord, context.state.project.octave, 500)
+    playbackStore.playChord(chord, context.state.project.octave, context.state.project.voicing, 500)
   }
 
   private applyModifiersToChord = (baseChord: ChordT): ChordT => {

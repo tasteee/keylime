@@ -87,7 +87,6 @@
 <style>
 	/* The same floating surface as the other progression controls. */
 	.selectionControls {
-		margin-left: auto;
 		box-sizing: border-box;
 		min-height: var(--progression-controls-height);
 		display: flex;
@@ -99,6 +98,7 @@
 	}
 
 	.durationLabel {
+		padding-inline: var(--spacing-2);
 		white-space: nowrap;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;

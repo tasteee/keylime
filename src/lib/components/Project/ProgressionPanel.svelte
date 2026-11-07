@@ -96,7 +96,7 @@
 		isModifierDialogOpen = false
 	}
 
-	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: VoicingT }) => {
+	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: VoicingT | null }) => {
 		if (!modifierChord) return
 		context.updateProgressionItem({
 			id: modifierChord.id,
@@ -573,6 +573,7 @@
 			isOpen={isModifierDialogOpen}
 			chord={modifierChord}
 			projectOctave={context.state.project.octave}
+			projectVoicing={context.state.project.voicing}
 			onClose={handleModifierClose}
 			onSave={handleModifierSave}
 		/>
@@ -601,7 +602,8 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		gap: var(--spacing-2);
+		justify-content: center;
+		gap: var(--spacing-3);
 		pointer-events: none;
 	}
 

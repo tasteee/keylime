@@ -27,6 +27,7 @@
 			id: project.id,
 			bpm: project.bpm,
 			octave: project.octave,
+			voicing: project.voicing,
 			progressionChords: progressionWithStartTimes,
 			patternSignals: patternActiveSignals,
 			patternSignalRows: project.patternSignalRows,

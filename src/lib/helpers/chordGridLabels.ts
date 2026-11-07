@@ -1,4 +1,4 @@
-import { scaled, getChordMidiNotes, VOICING_OPTIONS, DEFAULT_VOICING } from '$lib/music'
+import { scaled, getChordMidiNotes, VOICING_OPTIONS } from '$lib/music'
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 const UPPER_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']
@@ -28,8 +28,8 @@ const getPitchName = (midiNote: number): string => {
 // The notes as they will sound, lowest first, without
 // octave numbers. Inversions and voicings change the
 // order, so this list doubles as feedback for shaping.
-export const getChordNoteNames = (chord: ChordT, octave: number): string[] => {
-	const midiNotes = getChordMidiNotes(chord, octave)
+export const getChordNoteNames = (chord: ChordT, octave: number, projectVoicing: VoicingT): string[] => {
+	const midiNotes = getChordMidiNotes(chord, octave, projectVoicing)
 	const sortedMidiNotes = [...midiNotes].sort((first, second) => first - second)
 	const noteNames: string[] = []
 
@@ -71,11 +71,11 @@ export const getScaleDegreeIndex = (args: { key: string; scale: string; rootPitc
 export const checkIsChordShaped = (chord: ChordT): boolean => {
 	const hasOctaveShift = chord.octaveOffset !== 0
 	const hasInversion = chord.inversion !== 0
-	const hasCustomVoicing = chord.voicing !== DEFAULT_VOICING
-	return hasOctaveShift || hasInversion || hasCustomVoicing
+	const hasOwnVoicing = chord.voicing !== null
+	return hasOctaveShift || hasInversion || hasOwnVoicing
 }
 
-const getVoicingLabel = (voicing: VoicingT): string => {
+export const getVoicingLabel = (voicing: VoicingT): string => {
 	const voicingOption = VOICING_OPTIONS.find((option) => option.value === voicing)
 	return voicingOption?.label ?? voicing
 }
@@ -95,8 +95,9 @@ export const getChordShapeSummary = (chord: ChordT): string => {
 	const hasInversion = chord.inversion !== 0
 	if (hasInversion) parts.push(INVERSION_LABELS[chord.inversion] ?? `Inversion ${chord.inversion}`)
 
-	const hasCustomVoicing = chord.voicing !== DEFAULT_VOICING
-	if (hasCustomVoicing) parts.push(getVoicingLabel(chord.voicing))
+	const ownVoicing = chord.voicing
+	const hasOwnVoicing = ownVoicing !== null
+	if (hasOwnVoicing) parts.push(getVoicingLabel(ownVoicing))
 
 	const hasOctaveShift = chord.octaveOffset !== 0
 	if (hasOctaveShift) parts.push(getOctaveLabel(chord.octaveOffset))

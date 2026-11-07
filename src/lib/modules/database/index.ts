@@ -2,7 +2,7 @@
 // which read and write D1. Return shapes match what pages expect.
 import { warnWhen } from "$lib/modules/warnWhen"
 import { callApi } from "$lib/modules/api"
-import { isCurrentProject, migrateProject } from "$lib/modules/migrateProject"
+import { isCurrentProject, migrateProject, withProjectVoicing } from "$lib/modules/migrateProject"
 
 const toQuery = (params: Record<string, unknown>): string => {
   const search = new URLSearchParams()
@@ -46,7 +46,7 @@ export const cloneProjectById = async (projectId: string, _currentUserId?: strin
 // A project opened for editing is saved straight back so it only converts once.
 // Saving fails quietly for projects the viewer doesn't own; they stay converted in memory.
 const loadMigratedProject = (project: ProjectT): ProjectT => {
-  if (isCurrentProject(project)) return project
+  if (isCurrentProject(project)) return withProjectVoicing(project)
   const migratedProject = migrateProject(project)
   void callApi(`/api/projects/${migratedProject.id}`, { method: 'PUT', body: JSON.stringify(migratedProject) })
   return migratedProject

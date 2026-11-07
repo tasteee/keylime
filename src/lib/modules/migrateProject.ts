@@ -6,8 +6,9 @@
 // (see database/index.ts), so each project is converted once.
 import { scaled, isVoicingAvailable, DEFAULT_VOICING } from '$lib/music'
 
-// 1 = original shape, 2 = scaled shape. Mirrors D1's projects.dataVersion.
-export const CURRENT_DATA_VERSION = 2
+// 1 = original shape, 2 = scaled shape, 3 = chords may follow the
+// project's voicing. Mirrors D1's projects.dataVersion.
+export const CURRENT_DATA_VERSION = 3
 
 // Old voicing names to scaled voicing names. The two tonal dictionary voicings
 // searched for a nice arrangement, which is what Dynamic does now.
@@ -87,9 +88,15 @@ export const isCurrentProject = (project: Pick<ProjectT, 'dataVersion'>): boolea
 	return (project.dataVersion ?? 1) >= CURRENT_DATA_VERSION
 }
 
-export const migrateProject = (project: ProjectT): ProjectT => {
-	if (isCurrentProject(project)) return project
+// Older rows (and older API builds) have no project voicing.
+export const withProjectVoicing = (project: ProjectT): ProjectT => {
+	const hasVoicing = Boolean(project.voicing)
+	if (hasVoicing) return project
+	return { ...project, voicing: DEFAULT_VOICING }
+}
 
+// Version 1 to 2: tonal-era chords become scaled chords.
+const migrateToScaledShape = (project: ProjectT): ProjectT => {
 	const progressionChords = parseItems(project.progressionChords).map(migrateItem)
 	const chordSymbols = [...new Set(progressionChords.filter((item) => item.type === 'chord').map((item) => item.symbol))]
 
@@ -98,6 +105,35 @@ export const migrateProject = (project: ProjectT): ProjectT => {
 		octave: Number(project.octave) || 3,
 		progressionChords,
 		chordSymbols,
-		dataVersion: CURRENT_DATA_VERSION
+		dataVersion: 2
 	}
+}
+
+// Before version 3 every chord stored "closed", the old default,
+// whether or not anyone chose it. Those chords now follow the
+// project's voicing, which starts as Closed, so nothing sounds
+// different until the project voicing changes.
+const followProjectVoicing = (item: ProgressionItemT): ProgressionItemT => {
+	const isRest = item.type === 'rest'
+	if (isRest) return item
+	const isOldDefault = item.voicing === DEFAULT_VOICING
+	if (!isOldDefault) return item
+	return { ...item, voicing: null }
+}
+
+// Version 2 to 3: default voicings follow the project.
+const migrateToProjectVoicing = (project: ProjectT): ProjectT => {
+	const progressionChords = parseItems(project.progressionChords) as unknown as ProgressionItemT[]
+	const updatedChords = progressionChords.map(followProjectVoicing)
+	return { ...project, progressionChords: updatedChords, dataVersion: 3 }
+}
+
+export const migrateProject = (project: ProjectT): ProjectT => {
+	const projectWithVoicing = withProjectVoicing(project)
+	if (isCurrentProject(projectWithVoicing)) return projectWithVoicing
+
+	const isScaledShape = (projectWithVoicing.dataVersion ?? 1) >= 2
+	const scaledProject = isScaledShape ? projectWithVoicing : migrateToScaledShape(projectWithVoicing)
+	const currentProject = migrateToProjectVoicing(scaledProject)
+	return { ...currentProject, dataVersion: CURRENT_DATA_VERSION }
 }

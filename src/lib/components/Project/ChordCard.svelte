@@ -29,7 +29,7 @@
 	const isSounding = $derived(isPlaybackChord || isAuditioning)
 	const isShaped = $derived(checkIsChordShaped(props.chord))
 	const chordColor = $derived(getChordColor({ symbol: props.chord.symbol }))
-	const noteNames = $derived(getChordNoteNames(props.chord, project.octave))
+	const noteNames = $derived(getChordNoteNames(props.chord, project.octave, project.voicing))
 	const shapeSummary = $derived(getChordShapeSummary(props.chord))
 	const symbolSize = $derived(isLead ? 'lg' : 'sm')
 	const hasNumeral = $derived(isLead && Boolean(props.numeral))

@@ -8,7 +8,7 @@
 	const isRest = $derived(props.item.type === 'rest')
 	const hasOctaveModifier = $derived(props.item.type === 'chord' && props.item.octaveOffset != 0)
 	const hasInversionModifier = $derived(props.item.type === 'chord' && props.item.inversion != 0)
-	const hasVoicingModifier = $derived(props.item.type === 'chord' && props.item.voicing !== 'closed')
+	const hasVoicingModifier = $derived(props.item.type === 'chord' && props.item.voicing !== null)
 	const isModified = $derived(hasOctaveModifier || hasInversionModifier || hasVoicingModifier)
 
 	const badgeKind = $derived(isRest ? 'outline' : 'soft')
