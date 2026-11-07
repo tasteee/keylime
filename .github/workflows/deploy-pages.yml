@@ -20,22 +20,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
         with:
           version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
+
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+
+      - name: Build
         env:
           BASE_PATH: /keylime
-          # Set the repo variable API_URL to your Worker URL.
+          # Repository variable: your Worker URL.
           VITE_API_URL: ${{ vars.API_URL }}
-          # Set the repo variable SOUNDFONT_BASE_URL to your R2 public URL.
-          SOUNDFONT_BASE_URL: ${{ vars.SOUNDFONT_BASE_URL }}
-      - run: touch build/.nojekyll && cp build/index.html build/404.html
+          # Repository secret: your R2 public soundfont URL.
+          VITE_SOUNDFONT_BASE_URL: ${{ secrets.VITE_SOUNDFONT_BASE_URL }}
+        run: |
+          test -n "$VITE_SOUNDFONT_BASE_URL" || {
+            echo "::error::VITE_SOUNDFONT_BASE_URL is missing"
+            exit 1
+          }
+
+          pnpm build
+
+      - name: Prepare GitHub Pages files
+        run: touch build/.nojekyll && cp build/index.html build/404.html
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build
