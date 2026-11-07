@@ -16,7 +16,7 @@ importers:
         version: https://codeload.github.com/tasteee/scaled/tar.gz/052a703034a8e811045ab004b07fe5603f99f48a
       '@tasteee/zest':
         specifier: github:tasteee/zest#build
-        version: https://codeload.github.com/tasteee/zest/tar.gz/423dde90e49dcaf49123327f635066d44461899f
+        version: https://codeload.github.com/tasteee/zest/tar.gz/97fe4ea59e73438981e53fcb24c74c2eddc7469e
       '@types/store':
         specifier: ^2.0.5
         version: 2.0.5
@@ -868,8 +868,8 @@ packages:
     resolution: {gitHosted: true, integrity: sha512-3E1ldqbf8i4V0oGd8qd9Z+4VR0WIgbcndjY9SGEfUgm6nGgtblwUbGkpAw0Y0MNbLjc66VIaPJhpr0LL4kN3Cw==, tarball: https://codeload.github.com/tasteee/scaled/tar.gz/052a703034a8e811045ab004b07fe5603f99f48a}
     version: 0.1.0
 
-  '@tasteee/zest@https://codeload.github.com/tasteee/zest/tar.gz/423dde90e49dcaf49123327f635066d44461899f':
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/tasteee/zest/tar.gz/423dde90e49dcaf49123327f635066d44461899f}
+  '@tasteee/zest@https://codeload.github.com/tasteee/zest/tar.gz/97fe4ea59e73438981e53fcb24c74c2eddc7469e':
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/tasteee/zest/tar.gz/97fe4ea59e73438981e53fcb24c74c2eddc7469e}
     version: 1.0.0
 
   '@testing-library/dom@10.4.1':
@@ -2095,7 +2095,7 @@ snapshots:
 
   '@tasteee/scaled@https://codeload.github.com/tasteee/scaled/tar.gz/052a703034a8e811045ab004b07fe5603f99f48a': {}
 
-  '@tasteee/zest@https://codeload.github.com/tasteee/zest/tar.gz/423dde90e49dcaf49123327f635066d44461899f':
+  '@tasteee/zest@https://codeload.github.com/tasteee/zest/tar.gz/97fe4ea59e73438981e53fcb24c74c2eddc7469e':
     dependencies:
       atomico: 2.2.0
 
