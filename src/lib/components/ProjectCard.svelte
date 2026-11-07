@@ -3,6 +3,7 @@
 	import { Play, Stop, Trash, FolderOpen, CopySimple, MusicNotes, Clock } from 'phosphor-svelte'
 	import { useActiveUser } from '$lib/helpers/useActiveUser.svelte'
 	import { goToPath } from '$lib/modules/navigate'
+	import { DEFAULT_VOICING } from '$lib/music'
 	import { calculateStartTimes } from '$lib/helpers/progression'
 	import ChordBadge from '$lib/components/ChordBadge.svelte'
 
@@ -15,6 +16,8 @@
 			scale: string
 			bpm: number
 			octave: number
+			// Older list rows may not carry it; they play Closed.
+			voicing?: VoicingT
 			chordSymbols: string[]
 			updatedAt: Date
 			userId: string
@@ -74,11 +77,13 @@
 		}
 
 		const progressionWithStartTimes = calculateStartTimes({ items: props.project.progressionChords })
+		const projectVoicing = props.project.voicing ?? DEFAULT_VOICING
 
 		await playbackContext.perform({
 			id: props.project.id,
 			bpm: props.project.bpm,
 			octave: props.project.octave,
+			voicing: projectVoicing,
 			progressionChords: progressionWithStartTimes,
 			patternSignals: props.project.patternSignals,
 			patternSignalRows: props.project.patternSignalRows,

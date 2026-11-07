@@ -49,7 +49,7 @@
 		isModifierDialogOpen = false
 	}
 
-	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: VoicingT }) => {
+	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: VoicingT | null }) => {
 		if (!modifierChord) return
 		projectEditor.updateGridChordModifiers({
 			chordId: modifierChord.id,
@@ -140,7 +140,7 @@
 				</z-row>
 			{/if}
 
-			<z-text size="xs" color="muted" class="chord-grid-hint">Hold to listen · Double-click to add · Right-click to shape</z-text>
+			<z-text size="xs" color="muted" class="chord-grid-hint">Hold to listen · + to add · Right-click to shape</z-text>
 		</z-row>
 	</PanelHeader>
 
@@ -169,6 +169,7 @@
 			isOpen={isModifierDialogOpen}
 			chord={modifierChord as ProgressionChordT}
 			projectOctave={project.octave}
+			projectVoicing={project.voicing}
 			onClose={handleModifierClose}
 			onSave={handleModifierSave}
 		/>

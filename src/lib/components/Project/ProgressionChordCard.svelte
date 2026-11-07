@@ -14,6 +14,7 @@
 			cleanProjectSnapshot: string
 			activeView: 'chords' | 'pattern'
 			selectedProgressionItemId: string | null
+			isPatternEditorActive: boolean
 		}
 		updateProject: (updates: Partial<ProjectT>) => void
 		updateProgressionItem: (updatedItem: Partial<ProgressionItemT>) => void
@@ -52,13 +53,16 @@
 		return getChordColor({ symbol: props.item.symbol })
 	})
 	const isSelected = $derived(props.item.id === context.state.selectedProgressionItemId)
+	// While the user edits the pattern, the selected chord is only
+	// the pattern's reference: it keeps its outline but not its fill.
+	const isReference = $derived(isSelected && context.state.isPatternEditorActive)
 	const width = $derived(`${(props.item.durationBeats ?? 0) * props.pixelsPerBeat + (props.index === 0 ? 0 : 0)}px`)
 
 	// Check if chord is modified from original (only applicable to chords)
 	const isModified = $derived.by(() => {
 		if (props.item.type !== 'chord') return false
 		const chord = props.item as ProgressionChordT
-		return chord.octaveOffset !== 0 || chord.inversion !== 0 || chord.voicing !== 'closed'
+		return chord.octaveOffset !== 0 || chord.inversion !== 0 || chord.voicing !== null
 	})
 
 	const displayText = $derived.by(() => {
@@ -106,6 +110,7 @@
 	data-is-resizing={props.isResizing}
 	class:isRest
 	class:isSelected
+	class:isReference
 	data-chord-color={chordColor}
 	onclick={props.selectItem}
 	onmousedown={onMouseDown}
@@ -171,6 +176,14 @@
 
 	.progressionItem.isSelected {
 		z-index: 20;
+	}
+
+	.progressionItem.isSelected.isReference {
+		background: var(--chord-bg-strong, var(--color-neutral-1));
+	}
+
+	.progressionItem.isRest.isSelected.isReference {
+		background: var(--color-neutral-2);
 	}
 
 	.progressionItem.isRest {

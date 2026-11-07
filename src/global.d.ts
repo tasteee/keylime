@@ -15,11 +15,13 @@ type VoicingT = import('@tasteee/scaled/types').ScaledT.VoicingNameT
 // symbol is a chord symbol scaled produces (e.g. "Cmaj7", "Dmin").
 // octaveOffset shifts the chord from the project octave. Everything else
 // about the notes (root, intervals, MIDI notes) comes from scaled.
+// voicing is null when the chord follows the project's voicing
+// (ProjectT.voicing) instead of having one of its own.
 type ChordT = {
   id: string
   symbol: string
   octaveOffset: number
-  voicing: VoicingT
+  voicing: VoicingT | null
   inversion: number
 }
 
@@ -76,6 +78,8 @@ type ProjectT = {
   key: string
   scale: string
   octave: number
+  // Voicing for every chord that has none of its own.
+  voicing: VoicingT
   dataVersion: number // see CURRENT_DATA_VERSION in modules/migrateProject.ts
   bpm: number
   minVelocity: number
@@ -220,7 +224,7 @@ type PlaybackContextT = {
   state: PlaybackStateT
   load: () => Promise<void>
   playNote: (args: PlayNoteArgsT) => Promise<void>
-  playChord: (chord: ChordT, octave: number, durationMs?: number) => Promise<void>
+  playChord: (chord: ChordT, octave: number, projectVoicing: VoicingT, durationMs?: number) => Promise<void>
   previewChord: (chord: ChordT, project: PerformProjectArgsT) => Promise<void>
   stopChordPreview: () => void
   stopNote: (args: PlayNoteArgsT) => void

@@ -1,4 +1,4 @@
-import { applyPerformanceSafely, voiceProgression } from '$lib/music'
+import { applyPerformanceSafely, voiceProgression, DEFAULT_VOICING } from '$lib/music'
 import type { ScaledT } from '@tasteee/scaled/types'
 import { getChordToneIndex } from './signalRows'
 
@@ -12,6 +12,8 @@ type GeneratePerformanceArgsT = {
   // it run on through chord changes.
   doesPatternResetOnChordChange?: boolean
   octave: number
+  // Voicing for chords with none of their own. Closed when left out.
+  projectVoicing?: VoicingT
   minVelocity?: number
   maxVelocity?: number
 }
@@ -123,7 +125,8 @@ export const generatePerformance = (args: GeneratePerformanceArgsT): Performance
   const hasNoEvents = pattern.events.length === 0
   if (hasNoEvents) return []
 
-  const voicedChords = voiceProgression(args.chords, args.octave)
+  const projectVoicing = args.projectVoicing ?? DEFAULT_VOICING
+  const voicedChords = voiceProgression(args.chords, args.octave, projectVoicing)
   const segments = getChordSegments(args.chords)
   const chordSegments = segments.filter((segment) => segment.item.type === 'chord')
   const minVelocity = args.minVelocity ?? 70

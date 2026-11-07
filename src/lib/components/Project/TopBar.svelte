@@ -5,6 +5,7 @@
 	import SelectOutput from './SelectOutput.svelte'
 	import SelectBpm from './SelectBpm.svelte'
 	import SelectOctave from './SelectOctave.svelte'
+	import SelectProjectVoicing from './SelectProjectVoicing.svelte'
 	import SelectKeyScale from './SelectKeyScale.svelte'
 	import ProjectPlayButton from './ProjectPlayButton.svelte'
 	import DownloadMenu from './DownloadMenu.svelte'
@@ -81,6 +82,7 @@
 
 			<SelectBpm />
 			<SelectOctave />
+			<SelectProjectVoicing />
 			<SelectKeyScale />
 			<DownloadMenu />
 			<SaveMenu />

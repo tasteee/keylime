@@ -76,7 +76,7 @@
 	// Row id to MIDI note, for the selected chord.
 	const signalRowNotes = $derived.by(() => {
 		if (!selectedChord) return new Map<string, number>()
-		const voicedChord = getVoicedChord({ chord: selectedChord, octave: project.octave })
+		const voicedChord = getVoicedChord({ chord: selectedChord, octave: project.octave, projectVoicing: project.voicing })
 		return getSignalRowMidiNotes(voicedChord)
 	})
 
@@ -224,12 +224,52 @@
 		return () => cancelAnimationFrame(playheadFrameId)
 	})
 
+	// ---- Active surface ----
+
+	// Pressing or focusing inside the pattern editor makes it
+	// the target of keyboard edits. The selected chord stays
+	// selected as the pattern's reference, but the progression's
+	// delete and duplicate keys stand down until the user
+	// presses somewhere else.
+	let editorElement: HTMLElement | undefined = $state()
+
+	const checkIsInsideEditor = (event: Event): boolean => {
+		if (!editorElement) return false
+		const eventPath = event.composedPath()
+		return eventPath.includes(editorElement)
+	}
+
+	// Pressing a progression chord does not move focus by
+	// itself, so the grid would keep catching keys. Let go.
+	const releaseEditorFocus = () => {
+		const focusedElement = document.activeElement as HTMLElement | null
+		if (!focusedElement || !editorElement) return
+		const isFocusInsideEditor = editorElement.contains(focusedElement)
+		if (!isFocusInsideEditor) return
+		focusedElement.blur()
+	}
+
+	const handleWindowPointerDown = (event: PointerEvent) => {
+		const isInsideEditor = checkIsInsideEditor(event)
+		projectEditor.state.isPatternEditorActive = isInsideEditor
+		if (!isInsideEditor) releaseEditorFocus()
+	}
+
+	const handleWindowFocusIn = (event: FocusEvent) => {
+		projectEditor.state.isPatternEditorActive = checkIsInsideEditor(event)
+	}
+
 	onMount(() => {
-		return () => stopHeldLabelNote()
+		return () => {
+			stopHeldLabelNote()
+			projectEditor.state.isPatternEditorActive = false
+		}
 	})
 </script>
 
-<div class="pattern-editor" style={editorStyle}>
+<svelte:window onpointerdowncapture={handleWindowPointerDown} onfocusin={handleWindowFocusIn} />
+
+<div class="pattern-editor" style={editorStyle} bind:this={editorElement}>
 	<PanelHeader label="Pattern" />
 
 	<PatternGrid

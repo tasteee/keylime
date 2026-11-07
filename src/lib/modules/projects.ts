@@ -1,5 +1,6 @@
 import { goToPath } from '$lib/modules/navigate'
 import { CURRENT_DATA_VERSION } from '$lib/modules/migrateProject'
+import { DEFAULT_VOICING } from '$lib/music'
 import { SIGNAL_ROWS } from "$lib/constants/signalRows"
 import { deleteProjectById, getProjectById, saveProjectData } from "$lib/modules/database"
 
@@ -22,6 +23,7 @@ export const createNewProjectData = (userId: string, overrides: Partial<ProjectT
     key: overrides.key ?? 'C',
     scale: overrides.scale ?? 'Major',
     octave: overrides.octave ?? 3,
+    voicing: overrides.voicing ?? DEFAULT_VOICING,
     dataVersion: CURRENT_DATA_VERSION,
     minVelocity: overrides.minVelocity ?? 70,
     maxVelocity: overrides.maxVelocity ?? 80,

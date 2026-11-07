@@ -252,6 +252,29 @@ const text = (value: unknown, fallback: string, maxLength: number): string => {
 	return typeof value === 'string' ? value.slice(0, maxLength) : fallback
 }
 
+// Voicing names scaled understands. Anything else is stored as closed.
+const VOICING_NAMES = [
+	'rootPosition',
+	'closed',
+	'dynamic',
+	'dynamicBass',
+	'open',
+	'guitar',
+	'drop2',
+	'drop3',
+	'drop4',
+	'drop2and3',
+	'drop2and4',
+	'spread',
+	'shell'
+]
+
+const voicingName = (value: unknown): string => {
+	const isKnownVoicing = typeof value === 'string' && VOICING_NAMES.includes(value)
+	if (!isKnownVoicing) return 'closed'
+	return value as string
+}
+
 const int = (value: unknown, fallback: number): number => {
 	const number = Number(value)
 	return Number.isFinite(number) ? Math.round(number) : fallback
@@ -297,6 +320,7 @@ export const saveProject = async (db: D1Database, userId: string, input: Partial
 		text(input.key, 'C', 8),
 		text(input.scale, 'Major', 64),
 		String(input.octave ?? 3).slice(0, 2),
+		voicingName(input.voicing),
 		int(input.bpm, 120),
 		int(input.minVelocity, 60),
 		int(input.maxVelocity, 100),
@@ -314,13 +338,13 @@ export const saveProject = async (db: D1Database, userId: string, input: Partial
 		stamp
 	]
 
-	const sql = `INSERT INTO projects (id, title, description, userId, isPublic, key, scale, octave, bpm, minVelocity, maxVelocity,
+	const sql = `INSERT INTO projects (id, title, description, userId, isPublic, key, scale, octave, voicing, bpm, minVelocity, maxVelocity,
 			progressionChords, progressionDurationBars, chordSymbols, patternSignals, patternSignalRows,
 			patternDurationBars, doesPatternResetOnChordChange, patternZoomLevel, progressionZoomLevel, dataVersion, createdAt, updatedAt)
 		VALUES (${values.map(() => '?').join(', ')})
 		ON CONFLICT (id) DO UPDATE SET
 			title = excluded.title, description = excluded.description, isPublic = excluded.isPublic,
-			key = excluded.key, scale = excluded.scale, octave = excluded.octave, bpm = excluded.bpm,
+			key = excluded.key, scale = excluded.scale, octave = excluded.octave, voicing = excluded.voicing, bpm = excluded.bpm,
 			minVelocity = excluded.minVelocity, maxVelocity = excluded.maxVelocity,
 			progressionChords = excluded.progressionChords, progressionDurationBars = excluded.progressionDurationBars,
 			chordSymbols = excluded.chordSymbols, patternSignals = excluded.patternSignals,

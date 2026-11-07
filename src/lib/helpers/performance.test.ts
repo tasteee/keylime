@@ -5,7 +5,7 @@ import { getSignalRowMidiNotes } from './signalRows'
 
 // The chord's notes as names, e.g. ['C3', 'E3', 'G3'].
 const chordToNotes = (args: { chord: ChordT; rootOctave: string }): string[] => {
-  return getChordMidiNotes(args.chord, Number(args.rootOctave)).map(midiToNoteName)
+  return getChordMidiNotes(args.chord, Number(args.rootOctave), 'closed').map(midiToNoteName)
 }
 
 // What a signal row plays against a chord with these notes, as a note name.

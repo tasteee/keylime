@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Plus, Minus, ArrowCounterClockwise, Check, SpeakerHigh } from 'phosphor-svelte'
-	import { getChordNoteNames } from '$lib/helpers/chordGridLabels'
+	import { getChordNoteNames, getVoicingLabel } from '$lib/helpers/chordGridLabels'
 	import ChipSelect from './ChipSelect.svelte'
 	import { getVoicingOptions } from '$lib/music'
 	import playbackStore from '$lib/stores/playback.svelte'
@@ -9,9 +9,15 @@
 		isOpen: boolean
 		chord: ProgressionChordT
 		projectOctave: number
+		// Used when the chord has no voicing of its own.
+		projectVoicing: VoicingT
 		onClose: () => void
-		onSave: (args: { octaveOffset: number; inversion: number; voicing: VoicingT }) => void
+		// voicing null means "follow the project".
+		onSave: (args: { octaveOffset: number; inversion: number; voicing: VoicingT | null }) => void
 	}
+
+	// The chip value for "no voicing of its own".
+	const PROJECT_VOICING_VALUE = 'project'
 
 	const props: DialogChordModifierPropsT = $props()
 
@@ -28,8 +34,13 @@
 		{ value: '3', label: '3rd' }
 	]
 
-	// Voicings the chord has too few notes for are left out.
-	const voicingOptions = $derived(getVoicingOptions(props.chord.symbol))
+	// The project's voicing comes first, then every voicing the
+	// chord has enough notes for.
+	const projectVoicingLabel = $derived(`Project · ${getVoicingLabel(props.projectVoicing)}`)
+	const projectVoicingOption = $derived({ value: PROJECT_VOICING_VALUE, label: projectVoicingLabel })
+	const chordVoicingOptions = $derived(getVoicingOptions(props.chord.symbol))
+	const voicingOptions = $derived([projectVoicingOption, ...chordVoicingOptions])
+	const voicingValue = $derived(voicing ?? PROJECT_VOICING_VALUE)
 	const inversionValue = $derived(String(inversion))
 
 	const octaveDisplayValue = $derived.by(() => {
@@ -46,7 +57,7 @@
 	})
 
 	// Lowest note first, so inversions read as a new bass note.
-	const noteNames = $derived(getChordNoteNames(shapedChord, props.projectOctave))
+	const noteNames = $derived(getChordNoteNames(shapedChord, props.projectOctave, props.projectVoicing))
 	const notesLabel = $derived(`Notes, low to high: ${noteNames.join(', ')}`)
 
 	// Reset local state when the dialog opens with a chord.
@@ -58,7 +69,7 @@
 	})
 
 	const playCurrentChord = () => {
-		playbackStore.playChord(shapedChord, props.projectOctave)
+		playbackStore.playChord(shapedChord, props.projectOctave, props.projectVoicing)
 	}
 
 	const incrementOctave = () => {
@@ -72,7 +83,9 @@
 	}
 
 	const handleVoicingSelect = (value: string) => {
-		voicing = value as VoicingT
+		const isProjectVoicing = value === PROJECT_VOICING_VALUE
+		const ownVoicing = isProjectVoicing ? null : (value as VoicingT)
+		voicing = ownVoicing
 		playCurrentChord()
 	}
 
@@ -89,7 +102,7 @@
 	const handleReset = () => {
 		octaveOffset = 0
 		inversion = 0
-		voicing = 'closed'
+		voicing = null
 		playCurrentChord()
 	}
 
@@ -133,7 +146,7 @@
 		</z-row>
 
 		<ChipSelect label="Inversion" value={inversionValue} options={inversionOptions} onSelect={handleInversionSelect} />
-		<ChipSelect label="Voicing" value={voicing} options={voicingOptions} onSelect={handleVoicingSelect} />
+		<ChipSelect label="Voicing" value={voicingValue} options={voicingOptions} onSelect={handleVoicingSelect} />
 	</z-column>
 
 	<z-row slot="footer" gap="sm" alignsX="end">

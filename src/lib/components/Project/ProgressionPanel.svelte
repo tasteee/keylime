@@ -19,6 +19,7 @@
 			cleanProjectSnapshot: string
 			activeView: 'chords' | 'pattern'
 			selectedProgressionItemId: string | null
+			isPatternEditorActive: boolean
 		}
 
 		updateProject: (updates: Partial<ProjectT>) => void
@@ -95,7 +96,7 @@
 		isModifierDialogOpen = false
 	}
 
-	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: VoicingT }) => {
+	const handleModifierSave = (args: { octaveOffset: number; inversion: number; voicing: VoicingT | null }) => {
 		if (!modifierChord) return
 		context.updateProgressionItem({
 			id: modifierChord.id,
@@ -251,6 +252,11 @@
 	const handleKeyDown = (event: KeyboardEvent) => {
 		// While typing in a field, keys belong to the field.
 		if (isTypingInTextField(event)) return
+		// Another surface (the pattern grid) already used this key.
+		if (event.defaultPrevented) return
+		// While the user works on the pattern, edit keys belong to it.
+		const isPatternEditorActive = context.state.isPatternEditorActive
+		if (isPatternEditorActive) return
 		const isDeleteKey = event.key === 'Delete' || event.key === 'Backspace'
 		if (isDeleteKey && context.state.selectedProgressionItemId) {
 			context.removeProgressionItem(context.state.selectedProgressionItemId)
@@ -567,6 +573,7 @@
 			isOpen={isModifierDialogOpen}
 			chord={modifierChord}
 			projectOctave={context.state.project.octave}
+			projectVoicing={context.state.project.voicing}
 			onClose={handleModifierClose}
 			onSave={handleModifierSave}
 		/>
@@ -595,7 +602,8 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		gap: var(--spacing-2);
+		justify-content: center;
+		gap: var(--spacing-3);
 		pointer-events: none;
 	}
 

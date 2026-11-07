@@ -106,6 +106,7 @@
 			id: project.id,
 			bpm: project.bpm,
 			octave: project.octave,
+			voicing: project.voicing,
 			progressionChords: progressionWithStartTimes,
 			patternSignals: patternActiveSignals,
 			patternSignalRows: project.patternSignalRows,
@@ -119,6 +120,32 @@
 	$effect(() => {
 		// Project loading is now handled by ContextFrame
 		// This effect is no longer needed
+	})
+
+	// Logs the soundfont base URL so a missing value is easy to spot.
+	// In the browser `process` does not exist, so the two process.env
+	// reads land in their catch blocks. The import.meta.env read is the
+	// value the app actually uses (see stores/playback.svelte.ts).
+	// Nothing here can throw past its own try/catch.
+	$effect(() => {
+		try {
+			console.log('❤️❤️❤️❤️❤️soundfont base url: ', process.env.SOUNDFONT_BASE_URL)
+		} catch (error) {
+			console.debug('no SOUNDFONT_BASE_URL')
+		}
+		try {
+			console.log('❤️❤️❤️❤️❤️soundfont base url: ', process.env.VITE_SOUNDFONT_BASE_URL)
+		} catch (error) {
+			console.debug('no VITE_SOUNDFONT_BASE_URL')
+		}
+		try {
+			const viteSoundfontUrl = import.meta.env.VITE_SOUNDFONT_BASE_URL
+			const hasViteSoundfontUrl = Boolean(viteSoundfontUrl)
+			const viteSoundfontLabel = hasViteSoundfontUrl ? viteSoundfontUrl : '(empty: set VITE_SOUNDFONT_BASE_URL and restart Vite)'
+			console.log('❤️❤️❤️❤️❤️soundfont base url (import.meta.env): ', viteSoundfontLabel)
+		} catch (error) {
+			console.debug('no import.meta.env.VITE_SOUNDFONT_BASE_URL')
+		}
 	})
 
 	onMount(() => {

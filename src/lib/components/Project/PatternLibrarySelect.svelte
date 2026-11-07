@@ -57,7 +57,8 @@
 			referenceChord: getReferenceChord(),
 			key: project.key,
 			scale: project.scale,
-			octave: project.octave
+			octave: project.octave,
+			projectVoicing: project.voicing
 		})
 		if (!libraryPattern) return
 		projectEditor.replacePattern(libraryPattern)

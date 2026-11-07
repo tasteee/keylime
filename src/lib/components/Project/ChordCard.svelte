@@ -29,7 +29,7 @@
 	const isSounding = $derived(isPlaybackChord || isAuditioning)
 	const isShaped = $derived(checkIsChordShaped(props.chord))
 	const chordColor = $derived(getChordColor({ symbol: props.chord.symbol }))
-	const noteNames = $derived(getChordNoteNames(props.chord, project.octave))
+	const noteNames = $derived(getChordNoteNames(props.chord, project.octave, project.voicing))
 	const shapeSummary = $derived(getChordShapeSummary(props.chord))
 	const symbolSize = $derived(isLead ? 'lg' : 'sm')
 	const hasNumeral = $derived(isLead && Boolean(props.numeral))
@@ -76,13 +76,6 @@
 		event.preventDefault()
 		event.stopPropagation()
 		props.onOpenModifier(props.chord)
-	}
-
-	const handleDoubleClick = (event: MouseEvent) => {
-		const target = event.target as HTMLElement
-		const isButtonTarget = target.closest('z-button')
-		if (isButtonTarget) return
-		addChordToProgression()
 	}
 
 	const handleMouseDown = (event: MouseEvent) => {
@@ -141,7 +134,6 @@
 	role="group"
 	aria-label={props.chord.symbol}
 	onmousedown={handleMouseDown}
-	ondblclick={handleDoubleClick}
 	oncontextmenu={handleContextMenu}
 >
 	<button
