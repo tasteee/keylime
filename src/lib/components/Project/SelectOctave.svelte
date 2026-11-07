@@ -4,9 +4,15 @@
 	const projectEditor = useProjectEditor()
 	const project = $derived(projectEditor.state.project)
 
-	// Zest's generated types do not list value-prefix yet.
-	const prefixAttributes = { 'value-prefix': 'Octave' }
-	const octaveOptions = [0, 1, 2, 3, 4, 5, 6, 7, 8].map((octave) => ({ value: String(octave), label: String(octave) }))
+	// z-select has no value-prefix, so each option carries the word
+	// itself. The closed select then reads "Octave 3".
+	const OCTAVES = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+
+	const octaveOptions = OCTAVES.map((octave) => {
+		return { value: String(octave), label: `Octave ${octave}` }
+	})
+
+	const octaveValue = $derived(String(project.octave))
 
 	const handleChange = (event: CustomEvent) => {
 		const octaveNumber = parseInt(event.detail.value, 10)
@@ -16,12 +22,4 @@
 	}
 </script>
 
-<z-select
-	value={String(project.octave)}
-	options={octaveOptions}
-	label="Octave"
-	size="sm"
-	isInline
-	{...prefixAttributes}
-	onchange={handleChange}
-></z-select>
+<z-select value={octaveValue} options={octaveOptions} label="Octave" size="sm" isInline onchange={handleChange}></z-select>
