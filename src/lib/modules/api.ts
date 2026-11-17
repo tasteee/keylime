@@ -4,7 +4,7 @@ import { browser } from '$app/environment'
 // The app and the API live on different sites, so sign-in is
 // a bearer token kept in localStorage instead of a cookie.
 
-const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:8787') as string
+const API_URL = import.meta.env.VITE_API_URL || 'https://keylime-api.grayrockie.workers.dev'
 const SESSION_STORAGE_KEY = 'keylime_session'
 
 export type ApiResultT<DataT> = { data: DataT | null; error: Error | null; status: number }

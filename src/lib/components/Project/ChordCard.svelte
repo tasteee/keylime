@@ -13,6 +13,7 @@
 		kind: 'lead' | 'variation'
 		numeral?: string
 		isInProgression: boolean
+		keyboardChordId?: string | null
 		// The grid owns one shared modifier dialog, so opening is instant.
 		onOpenModifier: (chord: ChordT) => void
 	}
@@ -26,7 +27,8 @@
 	const isLead = $derived(props.kind === 'lead')
 	const isVariation = $derived(props.kind === 'variation')
 	const isPlaybackChord = $derived(playbackStore.currentlyPlayingChordId === props.chord.id)
-	const isSounding = $derived(isPlaybackChord || isAuditioning)
+	const isKeyboardChord = $derived(props.keyboardChordId === props.chord.id)
+	const isSounding = $derived(isPlaybackChord || isAuditioning || isKeyboardChord)
 	const isShaped = $derived(checkIsChordShaped(props.chord))
 	const chordColor = $derived(getChordColor({ symbol: props.chord.symbol }))
 	const noteNames = $derived(getChordNoteNames(props.chord, project.octave, project.voicing))

@@ -66,8 +66,12 @@ type PlaybackInstrumentConfigT = {
 
 // Where the .sf2 files are hosted (e.g. a Cloudflare R2 bucket).
 // No default: the env var must be set. A trailing slash is trimmed.
-const rawSoundfontBaseUrl = (import.meta.env.VITE_SOUNDFONT_BASE_URL ?? '') as string
+const rawSoundfontBaseUrl = (import.meta.env.VITE_SOUNDFONT_BASE_URL ?? import.meta.env.SOUNDFONT_BASE_URL ?? '') as string
 const SOUNDFONT_BASE_URL = rawSoundfontBaseUrl.replace(/\/+$/, '')
+
+console.log({
+  rawSoundfontBaseUrl, vite: import.meta.env.VITE_SOUNDFONT_BASE_URL, normal: import.meta.env.SOUNDFONT_BASE_URL, SOUNDFONT_BASE_URL
+})
 
 const findPresetName = (args: { presetNames: string[]; wantedName: string }): string | undefined => {
 	const wantedLowerCase = args.wantedName.toLowerCase()

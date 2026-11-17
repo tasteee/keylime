@@ -9,7 +9,7 @@ compatibility_flags = ["nodejs_compat"]
 # Where the app lives. Sign-in emails link here.
 APP_URL = "https://tasteee.github.io/keylime"
 # Origins allowed to call this API (comma separated).
-APP_ORIGIN = "https://tasteee.github.io"
+APP_ORIGIN = "https://tasteee.github.io,http://localhost:3124,http://127.0.0.1:3124"
 
 [[d1_databases]]
 binding = "DB"

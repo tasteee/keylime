@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { getContext } from 'svelte'
+	import * as Svelte from 'svelte'
+	import * as ChordGridKeyboard from '$lib/helpers/chordGridKeyboard'
+	import * as Typing from '$lib/helpers/typing'
+	import playbackStore from '$lib/stores/playback.svelte'
 	import { useProjectEditor } from '$lib/modules/useProjectEditor'
 	import { getChordRootPitch, checkIsTriad, getRomanNumeral, getScaleDegreeIndex } from '$lib/helpers/chordGridLabels'
 	import ChordCard from './ChordCard.svelte'
@@ -23,7 +26,7 @@
 		entries: ChordEntryT[]
 	}
 
-	const context = getContext<ProjectEditorContextT>('projectEditor')
+	const context = Svelte.getContext<ProjectEditorContextT>('projectEditor')
 	const gridChords = $derived(context.gridChords)
 	const projectEditor = useProjectEditor()
 	const project = $derived(projectEditor.state.project)
@@ -34,6 +37,7 @@
 	// only flips it open instead of building it first.
 	let isModifierDialogOpen = $state(false)
 	let modifierChordId: string | null = $state(null)
+	let keyboardChordId: string | null = $state(null)
 
 	const modifierChord = $derived.by(() => {
 		const chosenChord = gridChords.find((chord) => chord.id === modifierChordId)
@@ -41,6 +45,7 @@
 	})
 
 	const handleOpenModifier = (chord: ChordT) => {
+		keyboard.releaseAllKeys()
 		modifierChordId = chord.id
 		isModifierDialogOpen = true
 	}
@@ -116,12 +121,62 @@
 		const chordsByRoot = groupChordsByRoot(gridChords)
 		const lanes: ChordLaneT[] = []
 
-		for (const [rootPitch, chords] of chordsByRoot) {
-			lanes.push(buildLane(rootPitch, chords))
+		for (const rootEntry of chordsByRoot) {
+			const rootPitch = rootEntry[0]
+			const chords = rootEntry[1]
+			const lane = buildLane(rootPitch, chords)
+			lanes.push(lane)
 		}
 
 		return lanes
 	})
+
+	const keyboard = ChordGridKeyboard.createChordGridKeyboard({
+		getChord: (position) => {
+			const lane = chordLanes[position.columnIndex]
+			return lane?.entries[position.rowIndex]?.chord
+		},
+		startPreview: (chord) => {
+			keyboardChordId = chord.id
+			playbackStore.previewChord(chord, project)
+		},
+		stopPreview: () => {
+			keyboardChordId = null
+			playbackStore.stopChordPreview()
+		}
+	})
+
+	const checkIsShortcutBlockedElement = (target: EventTarget): boolean => {
+		const isElement = target instanceof HTMLElement
+		if (!isElement) return false
+		const isDialogOrSelect = target.matches('z-dialog, z-alert-dialog, z-select, select, [role="combobox"], [role="slider"], [role="spinbutton"]')
+		return target.isContentEditable || isDialogOrSelect
+	}
+
+	const handleChordKeyDown = (event: KeyboardEvent) => {
+		const hasModifier = event.ctrlKey || event.metaKey || event.altKey
+		const shouldIgnoreKey = event.defaultPrevented || event.repeat || event.isComposing || hasModifier || isModifierDialogOpen
+		if (shouldIgnoreKey) return
+		const isTyping = Typing.isTypingInTextField(event)
+		if (isTyping) return
+		const eventPath = event.composedPath()
+		const isBlocked = eventPath.some(checkIsShortcutBlockedElement)
+		if (isBlocked) return
+		const wasHandled = keyboard.pressKey(event.code)
+		if (wasHandled) event.preventDefault()
+	}
+
+	const handleChordKeyUp = (event: KeyboardEvent) => {
+		const wasHandled = keyboard.releaseKey(event.code)
+		if (wasHandled) event.preventDefault()
+	}
+
+	const handleVisibilityChange = () => {
+		const isHidden = document.hidden
+		if (isHidden) keyboard.releaseAllKeys()
+	}
+
+	Svelte.onDestroy(keyboard.releaseAllKeys)
 
 	// The legend only explains the dot when a dot is showing.
 	const hasChordsInProgression = $derived.by(() => {
@@ -129,6 +184,9 @@
 		return Boolean(usedGridChord)
 	})
 </script>
+
+<svelte:window onkeydown={handleChordKeyDown} onkeyup={handleChordKeyUp} onblur={keyboard.releaseAllKeys} />
+<svelte:document onvisibilitychange={handleVisibilityChange} />
 
 <section class="chord-grid" aria-label={gridLabel}>
 	<PanelHeader label="Chords" detail={keyLabel}>
@@ -140,7 +198,7 @@
 				</z-row>
 			{/if}
 
-			<z-text size="xs" color="muted" class="chord-grid-hint">Hold to listen · + to add · Right-click to shape</z-text>
+			<z-text size="xs" color="muted" class="chord-grid-hint">1–7 / Q–U / A–J / Z–M to listen · + to add · Right-click to shape</z-text>
 		</z-row>
 	</PanelHeader>
 
@@ -155,6 +213,7 @@
 								kind={entry.kind}
 								numeral={entry.numeral}
 								isInProgression={entry.isInProgression}
+								{keyboardChordId}
 								onOpenModifier={handleOpenModifier}
 							/>
 						</div>
